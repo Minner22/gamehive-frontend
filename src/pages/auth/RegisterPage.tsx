@@ -7,7 +7,7 @@ export default function RegisterPage() {
   return (
     <Card className="rounded-[2rem] p-8 shadow-ambient md:p-10">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <Brand iconOnly className="[&>span]:h-14 [&>span]:w-14" />
+        <Brand iconOnly />
         <h1 className="font-headline text-2xl font-bold">Dołącz do ula</h1>
         <p className="text-sm text-on-surface-variant">Załóż konto w GameHive.</p>
       </div>
