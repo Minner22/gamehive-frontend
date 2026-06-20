@@ -1,4 +1,11 @@
-import apiClient from './client'
+/**
+ * Endpointy uwierzytelniania.
+ *
+ * Konwencja zwrotów: funkcja zwraca `data` z odpowiedzi, jeśli klient jej
+ * potrzebuje (np. MessageResponseDto); w przeciwnym razie `void`. `login`
+ * zwraca `void`, bo token konsumuje wewnętrznie (setAccessToken).
+ */
+import apiClient, { REFRESH_PATH } from './client'
 import { clearAccessToken, setAccessToken } from './tokenStore'
 import type {
   AccessTokenResponseDto,
@@ -33,7 +40,7 @@ export async function logout(): Promise<void> {
 
 /** Odświeżenie sesji z ciasteczka refresh — używane przy starcie aplikacji. */
 export async function refreshSession(): Promise<string> {
-  const { data } = await apiClient.get<AccessTokenResponseDto>('/api/v1/auth/refresh')
+  const { data } = await apiClient.get<AccessTokenResponseDto>(REFRESH_PATH)
   setAccessToken(data.accessToken)
   return data.accessToken
 }
