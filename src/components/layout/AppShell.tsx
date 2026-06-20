@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { SideNav } from './SideNav'
 import { TopAppBar } from './TopAppBar'
@@ -9,6 +9,20 @@ import { TopAppBar } from './TopAppBar'
  */
 export default function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Otwarta szuflada: Escape zamyka + blokada scrolla tła.
+  useEffect(() => {
+    if (!drawerOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDrawerOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.body.style.overflow = ''
+    }
+  }, [drawerOpen])
 
   return (
     <div className="min-h-screen bg-background text-on-surface">
