@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+/* Globalne style bazowe GameHive.
+   Tailwind v4 konfigurujemy bezpośrednio tutaj przez dyrektywę @theme
+   (zamiast osobnego pliku tailwind.config.js). */
+
+:root {
+  color-scheme: light dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  min-height: 100vh;
+}
