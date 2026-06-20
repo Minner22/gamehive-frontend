@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { AxiosError, type AxiosResponse } from 'axios'
 import {
   Badge,
   Button,
@@ -9,7 +12,10 @@ import {
   Icon,
   Input,
   Spinner,
+  useToast,
 } from '@/components/ui'
+import { applyApiValidationErrors, getApiErrorMessage } from '@/lib/apiError'
+import { registerSchema, type RegisterInput } from '@/lib/validation'
 import { ROUTES } from '@/routes/paths'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -18,6 +24,80 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="font-headline text-xl font-bold text-on-surface">{title}</h2>
       {children}
     </section>
+  )
+}
+
+/** Demo całego stacku formularzy: react-hook-form + zod + toast + mapowanie błędów API. */
+function FormDemo() {
+  const toast = useToast()
+  const {
+    register,
+    handleSubmit,
+    setError,
+    reset,
+    formState: { errors },
+  } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema), mode: 'onBlur' })
+
+  const onValid = (data: RegisterInput) => {
+    toast.success(`Walidacja po stronie klienta OK: ${data.username}`)
+  }
+
+  // Symuluje odpowiedź 409 z ApiValidationError, by pokazać mapowanie na pola + toast.
+  const simulateServerError = () => {
+    const response = {
+      status: 409,
+      data: {
+        errorCode: 'EMAIL_ALREADY_EXISTS',
+        message: 'Konto o podanych danych już istnieje',
+        errors: [
+          { field: 'username', message: 'Nazwa użytkownika jest zajęta (z serwera)' },
+          { field: 'email', message: 'Ten e-mail jest już zarejestrowany (z serwera)' },
+        ],
+      },
+    } as unknown as AxiosResponse
+    const serverError = new AxiosError('Conflict', 'ERR_BAD_REQUEST', undefined, undefined, response)
+
+    applyApiValidationErrors(serverError, (field, message) =>
+      setError(field as keyof RegisterInput, { message }),
+    )
+    toast.error(getApiErrorMessage(serverError))
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onValid)} className="grid max-w-md gap-4" noValidate>
+      <Input
+        label="Nazwa użytkownika"
+        iconLeft="person"
+        placeholder="john.doe"
+        error={errors.username?.message}
+        {...register('username')}
+      />
+      <Input
+        label="E-mail"
+        iconLeft="mail"
+        type="email"
+        placeholder="john@example.com"
+        error={errors.email?.message}
+        {...register('email')}
+      />
+      <Input
+        label="Hasło"
+        iconLeft="lock"
+        type="password"
+        placeholder="••••••••"
+        error={errors.password?.message}
+        {...register('password')}
+      />
+      <div className="flex flex-wrap gap-3">
+        <Button type="submit">Waliduj (zod)</Button>
+        <Button type="button" variant="ghost" onClick={simulateServerError}>
+          Symuluj błąd serwera
+        </Button>
+        <Button type="button" variant="tertiary" onClick={() => reset()}>
+          Wyczyść
+        </Button>
+      </div>
+    </form>
   )
 }
 
@@ -84,6 +164,15 @@ export default function UiKitPage() {
           />
           <Input label="Telefon" iconLeft="call" placeholder="+48123456789" />
         </div>
+      </Section>
+
+      <Section title="Formularz (react-hook-form + zod + toast)">
+        <p className="-mt-2 text-sm text-on-surface-variant">
+          „Waliduj" sprawdza zod-em (puste/za krótkie pola pokażą błędy). „Symuluj błąd
+          serwera" demonstruje mapowanie <code className="text-primary">ApiValidationError</code>{' '}
+          na pola + toast.
+        </p>
+        <FormDemo />
       </Section>
 
       <Section title="Karty & odznaki">
