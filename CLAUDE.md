@@ -48,6 +48,10 @@ src/
                    #   interceptor Bearer + single-flight refresh na 401
     tokenStore.ts  # access token TYLKO w pamięci (nie localStorage — ochrona XSS)
     types.ts       # typy DTO odwzorowujące kontrakt OpenAPI (ręczne)
+    auth.ts        # endpointy /auth/** (login, register, refreshSession, logout, …)
+    users.ts       # getMe, updateProfile
+  auth/
+    AuthContext.tsx# AuthProvider (bootstrap sesji) + useAuth (status/user/login/logout/hasRole)
   components/
     ui/            # UI-kit Nectar (Button/ButtonLink, Input, Card, Chip, Badge,
                    #   HexAvatar, Icon, Spinner, Toast) + barrel; importuj z '@/components/ui'
@@ -62,8 +66,13 @@ src/
   routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
   index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)
   App.tsx          # definicja tras (AppShell vs AuthLayout)
-  main.tsx         # punkt wejścia (BrowserRouter + ToastProvider)
+  main.tsx         # punkt wejścia (BrowserRouter + AuthProvider + ToastProvider)
 ```
+
+- **Sesja/auth:** stan z `useAuth()` (`@/auth/AuthContext`) — `status`/`user`/`login`/
+  `logout`/`hasRole`. `AuthProvider` przy starcie odtwarza sesję (`refreshSession` →
+  `getMe`). Trasy chroń przez `<ProtectedRoute>` (opcjonalnie `role="ROLE_ADMIN"`).
+  Wywołania API rób przez `@/api/auth` i `@/api/users`, nie bezpośrednio przez `apiClient`.
 
 - **Formularze:** `react-hook-form` + `zod` (`zodResolver`). Schematy w
   `src/lib/validation.ts` (zgodne z DTO backendu). Po błędzie zapytania:
@@ -111,7 +120,7 @@ Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user 
 - **Faza 0 ✅** GH-1 init.
 - **Faza 1 — fundament:** GH-2 ✅ design system Nectar + AppShell + UI-kit (`/ui`) ·
   GH-3 ✅ formularze (react-hook-form + zod) + Toast + mapowanie błędów API ·
-  GH-4 AuthContext + bootstrap sesji + Role-/ProtectedRoute.
+  GH-4 ✅ AuthContext + bootstrap sesji + ProtectedRoute (z rolą) + api/auth+users.
 - **Faza 2 — auth:** GH-5 landing · GH-6 rejestracja · GH-7 login · GH-8 aktywacja+resend
   · GH-9 reset hasła.
 - **Faza 3 — konto:** GH-10 profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).
