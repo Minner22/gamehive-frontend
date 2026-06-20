@@ -53,7 +53,9 @@ src/
                    #   Icon, Spinner) + barrel index.ts; importuj z '@/components/ui'
     layout/        # AppShell, SideNav, TopAppBar, AuthLayout, Brand, ThemeToggle
     ProtectedRoute.tsx
-  lib/cn.ts        # helper klas (clsx + tailwind-merge) — używaj zamiast string concat
+  lib/
+    cn.ts          # helper klas (clsx + tailwind-merge) — używaj zamiast string concat
+    theme.ts       # wspólny store motywu (jasny/ciemny) — jedyne źródło prawdy
   pages/           # widoki przypięte do tras
   routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
   index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)
