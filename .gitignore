@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Materiały robocze designu (mockupy Stitch itp.) — poza repo
+*.zip
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

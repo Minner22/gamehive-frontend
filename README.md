@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# GameHive — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend platformy **GameHive**. Konsumuje REST API backendu (Spring Boot,
+repo [`gamehive-backend`](https://github.com/Minner22/gamehive-backend)).
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19** + **TypeScript** (Vite 8)
+- **Tailwind CSS v4** (plugin `@tailwindcss/vite`, konfiguracja przez `@theme`)
+- **React Router v7** — routing po stronie klienta
+- **Axios** — komunikacja z API (JWT Bearer + refresh przez ciasteczko HttpOnly)
 
-## React Compiler
+## Wymagania
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Node.js ≥ 20.19** (lub 22 LTS) — Vite 8 opiera się na bundlerze Rolldown,
+  który wymaga tej wersji. Na starszym Node natywny binding się nie zainstaluje.
+- npm ≥ 10
 
-## Expanding the ESLint configuration
+## Start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+cp .env.example .env   # ustaw VITE_API_BASE_URL jeśli backend nie jest na :8080
+npm run dev            # serwer deweloperski (http://localhost:5173)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Skrypty
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Komenda           | Opis                                  |
+| ----------------- | ------------------------------------- |
+| `npm run dev`     | serwer deweloperski z HMR             |
+| `npm run build`   | typecheck (`tsc`) + build produkcyjny |
+| `npm run preview` | podgląd builda produkcyjnego          |
+| `npm run lint`    | ESLint                                |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Konfiguracja środowiska
+
+Zmienne czytane przez Vite muszą mieć prefiks `VITE_` (plik `.env`):
+
+| Zmienna             | Domyślnie               | Opis                  |
+| ------------------- | ----------------------- | --------------------- |
+| `VITE_API_BASE_URL` | `http://localhost:8080` | bazowy URL backendu   |
+
+## Struktura projektu
+
 ```
+src/
+  api/            # warstwa komunikacji z backendem
+    client.ts     # instancja Axios + interceptory (Bearer, refresh na 401)
+    tokenStore.ts # access token trzymany w pamięci (nie w localStorage)
+    types.ts      # typy DTO odwzorowujące kontrakt OpenAPI
+  components/
+    layout/       # RootLayout (nawigacja + Outlet)
+    ProtectedRoute.tsx
+  pages/          # widoki przypięte do tras
+  routes/
+    paths.ts      # centralne stałe ścieżek
+  App.tsx         # definicja tras
+  main.tsx        # punkt wejścia (BrowserRouter)
+```
+
+## Konwencja commitów
+
+Jak w backendzie: `GH-<numer> <typ>(<scope>): opis`, np.
+`GH-1 feat(router): podstawowa struktura tras`. Praca na branchach
+`GH-<numer>-<opis>`, scalanie przez Pull Request.
