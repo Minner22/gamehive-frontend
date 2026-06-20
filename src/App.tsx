@@ -6,6 +6,7 @@ import HomePage from '@/pages/HomePage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import ProfilePage from '@/pages/ProfilePage'
 import UiKitPage from '@/pages/UiKitPage'
+import ActivatePage from '@/pages/auth/ActivatePage'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import { ROUTES } from '@/routes/paths'
@@ -17,6 +18,7 @@ export default function App() {
       <Route element={<AuthLayout />}>
         <Route path={ROUTES.login} element={<LoginPage />} />
         <Route path={ROUTES.register} element={<RegisterPage />} />
+        <Route path={ROUTES.activate} element={<ActivatePage />} />
       </Route>
 
       {/* Aplikacja — szkielet z nawigacją */}
