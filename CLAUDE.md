@@ -122,8 +122,8 @@ Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user 
 - **Faza 1 — fundament:** GH-2 ✅ design system Nectar + AppShell + UI-kit (`/ui`) ·
   GH-3 ✅ formularze (react-hook-form + zod) + Toast + mapowanie błędów API ·
   GH-4 ✅ AuthContext + bootstrap sesji + ProtectedRoute (z rolą) + api/auth+users.
-- **Faza 2 — auth:** GH-5 landing · GH-6 ✅ rejestracja · GH-7 login · GH-8 aktywacja+resend
-  · GH-9 reset hasła.
+- **Faza 2 — auth:** GH-5 landing (odłożony) · GH-6 ✅ rejestracja · GH-7 ✅ login ·
+  GH-8 aktywacja+resend · GH-9 reset hasła.
 - **Faza 3 — konto:** GH-10 profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).
 - **Faza 4 — admin:** GH-13 lista userów · GH-14 akcje (role/activate/deactivate/
   force-logout/delete) · GH-15 audyt.
