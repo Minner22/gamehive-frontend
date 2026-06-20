@@ -8,9 +8,13 @@ interface BrandMarkProps {
 const gold = { fill: 'var(--color-primary-container)' }
 
 /**
- * Znak marki GameHive (wektor z Inkscape): heksagon-obrys + meeple + dwa złote
- * chevrony. Obrys i meeple = `currentColor` (ustaw text-* na rodzicu — reaguje na
- * dark mode); chevrony stałe złote. Źródło: src/assets/logo-mark.svg.
+ * Znak marki GameHive: heksagon-obrys + meeple + dwa złote chevrony.
+ * Obrys i meeple = `currentColor` (ustaw text-* na rodzicu — reaguje na dark
+ * mode); chevrony stałe złote.
+ *
+ * Edytowalny master (Inkscape): src/assets/logo-mark.svg. Ten komponent oraz
+ * public/favicon.svg są RĘCZNYMI kopiami runtime tych ścieżek — przy zmianie
+ * mastera zaktualizuj oba (svgr pozwoliłby generować z jednego pliku).
  */
 export function BrandMark({ size = 36, className, title = 'GameHive' }: BrandMarkProps) {
   return (

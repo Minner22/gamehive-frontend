@@ -1,6 +1,6 @@
 import { Brand } from './Brand'
 import { ThemeToggle } from './ThemeToggle'
-import { Icon } from '@/components/ui/Icon'
+import { Icon } from '@/components/ui'
 
 /** Górny pasek widoczny tylko na mobile — otwiera szufladę nawigacji. */
 export function TopAppBar({ onMenu }: { onMenu: () => void }) {

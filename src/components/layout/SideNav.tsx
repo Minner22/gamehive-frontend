@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/cn'
-import { Icon } from '@/components/ui/Icon'
+import { Icon } from '@/components/ui'
 import { Brand } from './Brand'
 import { ThemeToggle } from './ThemeToggle'
 import { ROUTES } from '@/routes/paths'
