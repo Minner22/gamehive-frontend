@@ -15,7 +15,7 @@ dist-ssr
 # Materiały robocze / referencyjne designu (mockupy Stitch, podgląd logo) — poza repo
 *.zip
 stitch_extracted/
-logo.png
+logo*.png
 
 # Editor directories and files
 .vscode/*
