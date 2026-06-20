@@ -20,9 +20,9 @@ export function BrandMark({ size = 36, className, title = 'GameHive' }: BrandMar
       aria-label={title}
       className={className}
     >
-      {/* Heksagon (flat-top) */}
+      {/* Heksagon (pointy-top) */}
       <path
-        d="M44 9.2 L56 30 L44 50.8 L20 50.8 L8 30 L20 9.2 Z"
+        d="M32 7.5 L51.5 18.75 L51.5 41.25 L32 52.5 L12.5 41.25 L12.5 18.75 Z"
         stroke="currentColor"
         strokeWidth="4.5"
         strokeLinejoin="round"
@@ -41,14 +41,14 @@ export function BrandMark({ size = 36, className, title = 'GameHive' }: BrandMar
       />
       {/* Chevrony (złote) — dwie odseparowane warstwy ula */}
       <path
-        d="M21 39 L32 42.5 L43 39"
+        d="M22 38 L32 41.5 L42 38"
         stroke="var(--color-primary-container)"
         strokeWidth="3.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M21 45 L32 48.5 L43 45"
+        d="M22 43.5 L32 47 L42 43.5"
         stroke="var(--color-primary-container)"
         strokeWidth="3.8"
         strokeLinecap="round"
