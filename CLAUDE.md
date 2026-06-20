@@ -49,19 +49,26 @@ src/
     tokenStore.ts  # access token TYLKO w pamięci (nie localStorage — ochrona XSS)
     types.ts       # typy DTO odwzorowujące kontrakt OpenAPI (ręczne)
   components/
-    ui/            # UI-kit Nectar (Button, Input, Card, Chip, Badge, HexAvatar,
-                   #   Icon, Spinner) + barrel index.ts; importuj z '@/components/ui'
-    layout/        # AppShell, SideNav, TopAppBar, AuthLayout, Brand, ThemeToggle
+    ui/            # UI-kit Nectar (Button/ButtonLink, Input, Card, Chip, Badge,
+                   #   HexAvatar, Icon, Spinner, Toast) + barrel; importuj z '@/components/ui'
+    layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, Brand, ThemeToggle
     ProtectedRoute.tsx
   lib/
     cn.ts          # helper klas (clsx + tailwind-merge) — używaj zamiast string concat
     theme.ts       # wspólny store motywu (jasny/ciemny) — jedyne źródło prawdy
+    validation.ts  # schematy zod zgodne z kontraktem API (register/login/profile…)
+    apiError.ts    # getApiErrorMessage + applyApiValidationErrors (błędy serwera -> pola)
   pages/           # widoki przypięte do tras
   routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
   index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)
   App.tsx          # definicja tras (AppShell vs AuthLayout)
-  main.tsx         # punkt wejścia (BrowserRouter)
+  main.tsx         # punkt wejścia (BrowserRouter + ToastProvider)
 ```
+
+- **Formularze:** `react-hook-form` + `zod` (`zodResolver`). Schematy w
+  `src/lib/validation.ts` (zgodne z DTO backendu). Po błędzie zapytania:
+  `applyApiValidationErrors(err, setError)` mapuje błędy pól, a `getApiErrorMessage(err)`
+  daje komunikat do `useToast().error(...)`. Nawigację linkową rób `ButtonLink`, nie `Button`+navigate.
 
 - **Design tokeny:** w `src/index.css` (`@theme`). Używaj utilities z tokenów
   (`bg-primary`, `text-on-surface`, `bg-surface-container-low`…) — **nie** hardkoduj
@@ -103,8 +110,8 @@ Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user 
 
 - **Faza 0 ✅** GH-1 init.
 - **Faza 1 — fundament:** GH-2 ✅ design system Nectar + AppShell + UI-kit (`/ui`) ·
-  GH-3 formularze (react-hook-form + zod) + mapowanie błędów API · GH-4 AuthContext
-  + bootstrap sesji + Role-/ProtectedRoute.
+  GH-3 ✅ formularze (react-hook-form + zod) + Toast + mapowanie błędów API ·
+  GH-4 AuthContext + bootstrap sesji + Role-/ProtectedRoute.
 - **Faza 2 — auth:** GH-5 landing · GH-6 rejestracja · GH-7 login · GH-8 aktywacja+resend
   · GH-9 reset hasła.
 - **Faza 3 — konto:** GH-10 profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).
