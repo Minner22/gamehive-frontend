@@ -7,6 +7,7 @@ export const ROUTES = {
   passwordResetRequest: '/password-reset',
   passwordResetConfirm: '/password-reset/confirm',
   profile: '/profile',
+  uiKit: '/ui',
   admin: {
     users: '/admin/users',
     audit: '/admin/audit',
