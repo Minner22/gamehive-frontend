@@ -29,6 +29,18 @@ export const registerSchema = z.object({
 })
 export type RegisterInput = z.infer<typeof registerSchema>
 
+/**
+ * Schemat formularza rejestracji = kontrakt + powtórzenie hasła (pole tylko po
+ * stronie klienta, nie wysyłane do API). Sprawdza zgodność obu haseł.
+ */
+export const registerFormSchema = registerSchema
+  .extend({ confirmPassword: z.string().min(1, 'Powtórz hasło') })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: 'Hasła nie są takie same',
+    path: ['confirmPassword'],
+  })
+export type RegisterFormInput = z.infer<typeof registerFormSchema>
+
 export const loginSchema = z.object({
   email,
   password: z.string().min(1, 'Podaj hasło'),
