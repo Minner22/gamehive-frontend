@@ -1,5 +1,4 @@
-import { useNavigate } from 'react-router-dom'
-import { Button, Card, Icon } from '@/components/ui'
+import { ButtonLink, Card, Icon } from '@/components/ui'
 import { ROUTES } from '@/routes/paths'
 
 const FEATURES = [
@@ -9,8 +8,6 @@ const FEATURES = [
 ]
 
 export default function HomePage() {
-  const navigate = useNavigate()
-
   return (
     <div className="space-y-12">
       <section className="flex flex-col items-start gap-5 py-8">
@@ -26,12 +23,12 @@ export default function HomePage() {
           designu są gotowe — kolejne ekrany powstają zgodnie z roadmapą.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button iconRight="arrow_forward" onClick={() => navigate(ROUTES.register)}>
+          <ButtonLink to={ROUTES.register} iconRight="arrow_forward">
             Załóż konto
-          </Button>
-          <Button variant="secondary" onClick={() => navigate(ROUTES.login)}>
+          </ButtonLink>
+          <ButtonLink to={ROUTES.login} variant="secondary">
             Zaloguj się
-          </Button>
+          </ButtonLink>
         </div>
       </section>
 

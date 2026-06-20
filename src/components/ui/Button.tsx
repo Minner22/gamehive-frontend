@@ -1,11 +1,12 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { Link, type LinkProps } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import { Icon } from './Icon'
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost'
 type ButtonSize = 'sm' | 'md' | 'lg'
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonStyleProps {
   variant?: ButtonVariant
   size?: ButtonSize
   /** Nazwa ikony Material Symbols po lewej / prawej stronie tekstu. */
@@ -13,7 +14,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconRight?: string
   /** Pełna szerokość kontenera. */
   fullWidth?: boolean
-  /** Stan ładowania — blokuje przycisk i pokazuje spinner. */
+  /** Stan ładowania — pokazuje spinner (Button dodatkowo blokuje przycisk). */
   loading?: boolean
   children?: ReactNode
 }
@@ -41,9 +42,30 @@ const sizes: Record<ButtonSize, string> = {
   lg: 'text-base px-7 py-3.5',
 }
 
+function buttonClass({ variant = 'primary', size = 'md', fullWidth }: ButtonStyleProps) {
+  return cn(base, variants[variant], sizes[size], fullWidth && 'w-full')
+}
+
+function ButtonInner({ loading, iconLeft, iconRight, children }: ButtonStyleProps) {
+  return (
+    <>
+      {loading ? (
+        <Icon name="progress_activity" className="animate-spin text-[1.1em]" />
+      ) : (
+        iconLeft && <Icon name={iconLeft} className="text-[1.2em]" />
+      )}
+      {children}
+      {iconRight && !loading && <Icon name={iconRight} className="text-[1.2em]" />}
+    </>
+  )
+}
+
+type ButtonProps = ButtonStyleProps & ButtonHTMLAttributes<HTMLButtonElement>
+
+/** Przycisk akcji (renderuje <button>). Do nawigacji użyj ButtonLink. */
 export function Button({
-  variant = 'primary',
-  size = 'md',
+  variant,
+  size,
   iconLeft,
   iconRight,
   fullWidth,
@@ -55,17 +77,37 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={cn(base, variants[variant], sizes[size], fullWidth && 'w-full', className)}
+      className={cn(buttonClass({ variant, size, fullWidth }), className)}
       disabled={disabled || loading}
       {...rest}
     >
-      {loading ? (
-        <Icon name="progress_activity" className="animate-spin text-[1.1em]" />
-      ) : (
-        iconLeft && <Icon name={iconLeft} className="text-[1.2em]" />
-      )}
-      {children}
-      {iconRight && !loading && <Icon name={iconRight} className="text-[1.2em]" />}
+      <ButtonInner loading={loading} iconLeft={iconLeft} iconRight={iconRight}>
+        {children}
+      </ButtonInner>
     </button>
+  )
+}
+
+type ButtonLinkProps = ButtonStyleProps & Omit<LinkProps, 'children'>
+
+/** Link w wyglądzie przycisku (renderuje <a> przez React Router) — zachowuje
+ * semantykę linku: ctrl/środkowy klik, „otwórz w nowej karcie", href. */
+export function ButtonLink({
+  variant,
+  size,
+  iconLeft,
+  iconRight,
+  fullWidth,
+  loading,
+  className,
+  children,
+  ...rest
+}: ButtonLinkProps) {
+  return (
+    <Link className={cn(buttonClass({ variant, size, fullWidth }), className)} {...rest}>
+      <ButtonInner loading={loading} iconLeft={iconLeft} iconRight={iconRight}>
+        {children}
+      </ButtonInner>
+    </Link>
   )
 }

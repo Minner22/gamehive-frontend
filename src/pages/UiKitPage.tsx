@@ -1,5 +1,16 @@
 import type { ReactNode } from 'react'
-import { Badge, Button, Card, Chip, HexAvatar, Icon, Input, Spinner } from '@/components/ui'
+import {
+  Badge,
+  Button,
+  ButtonLink,
+  Card,
+  Chip,
+  HexAvatar,
+  Icon,
+  Input,
+  Spinner,
+} from '@/components/ui'
+import { ROUTES } from '@/routes/paths'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -52,6 +63,9 @@ export default function UiKitPage() {
             Ghost
           </Button>
           <Button iconRight="login">Z ikoną</Button>
+          <ButtonLink to={ROUTES.uiKit} variant="tertiary" iconRight="open_in_new">
+            ButtonLink
+          </ButtonLink>
           <Button loading>Ładowanie</Button>
           <Button disabled>Wyłączony</Button>
         </div>
