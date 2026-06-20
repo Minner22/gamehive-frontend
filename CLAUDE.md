@@ -53,8 +53,8 @@ src/
   auth/
     AuthContext.tsx# AuthProvider (bootstrap sesji) + useAuth (status/user/login/logout/hasRole)
   components/
-    ui/            # UI-kit Nectar (Button/ButtonLink, Input, Card, Chip, Badge,
-                   #   HexAvatar, Icon, Spinner, Toast) + barrel; importuj z '@/components/ui'
+    ui/            # UI-kit Nectar (Button/ButtonLink, Input/PasswordInput, Card, Chip,
+                   #   Badge, HexAvatar, Icon, Spinner, Toast) + barrel; '@/components/ui'
     layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, Brand, ThemeToggle
     ProtectedRoute.tsx
   lib/
@@ -62,6 +62,7 @@ src/
     theme.ts       # wspólny store motywu (jasny/ciemny) — jedyne źródło prawdy
     validation.ts  # schematy zod zgodne z kontraktem API (register/login/profile…)
     apiError.ts    # getApiErrorMessage + applyApiValidationErrors (błędy serwera -> pola)
+    formError.ts   # handleApiFormError — wspólna obsługa błędu submitu (pola + toast)
   pages/           # widoki przypięte do tras
   routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
   index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)
@@ -121,7 +122,7 @@ Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user 
 - **Faza 1 — fundament:** GH-2 ✅ design system Nectar + AppShell + UI-kit (`/ui`) ·
   GH-3 ✅ formularze (react-hook-form + zod) + Toast + mapowanie błędów API ·
   GH-4 ✅ AuthContext + bootstrap sesji + ProtectedRoute (z rolą) + api/auth+users.
-- **Faza 2 — auth:** GH-5 landing · GH-6 rejestracja · GH-7 login · GH-8 aktywacja+resend
+- **Faza 2 — auth:** GH-5 landing · GH-6 ✅ rejestracja · GH-7 login · GH-8 aktywacja+resend
   · GH-9 reset hasła.
 - **Faza 3 — konto:** GH-10 profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).
 - **Faza 4 — admin:** GH-13 lista userów · GH-14 akcje (role/activate/deactivate/
