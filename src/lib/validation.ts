@@ -48,13 +48,18 @@ export const resendActivationSchema = z.object({ email })
 export type ResendActivationInput = z.infer<typeof resendActivationSchema>
 
 // --- Profil (PATCH, wszystkie pola opcjonalne) --------------------------
+//
+// Puste pole formularza ('') zamieniamy na undefined, żeby przy PATCH nie
+// nadpisać istniejącej wartości pustym stringiem (pominięte pola = bez zmian).
+
+const emptyToUndefined = (v: string | undefined) => (v ? v : undefined)
 
 const optionalText = (max: number, label: string) =>
   z
     .string()
     .max(max, `${label}: maksymalnie ${max} znaków`)
     .optional()
-    .or(z.literal(''))
+    .transform(emptyToUndefined)
 
 export const addressSchema = z.object({
   street: optionalText(255, 'Ulica'),
@@ -69,18 +74,24 @@ export const profileUpdateSchema = z.object({
   phoneNumber: z
     .string()
     .regex(/^\+?[1-9]\d{1,14}$/, 'Numer w formacie E.164, np. +48123456789')
+    .or(z.literal(''))
     .optional()
-    .or(z.literal('')),
+    .transform(emptyToUndefined),
   dateOfBirth: z
     .string()
-    .refine((v) => !v || new Date(v) < new Date(), 'Data urodzenia musi być w przeszłości')
+    .refine((v) => new Date(v) < new Date(), 'Data urodzenia musi być w przeszłości')
+    .or(z.literal(''))
     .optional()
-    .or(z.literal('')),
+    .transform(emptyToUndefined),
   profilePictureUrl: z
     .url('Podaj poprawny URL')
     .max(512, 'URL: maksymalnie 512 znaków')
+    .or(z.literal(''))
     .optional()
-    .or(z.literal('')),
+    .transform(emptyToUndefined),
   address: addressSchema.optional(),
 })
-export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>
+/** Wartości pól formularza profilu (mogą zawierać puste stringi). */
+export type ProfileUpdateInput = z.input<typeof profileUpdateSchema>
+/** Payload po walidacji — puste pola jako undefined (gotowe do PATCH). */
+export type ProfileUpdatePayload = z.output<typeof profileUpdateSchema>
