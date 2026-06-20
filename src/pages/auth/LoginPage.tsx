@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { isAxiosError } from 'axios'
@@ -15,6 +16,7 @@ type RedirectTarget = { pathname: string; search?: string; hash?: string }
 export default function LoginPage() {
   const { status, login } = useAuth()
   const location = useLocation()
+  const [inactiveEmail, setInactiveEmail] = useState<string | null>(null)
 
   // Pełny `from` (pathname + search + hash) zapisany przez ProtectedRoute.
   const from = (location.state as { from?: RedirectTarget } | null)?.from
@@ -23,7 +25,7 @@ export default function LoginPage() {
   const {
     register,
     setError,
-    toast,
+    getValues,
     submit,
     formState: { errors, isSubmitting },
   } = useApiForm<LoginInput>({ resolver: zodResolver(loginSchema) }, LOGIN_FIELDS)
@@ -37,6 +39,7 @@ export default function LoginPage() {
     // Po sukcesie status → 'authenticated' i guard <Navigate to={target}> wyżej
     // przekieruje (na from/home) — bez osobnego navigate().
     async (data) => {
+      setInactiveEmail(null)
       await login(data)
     },
     (err) => {
@@ -46,7 +49,8 @@ export default function LoginPage() {
           return true
         }
         if (err.response?.status === 403) {
-          toast.error('Konto nie zostało aktywowane — sprawdź skrzynkę e-mail.')
+          // Konto nieaktywne — pokaż link do ponownego wysłania aktywacji.
+          setInactiveEmail(getValues('email'))
           return true
         }
       }
@@ -68,6 +72,21 @@ export default function LoginPage() {
       }
     >
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
+        {inactiveEmail && (
+          <div
+            role="alert"
+            className="rounded-2xl bg-error-container/40 p-3 text-sm text-on-error-container"
+          >
+            Konto nie zostało aktywowane.{' '}
+            <Link
+              to={ROUTES.activate}
+              state={{ email: inactiveEmail }}
+              className="font-bold underline"
+            >
+              Wyślij link aktywacyjny ponownie
+            </Link>
+          </div>
+        )}
         <Input
           label="E-mail"
           iconLeft="mail"
