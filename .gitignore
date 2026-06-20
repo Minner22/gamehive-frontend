@@ -14,6 +14,7 @@ dist-ssr
 
 # Materiały robocze designu (mockupy Stitch itp.) — poza repo
 *.zip
+stitch_extracted/
 
 # Editor directories and files
 .vscode/*
