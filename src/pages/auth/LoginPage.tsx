@@ -1,59 +1,58 @@
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { isAxiosError } from 'axios'
 import { AuthCard } from '@/components/layout/AuthCard'
-import { Button, Input, PasswordInput, useToast } from '@/components/ui'
+import { Button, Input, PasswordInput } from '@/components/ui'
 import { useAuth } from '@/auth/AuthContext'
+import { useApiForm } from '@/lib/useApiForm'
 import { loginSchema, type LoginInput } from '@/lib/validation'
-import { handleApiFormError } from '@/lib/formError'
 import { ROUTES } from '@/routes/paths'
 
-const FORM_FIELDS = Object.keys(loginSchema.shape)
-const isFormField = (field: string) => FORM_FIELDS.includes(field)
+const LOGIN_FIELDS = Object.keys(loginSchema.shape)
+
+type RedirectTarget = { pathname: string; search?: string; hash?: string }
 
 export default function LoginPage() {
-  const toast = useToast()
   const { status, login } = useAuth()
-  const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname
+
+  // Pełny `from` (pathname + search + hash) zapisany przez ProtectedRoute.
+  const from = (location.state as { from?: RedirectTarget } | null)?.from
+  const target: RedirectTarget = from ?? { pathname: ROUTES.home }
 
   const {
     register,
-    handleSubmit,
     setError,
+    toast,
+    submit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) })
+  } = useApiForm<LoginInput>({ resolver: zodResolver(loginSchema) }, LOGIN_FIELDS)
 
   // Zalogowany na /login → wróć tam, skąd przyszedł (lub na stronę główną).
   if (status === 'authenticated') {
-    return <Navigate to={from ?? ROUTES.home} replace />
+    return <Navigate to={target} replace />
   }
 
-  const onSubmit = async (data: LoginInput) => {
-    try {
+  const onSubmit = submit(
+    // Po sukcesie status → 'authenticated' i guard <Navigate to={target}> wyżej
+    // przekieruje (na from/home) — bez osobnego navigate().
+    async (data) => {
       await login(data)
-      navigate(from ?? ROUTES.home, { replace: true })
-    } catch (err) {
+    },
+    (err) => {
       if (isAxiosError(err)) {
         if (err.response?.status === 401) {
           setError('password', { message: 'Nieprawidłowy e-mail lub hasło' })
-          return
+          return true
         }
         if (err.response?.status === 403) {
           toast.error('Konto nie zostało aktywowane — sprawdź skrzynkę e-mail.')
-          return
+          return true
         }
       }
-      handleApiFormError(err, {
-        setFieldError: (field, message) =>
-          setError(field as keyof LoginInput, { message }),
-        toastError: toast.error,
-        isFormField,
-      })
-    }
-  }
+      return false
+    },
+  )
 
   return (
     <AuthCard
@@ -68,7 +67,7 @@ export default function LoginPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <form onSubmit={onSubmit} className="space-y-5" noValidate>
         <Input
           label="E-mail"
           iconLeft="mail"
