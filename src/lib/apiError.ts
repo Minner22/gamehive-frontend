@@ -17,26 +17,41 @@ export function getApiErrorMessage(
   return fallback
 }
 
+export interface ApiValidationResult {
+  /** Czy choć jeden błąd został przypisany do pola formularza. */
+  applied: boolean
+  /** Komunikaty, których nie dało się przypisać do pola (brak `field` lub pole
+   *  spoza formularza). Pokaż je osobno, np. przez toast — nie znikają po cichu. */
+  unmapped: string[]
+}
+
 /**
  * Mapuje błędy walidacji z odpowiedzi serwera (ApiValidationError.errors[])
- * na poszczególne pola formularza przez przekazany callback (np. setError z
- * react-hook-form). Zwraca true, jeśli choć jeden błąd polowy został zastosowany.
+ * na pola formularza przez przekazany callback (np. setError z react-hook-form).
+ *
+ * Podaj `isFormField`, by błędy dla pól spoza formularza nie trafiały w próżnię —
+ * wrócą w `unmapped` zamiast cichego setError na nieistniejące pole.
  */
 export function applyApiValidationErrors(
   error: unknown,
   setFieldError: (field: string, message: string) => void,
-): boolean {
-  if (!isAxiosError(error)) return false
+  isFormField?: (field: string) => boolean,
+): ApiValidationResult {
+  const unmapped: string[] = []
+  if (!isAxiosError(error)) return { applied: false, unmapped }
   const data = error.response?.data as ApiValidationError | undefined
   const fieldErrors = data?.errors
-  if (!fieldErrors?.length) return false
+  if (!fieldErrors?.length) return { applied: false, unmapped }
 
   let applied = false
   for (const fe of fieldErrors) {
-    if (fe.field) {
-      setFieldError(fe.field, fe.message ?? 'Nieprawidłowa wartość')
+    const message = fe.message ?? 'Nieprawidłowa wartość'
+    if (fe.field && (!isFormField || isFormField(fe.field))) {
+      setFieldError(fe.field, message)
       applied = true
+    } else {
+      unmapped.push(message)
     }
   }
-  return applied
+  return { applied, unmapped }
 }
