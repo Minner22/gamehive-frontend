@@ -44,9 +44,12 @@ const AUTO_DISMISS_MS = 5000
 
 function ToastView({ item, onClose }: { item: ToastItem; onClose: () => void }) {
   const tone = TONES[item.tone]
+  // Błędy przerywają (assertive/alert); reszta grzecznie (polite/status).
+  const assertive = item.tone === 'error'
   return (
     <div
-      role="status"
+      role={assertive ? 'alert' : 'status'}
+      aria-live={assertive ? 'assertive' : 'polite'}
       className={cn(
         'flex w-80 max-w-[calc(100vw-2rem)] items-start gap-3 rounded-2xl px-4 py-3 shadow-ambient',
         tone.cls,
@@ -97,11 +100,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div
-        aria-live="polite"
-        aria-label="Powiadomienia"
-        className="fixed right-4 top-4 z-[100] flex flex-col gap-2"
-      >
+      {/* Kontener pozycjonujący — live-region jest na pojedynczym toaście (ToastView),
+          żeby uniknąć podwójnego odczytu. */}
+      <div className="fixed right-4 top-4 z-[100] flex flex-col gap-2">
         {toasts.map((t) => (
           <ToastView key={t.id} item={t} onClose={() => remove(t.id)} />
         ))}
