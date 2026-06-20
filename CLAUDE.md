@@ -43,18 +43,30 @@ Przed commitem upewnij się, że `npm run build` i `npm run lint` przechodzą.
 
 ```
 src/
-  api/            # warstwa HTTP
-    client.ts     # instancja Axios: baseURL z VITE_API_BASE_URL, withCredentials,
-                  #   interceptor Bearer + single-flight refresh na 401
-    tokenStore.ts # access token TYLKO w pamięci (nie localStorage — ochrona XSS)
-    types.ts      # typy DTO odwzorowujące kontrakt OpenAPI (ręczne)
-  components/     # współdzielone (RootLayout, ProtectedRoute, UI-kit)
-  pages/          # widoki przypięte do tras
-  routes/paths.ts # centralne stałe ścieżek (jedno źródło prawdy)
-  App.tsx         # definicja tras
-  main.tsx        # punkt wejścia (BrowserRouter)
+  api/             # warstwa HTTP
+    client.ts      # instancja Axios: baseURL z VITE_API_BASE_URL, withCredentials,
+                   #   interceptor Bearer + single-flight refresh na 401
+    tokenStore.ts  # access token TYLKO w pamięci (nie localStorage — ochrona XSS)
+    types.ts       # typy DTO odwzorowujące kontrakt OpenAPI (ręczne)
+  components/
+    ui/            # UI-kit Nectar (Button, Input, Card, Chip, Badge, HexAvatar,
+                   #   Icon, Spinner) + barrel index.ts; importuj z '@/components/ui'
+    layout/        # AppShell, SideNav, TopAppBar, AuthLayout, Brand, ThemeToggle
+    ProtectedRoute.tsx
+  lib/
+    cn.ts          # helper klas (clsx + tailwind-merge) — używaj zamiast string concat
+    theme.ts       # wspólny store motywu (jasny/ciemny) — jedyne źródło prawdy
+  pages/           # widoki przypięte do tras
+  routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
+  index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)
+  App.tsx          # definicja tras (AppShell vs AuthLayout)
+  main.tsx         # punkt wejścia (BrowserRouter)
 ```
 
+- **Design tokeny:** w `src/index.css` (`@theme`). Używaj utilities z tokenów
+  (`bg-primary`, `text-on-surface`, `bg-surface-container-low`…) — **nie** hardkoduj
+  kolorów ani `slate-*`/`violet-*`. Fonty: `font-headline` (Manrope) / `font-body` (Inter).
+- **Layouty:** `AppShell` (nawigacja) dla tras aplikacji, `AuthLayout` dla login/register.
 - **Alias `@` → `./src`** (vite.config.ts + tsconfig.app.json `paths`). Używaj `@/...`.
 - **Sesja:** access token w body logowania, refresh token w ciasteczku **HttpOnly**
   (`/api/v1/auth/refresh`). Po reloadzie sesję odtwarza się przez `GET /auth/refresh`.
@@ -90,9 +102,9 @@ Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user 
 ## Roadmapa (skrót)
 
 - **Faza 0 ✅** GH-1 init.
-- **Faza 1 — fundament:** GH-2 design system + AppShell + UI-kit · GH-3 formularze
-  (react-hook-form + zod) + mapowanie błędów API · GH-4 AuthContext + bootstrap sesji
-  + Role-/ProtectedRoute.
+- **Faza 1 — fundament:** GH-2 ✅ design system Nectar + AppShell + UI-kit (`/ui`) ·
+  GH-3 formularze (react-hook-form + zod) + mapowanie błędów API · GH-4 AuthContext
+  + bootstrap sesji + Role-/ProtectedRoute.
 - **Faza 2 — auth:** GH-5 landing · GH-6 rejestracja · GH-7 login · GH-8 aktywacja+resend
   · GH-9 reset hasła.
 - **Faza 3 — konto:** GH-10 profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).

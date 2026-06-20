@@ -1,30 +1,48 @@
-import { Link } from 'react-router-dom'
+import { ButtonLink, Card, Icon } from '@/components/ui'
 import { ROUTES } from '@/routes/paths'
+
+const FEATURES = [
+  { icon: 'inventory_2', title: 'The Vault', desc: 'Zarządzaj kolekcją gier planszowych w jednym miejscu.' },
+  { icon: 'groups', title: 'Hives', desc: 'Dołączaj do społeczności i dziel się rozgrywkami.' },
+  { icon: 'travel_explore', title: 'Odkrywaj', desc: 'Przeglądaj tytuły, dodatki i rekomendacje.' },
+]
 
 export default function HomePage() {
   return (
-    <section className="flex flex-col items-center gap-6 py-16 text-center">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-        Witaj w <span className="text-violet-400">GameHive</span>
-      </h1>
-      <p className="max-w-xl text-slate-400">
-        Frontend platformy GameHive. Szkielet projektu jest gotowy — kolejne
-        ekrany powstają zgodnie z roadmapą.
-      </p>
-      <div className="flex gap-3">
-        <Link
-          to={ROUTES.register}
-          className="rounded-md bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-500"
-        >
-          Załóż konto
-        </Link>
-        <Link
-          to={ROUTES.login}
-          className="rounded-md border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-800"
-        >
-          Zaloguj się
-        </Link>
-      </div>
-    </section>
+    <div className="space-y-12">
+      <section className="flex flex-col items-start gap-5 py-8">
+        <span className="inline-flex items-center gap-2 rounded-full bg-primary-fixed px-3 py-1 text-sm font-semibold text-on-primary-fixed">
+          <Icon name="hive" filled className="text-base" />
+          The Digital Hearth
+        </span>
+        <h1 className="max-w-2xl font-headline text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+          Witaj w <span className="text-primary">GameHive</span>
+        </h1>
+        <p className="max-w-xl text-lg text-on-surface-variant">
+          Społecznościowa platforma dla graczy w gry planszowe. Szkielet i system
+          designu są gotowe — kolejne ekrany powstają zgodnie z roadmapą.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <ButtonLink to={ROUTES.register} iconRight="arrow_forward">
+            Załóż konto
+          </ButtonLink>
+          <ButtonLink to={ROUTES.login} variant="secondary">
+            Zaloguj się
+          </ButtonLink>
+        </div>
+      </section>
+
+      <section className="grid gap-5 sm:grid-cols-3">
+        {FEATURES.map((f) => (
+          <Card key={f.title} interactive>
+            <span className="hex-flat grid h-12 w-12 place-items-center bg-primary/10">
+              <Icon name={f.icon} className="text-2xl text-primary" />
+            </span>
+            <h3 className="mt-4 font-headline text-lg font-bold">{f.title}</h3>
+            <p className="mt-1 text-sm text-on-surface-variant">{f.desc}</p>
+          </Card>
+        ))}
+      </section>
+    </div>
   )
 }

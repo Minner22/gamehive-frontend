@@ -1,19 +1,148 @@
 @import 'tailwindcss';
 
-/* Globalne style bazowe GameHive.
-   Tailwind v4 konfigurujemy bezpośrednio tutaj przez dyrektywę @theme
-   (zamiast osobnego pliku tailwind.config.js). */
+/* =========================================================================
+   System designu "Nectar" (The Digital Hearth) — Material 3 / miodowa paleta.
+   Tailwind v4: tokeny w @theme generują utilities (bg-*, text-*, border-*,
+   font-*, shadow-*). Brak tailwind.config.js — wszystko tutaj.
+   ========================================================================= */
 
-:root {
-  color-scheme: light dark;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Dark mode sterowany klasą .dark na <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* --- Fonty --- */
+  --font-headline: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Primary (Nectar Gold / Deep Hive) --- */
+  --color-primary: #835400;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #f9a825;
+  --color-on-primary-container: #674100;
+  --color-primary-fixed: #ffddb5;
+  --color-primary-fixed-dim: #ffb957;
+  --color-on-primary-fixed: #2a1800;
+  --color-on-primary-fixed-variant: #643f00;
+  --color-inverse-primary: #ffb957;
+
+  /* --- Secondary (Slate) --- */
+  --color-secondary: #506169;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d1e2ec;
+  --color-on-secondary-container: #55656d;
+  --color-secondary-fixed: #d4e5ef;
+  --color-secondary-fixed-dim: #b8c9d3;
+  --color-on-secondary-fixed: #0d1e25;
+  --color-on-secondary-fixed-variant: #394951;
+
+  /* --- Tertiary (Wood accents) --- */
+  --color-tertiary: #75584d;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #d5b1a4;
+  --color-on-tertiary-container: #5e4339;
+
+  /* --- Error --- */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* --- Tła i powierzchnie (tonal layering, brak linii 1px) --- */
+  --color-background: #f3faff;
+  --color-on-background: #071e27;
+  --color-surface: #f3faff;
+  --color-on-surface: #071e27;
+  --color-on-surface-variant: #524434;
+  --color-surface-variant: #cfe6f2;
+  --color-surface-dim: #c7dde9;
+  --color-surface-bright: #f3faff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #e6f6ff;
+  --color-surface-container: #dbf1fe;
+  --color-surface-container-high: #d5ecf8;
+  --color-surface-container-highest: #cfe6f2;
+  --color-inverse-surface: #1e333c;
+  --color-inverse-on-surface: #dff4ff;
+
+  /* --- Obrysy (używać oszczędnie, "ghost border") --- */
+  --color-outline: #857462;
+  --color-outline-variant: #d7c3ae;
+
+  /* --- Cienie (tonalne, nie "brudne") --- */
+  --shadow-soft: 0 4px 20px rgb(7 30 39 / 0.05);
+  --shadow-ambient: 0 20px 40px rgb(7 30 39 / 0.06);
+  --shadow-glow: 0 8px 24px rgb(131 84 0 / 0.18);
 }
 
-html,
-body,
-#root {
-  min-height: 100vh;
+/* Dark mode — wstępna paleta (Abyssal Ink jako baza). Złoto primary działa na ciemnym. */
+.dark {
+  --color-background: #071e27;
+  --color-on-background: #dff4ff;
+  --color-surface: #071e27;
+  --color-on-surface: #dff4ff;
+  --color-on-surface-variant: #b9c9d2;
+  --color-surface-variant: #163340;
+  --color-surface-container-lowest: #04141a;
+  --color-surface-container-low: #0c2630;
+  --color-surface-container: #102b36;
+  --color-surface-container-high: #163340;
+  --color-surface-container-highest: #1e333c;
+  --color-outline-variant: #3a4a52;
+  --color-secondary: #b8c9d3;
+}
+
+/* --- Custom utilities (Tailwind v4 @utility) --- */
+
+/* Heksagon "pointy-top" — awatary, kafle gier */
+@utility hex {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+/* Heksagon "flat-top" — odznaki/ikony marki */
+@utility hex-flat {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+/* Glassmorphism — pływające panele */
+@utility glass {
+  background-color: rgb(207 230 242 / 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* --- Style bazowe --- */
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html {
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--color-background);
+    color: var(--color-on-surface);
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-headline);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Material Symbols — domyślne ustawienia osi zmiennych */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
