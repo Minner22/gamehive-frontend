@@ -17,6 +17,9 @@ import { clearAccessToken, getAccessToken, setAccessToken } from './tokenStore'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
+/** Endpoint odświeżania sesji — jedno źródło dla interceptora i api/auth. */
+export const REFRESH_PATH = '/api/v1/auth/refresh'
+
 export const apiClient = axios.create({
   baseURL,
   withCredentials: true,
@@ -37,10 +40,10 @@ let refreshPromise: Promise<string> | null = null
 
 async function refreshAccessToken(): Promise<string> {
   // Czysta instancja axios — bez interceptorów, żeby uniknąć pętli na 401.
-  const { data } = await axios.get<AccessTokenResponseDto>(
-    '/api/v1/auth/refresh',
-    { baseURL, withCredentials: true },
-  )
+  const { data } = await axios.get<AccessTokenResponseDto>(REFRESH_PATH, {
+    baseURL,
+    withCredentials: true,
+  })
   setAccessToken(data.accessToken)
   return data.accessToken
 }
@@ -56,7 +59,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status
     const url = original?.url ?? ''
 
-    const isRefreshCall = url.includes('/api/v1/auth/refresh')
+    const isRefreshCall = url.includes(REFRESH_PATH)
     const canRetry = Boolean(original) && !original?._retry && !isRefreshCall
 
     if (status === 401 && canRetry) {

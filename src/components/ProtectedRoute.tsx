@@ -1,24 +1,54 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { getAccessToken } from '@/api/tokenStore'
+import { useAuth } from '@/auth/AuthContext'
+import { Button, Icon, Spinner } from '@/components/ui'
 import { ROUTES } from '@/routes/paths'
+import type { Role } from '@/api/types'
 
 interface ProtectedRouteProps {
   children: ReactNode
+  /** Wymagana rola (np. 'ROLE_ADMIN'). Pominięta = wystarczy zalogowanie. */
+  role?: Role
 }
 
 /**
- * Prosta bramka dla tras wymagających zalogowania.
+ * Bramka tras wymagających zalogowania (i opcjonalnie roli).
  *
- * Na tym etapie sprawdzamy jedynie obecność tokenu w pamięci. Docelowo
- * (patrz roadmapa) zastąpi to kontekst uwierzytelnienia, który przy starcie
- * aplikacji spróbuje odświeżyć sesję z ciasteczka HttpOnly.
+ * - podczas odtwarzania sesji pokazuje loader,
+ * - błąd połączenia przy starcie → ekran „spróbuj ponownie" (nie wylogowuje),
+ * - niezalogowany → /login z zapamiętaniem `from`,
+ * - zalogowany bez wymaganej roli → strona główna.
  */
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, role }: ProtectedRouteProps) {
+  const { status, retry, hasRole } = useAuth()
   const location = useLocation()
 
-  if (!getAccessToken()) {
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner className="text-4xl" />
+      </div>
+    )
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
+        <Icon name="cloud_off" className="text-4xl text-on-surface-variant" />
+        <p className="text-on-surface-variant">Nie udało się połączyć z serwerem.</p>
+        <Button iconLeft="refresh" onClick={() => void retry()}>
+          Spróbuj ponownie
+        </Button>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated') {
     return <Navigate to={ROUTES.login} replace state={{ from: location }} />
+  }
+
+  if (role && !hasRole(role)) {
+    return <Navigate to={ROUTES.home} replace />
   }
 
   return <>{children}</>
