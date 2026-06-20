@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -6,16 +6,25 @@ import { isAxiosError } from 'axios'
 import { AuthCard } from '@/components/layout/AuthCard'
 import { Button, Icon, Input, PasswordInput, useToast } from '@/components/ui'
 import { register as registerUser } from '@/api/auth'
-import { registerFormSchema, type RegisterFormInput } from '@/lib/validation'
+import { registerFormSchema, registerSchema, type RegisterFormInput } from '@/lib/validation'
 import { handleApiFormError } from '@/lib/formError'
 import { ROUTES } from '@/routes/paths'
 
-const FORM_FIELDS = ['username', 'email', 'password']
+// Pola mapowalne na błędy serwera = klucze kontraktu (confirmPassword jest tylko
+// po stronie klienta). Wyprowadzone ze schematu, żeby nie rozjechać się przy zmianie.
+const FORM_FIELDS = Object.keys(registerSchema.shape)
 const isFormField = (field: string) => FORM_FIELDS.includes(field)
 
 export default function RegisterPage() {
   const toast = useToast()
   const [sentTo, setSentTo] = useState<string | null>(null)
+  const successRef = useRef<HTMLDivElement>(null)
+
+  // Po sukcesie przenieś fokus na potwierdzenie (dla czytników/klawiatury).
+  useEffect(() => {
+    if (sentTo) successRef.current?.focus()
+  }, [sentTo])
+
   const {
     register,
     handleSubmit,
@@ -56,7 +65,11 @@ export default function RegisterPage() {
           </Link>
         }
       >
-        <div className="flex flex-col items-center gap-3 text-center">
+        <div
+          ref={successRef}
+          tabIndex={-1}
+          className="flex flex-col items-center gap-3 text-center focus:outline-none"
+        >
           <span className="hex-flat grid h-14 w-14 place-items-center bg-primary/10">
             <Icon name="mark_email_unread" className="text-2xl text-primary" />
           </span>
