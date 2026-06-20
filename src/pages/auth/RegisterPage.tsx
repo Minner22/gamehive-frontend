@@ -1,22 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { isAxiosError } from 'axios'
 import { AuthCard } from '@/components/layout/AuthCard'
-import { Button, Icon, Input, PasswordInput, useToast } from '@/components/ui'
+import { Button, Icon, Input, PasswordInput } from '@/components/ui'
 import { register as registerUser } from '@/api/auth'
 import { registerFormSchema, registerSchema, type RegisterFormInput } from '@/lib/validation'
-import { handleApiFormError } from '@/lib/formError'
+import { useApiForm } from '@/lib/useApiForm'
 import { ROUTES } from '@/routes/paths'
 
 // Pola mapowalne na błędy serwera = klucze kontraktu (confirmPassword jest tylko
 // po stronie klienta). Wyprowadzone ze schematu, żeby nie rozjechać się przy zmianie.
-const FORM_FIELDS = Object.keys(registerSchema.shape)
-const isFormField = (field: string) => FORM_FIELDS.includes(field)
+const REGISTER_FIELDS = Object.keys(registerSchema.shape)
 
 export default function RegisterPage() {
-  const toast = useToast()
   const [sentTo, setSentTo] = useState<string | null>(null)
   const successRef = useRef<HTMLDivElement>(null)
 
@@ -27,33 +24,32 @@ export default function RegisterPage() {
 
   const {
     register,
-    handleSubmit,
     setError,
+    submit,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormInput>({ resolver: zodResolver(registerFormSchema) })
+  } = useApiForm<RegisterFormInput>(
+    { resolver: zodResolver(registerFormSchema) },
+    REGISTER_FIELDS,
+  )
 
-  const onSubmit = async (data: RegisterFormInput) => {
-    try {
-      // confirmPassword to pole tylko kliencie — nie wysyłamy go do API.
+  const onSubmit = submit(
+    async (data) => {
+      // confirmPassword to pole tylko po stronie klienta — nie wysyłamy go do API.
       await registerUser({
         username: data.username,
         email: data.email,
         password: data.password,
       })
       setSentTo(data.email)
-    } catch (err) {
+    },
+    (err) => {
       if (isAxiosError(err) && err.response?.status === 409) {
         setError('email', { message: 'Konto z tym adresem e-mail już istnieje' })
-        return
+        return true
       }
-      handleApiFormError(err, {
-        setFieldError: (field, message) =>
-          setError(field as keyof RegisterFormInput, { message }),
-        toastError: toast.error,
-        isFormField,
-      })
-    }
-  }
+      return false
+    },
+  )
 
   if (sentTo) {
     return (
@@ -96,7 +92,7 @@ export default function RegisterPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <form onSubmit={onSubmit} className="space-y-5" noValidate>
         <Input
           label="Nazwa użytkownika"
           iconLeft="person"

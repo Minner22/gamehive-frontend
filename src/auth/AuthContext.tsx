@@ -69,17 +69,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [bootstrap])
 
   const login = useCallback(async (dto: LoginDto) => {
+    // Błędy poświadczeń/aktywacji (401/403) lecą z apiLogin jako AxiosError —
+    // strona logowania mapuje je po statusie.
     await apiLogin(dto)
     try {
       setUser(await getMe())
       setStatus('authenticated')
     } catch (error) {
-      // Token był ustawiony przez apiLogin — przy błędzie getMe sprzątamy,
-      // żeby nie zostać z tokenem bez stanu zalogowania.
+      // Token był ustawiony przez apiLogin — przy błędzie getMe sprzątamy.
+      // Owijamy w zwykły błąd (nie AxiosError), żeby strona logowania NIE
+      // pomyliła awarii pobrania profilu z błędem poświadczeń (np. getMe 401).
       clearAccessToken()
       setUser(null)
       setStatus('unauthenticated')
-      throw error
+      throw new Error('Nie udało się pobrać danych konta po zalogowaniu.', {
+        cause: error,
+      })
     }
   }, [])
 

@@ -1,8 +1,59 @@
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { isAxiosError } from 'axios'
 import { AuthCard } from '@/components/layout/AuthCard'
+import { Button, Input, PasswordInput } from '@/components/ui'
+import { useAuth } from '@/auth/AuthContext'
+import { useApiForm } from '@/lib/useApiForm'
+import { loginSchema, type LoginInput } from '@/lib/validation'
 import { ROUTES } from '@/routes/paths'
 
+const LOGIN_FIELDS = Object.keys(loginSchema.shape)
+
+type RedirectTarget = { pathname: string; search?: string; hash?: string }
+
 export default function LoginPage() {
+  const { status, login } = useAuth()
+  const location = useLocation()
+
+  // Pełny `from` (pathname + search + hash) zapisany przez ProtectedRoute.
+  const from = (location.state as { from?: RedirectTarget } | null)?.from
+  const target: RedirectTarget = from ?? { pathname: ROUTES.home }
+
+  const {
+    register,
+    setError,
+    toast,
+    submit,
+    formState: { errors, isSubmitting },
+  } = useApiForm<LoginInput>({ resolver: zodResolver(loginSchema) }, LOGIN_FIELDS)
+
+  // Zalogowany na /login → wróć tam, skąd przyszedł (lub na stronę główną).
+  if (status === 'authenticated') {
+    return <Navigate to={target} replace />
+  }
+
+  const onSubmit = submit(
+    // Po sukcesie status → 'authenticated' i guard <Navigate to={target}> wyżej
+    // przekieruje (na from/home) — bez osobnego navigate().
+    async (data) => {
+      await login(data)
+    },
+    (err) => {
+      if (isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          setError('password', { message: 'Nieprawidłowy e-mail lub hasło' })
+          return true
+        }
+        if (err.response?.status === 403) {
+          toast.error('Konto nie zostało aktywowane — sprawdź skrzynkę e-mail.')
+          return true
+        }
+      }
+      return false
+    },
+  )
+
   return (
     <AuthCard
       title="Witaj ponownie"
@@ -16,10 +67,38 @@ export default function LoginPage() {
         </>
       }
     >
-      <p className="rounded-2xl bg-surface-container-low p-4 text-center text-sm text-on-surface-variant">
-        Formularz logowania (<code className="text-primary">POST /api/v1/auth/login</code>)
-        dodamy w GH-7.
-      </p>
+      <form onSubmit={onSubmit} className="space-y-5" noValidate>
+        <Input
+          label="E-mail"
+          iconLeft="mail"
+          type="email"
+          placeholder="john@example.com"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register('email')}
+        />
+        <div className="space-y-1.5">
+          <PasswordInput
+            label="Hasło"
+            iconLeft="lock"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            error={errors.password?.message}
+            {...register('password')}
+          />
+          <div className="px-1 text-right">
+            <Link
+              to={ROUTES.passwordResetRequest}
+              className="text-xs font-bold text-primary hover:underline"
+            >
+              Nie pamiętasz hasła?
+            </Link>
+          </div>
+        </div>
+        <Button type="submit" fullWidth loading={isSubmitting} iconRight="login">
+          Zaloguj się
+        </Button>
+      </form>
     </AuthCard>
   )
 }
