@@ -12,9 +12,10 @@ dist
 dist-ssr
 *.local
 
-# Materiały robocze designu (mockupy Stitch itp.) — poza repo
+# Materiały robocze / referencyjne designu (mockupy Stitch, podgląd logo) — poza repo
 *.zip
 stitch_extracted/
+logo.png
 
 # Editor directories and files
 .vscode/*
