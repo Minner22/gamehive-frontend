@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import { Icon } from './Icon'
+import { Spinner } from './Spinner'
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost'
 type ButtonSize = 'sm' | 'md' | 'lg'
@@ -50,7 +51,7 @@ function ButtonInner({ loading, iconLeft, iconRight, children }: ButtonStyleProp
   return (
     <>
       {loading ? (
-        <Icon name="progress_activity" className="animate-spin text-[1.1em]" />
+        <Spinner className="text-[1.1em]" />
       ) : (
         iconLeft && <Icon name={iconLeft} className="text-[1.2em]" />
       )}

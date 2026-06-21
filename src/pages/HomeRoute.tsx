@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
-import { Spinner } from '@/components/ui'
+import { RouteLoader } from '@/components/ui'
 import HomePage from './HomePage'
 import { ROUTES } from '@/routes/paths'
 
@@ -12,11 +12,7 @@ export default function HomeRoute() {
   const { status } = useAuth()
 
   if (status === 'loading') {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Spinner className="text-4xl" />
-      </div>
-    )
+    return <RouteLoader />
   }
 
   if (status === 'authenticated') {
