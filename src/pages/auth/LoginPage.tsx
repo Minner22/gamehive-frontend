@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   // Pełny `from` (pathname + search + hash) zapisany przez ProtectedRoute.
   const from = (location.state as { from?: RedirectTarget } | null)?.from
-  const target: RedirectTarget = from ?? { pathname: ROUTES.home }
+  const target: RedirectTarget = from ?? { pathname: ROUTES.dashboard }
 
   const {
     register,

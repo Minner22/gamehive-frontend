@@ -1,8 +1,7 @@
-import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '@/auth/AuthContext'
-import { Button, ButtonLink, Card, Input } from '@/components/ui'
+import { Button, ButtonLink, Input, Section } from '@/components/ui'
 import { updateProfile } from '@/api/users'
 import { profileUpdateSchema, type ProfileUpdateInput } from '@/lib/validation'
 import { useApiForm } from '@/lib/useApiForm'
@@ -17,15 +16,6 @@ const FIELDS = [
   'address.postalCode',
   'address.country',
 ]
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <Card className="space-y-4">
-      <h2 className="font-headline text-lg font-bold">{title}</h2>
-      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
-    </Card>
-  )
-}
 
 export default function ProfileEditPage() {
   const { user, refreshUser } = useAuth()
@@ -83,6 +73,7 @@ export default function ProfileEditPage() {
 
       <form onSubmit={onSubmit} className="space-y-6" noValidate>
         <Section title="Dane osobowe">
+          <div className="grid gap-4 sm:grid-cols-2">
           <Input
             label="Imię"
             iconLeft="badge"
@@ -124,9 +115,11 @@ export default function ProfileEditPage() {
             className="sm:col-span-2"
             {...register('profilePictureUrl')}
           />
+          </div>
         </Section>
 
         <Section title="Adres">
+          <div className="grid gap-4 sm:grid-cols-2">
           <Input
             label="Ulica"
             iconLeft="home"
@@ -155,6 +148,7 @@ export default function ProfileEditPage() {
             error={errors.address?.country?.message}
             {...register('address.country')}
           />
+          </div>
         </Section>
 
         <div className="flex flex-wrap gap-3">

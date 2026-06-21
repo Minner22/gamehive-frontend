@@ -1,6 +1,5 @@
-import type { ReactNode } from 'react'
 import { useAuth } from '@/auth/AuthContext'
-import { Badge, ButtonLink, Card, HexAvatar, Icon } from '@/components/ui'
+import { Badge, ButtonLink, Card, HexAvatar, Icon, Section } from '@/components/ui'
 import { ROUTES } from '@/routes/paths'
 
 /** Formatuje datę ISO (YYYY-MM-DD) na czytelną polską; surową zwraca w razie błędu. */
@@ -37,15 +36,6 @@ function visibleRoles(roles: readonly string[] | undefined): string[] {
   return (roles ?? [])
     .filter((role) => role !== 'ROLE_USER')
     .map((role) => role.replace(/^ROLE_/, ''))
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <Card className="space-y-4">
-      <h2 className="font-headline text-lg font-bold">{title}</h2>
-      <dl className="grid gap-4">{children}</dl>
-    </Card>
-  )
 }
 
 export default function ProfilePage() {
@@ -85,17 +75,21 @@ export default function ProfilePage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         <Section title="Dane osobowe">
-          <Field icon="badge" label="Imię" value={profile?.firstName} />
-          <Field icon="badge" label="Nazwisko" value={profile?.lastName} />
-          <Field icon="call" label="Telefon" value={profile?.phoneNumber} />
-          <Field icon="cake" label="Data urodzenia" value={formatDate(profile?.dateOfBirth)} />
+          <dl className="grid gap-4">
+            <Field icon="badge" label="Imię" value={profile?.firstName} />
+            <Field icon="badge" label="Nazwisko" value={profile?.lastName} />
+            <Field icon="call" label="Telefon" value={profile?.phoneNumber} />
+            <Field icon="cake" label="Data urodzenia" value={formatDate(profile?.dateOfBirth)} />
+          </dl>
         </Section>
 
         <Section title="Adres">
-          <Field icon="home" label="Ulica" value={address?.street} />
-          <Field icon="location_city" label="Miasto" value={address?.city} />
-          <Field icon="markunread_mailbox" label="Kod pocztowy" value={address?.postalCode} />
-          <Field icon="public" label="Kraj" value={address?.country} />
+          <dl className="grid gap-4">
+            <Field icon="home" label="Ulica" value={address?.street} />
+            <Field icon="location_city" label="Miasto" value={address?.city} />
+            <Field icon="markunread_mailbox" label="Kod pocztowy" value={address?.postalCode} />
+            <Field icon="public" label="Kraj" value={address?.country} />
+          </dl>
         </Section>
       </div>
     </div>

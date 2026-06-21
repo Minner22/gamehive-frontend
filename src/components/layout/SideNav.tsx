@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import { HexAvatar, Icon } from '@/components/ui'
 import { useAuth } from '@/auth/AuthContext'
-import { Brand } from './Brand'
+import { BrandLink } from './BrandLink'
 import { ThemeToggle } from './ThemeToggle'
 import { ROUTES } from '@/routes/paths'
 
@@ -14,7 +14,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: ROUTES.home, icon: 'dashboard', label: 'Start', end: true },
+  { to: ROUTES.dashboard, icon: 'dashboard', label: 'Dashboard' },
   { to: ROUTES.profile, icon: 'person', label: 'Profil' },
   { to: ROUTES.uiKit, icon: 'palette', label: 'UI-kit' },
 ]
@@ -48,7 +48,7 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="flex h-full w-64 flex-col bg-surface-container-low py-6">
       <div className="mb-8 px-6">
-        <Brand />
+        <BrandLink onClick={onNavigate} />
         <p className="mt-2 text-sm text-on-surface-variant">The Digital Hearth</p>
       </div>
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Brand } from './Brand'
+import { BrandLink } from './BrandLink'
 import { Card } from '@/components/ui'
 
 interface AuthCardProps {
@@ -15,7 +15,7 @@ export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
   return (
     <Card className="rounded-[2rem] p-8 shadow-ambient md:p-10">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <Brand iconOnly />
+        <BrandLink iconOnly />
         <h1 className="font-headline text-2xl font-bold">{title}</h1>
         {subtitle && <p className="text-sm text-on-surface-variant">{subtitle}</p>}
       </div>

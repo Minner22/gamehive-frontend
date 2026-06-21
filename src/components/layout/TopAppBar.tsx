@@ -1,4 +1,4 @@
-import { Brand } from './Brand'
+import { BrandLink } from './BrandLink'
 import { ThemeToggle } from './ThemeToggle'
 import { Icon } from '@/components/ui'
 
@@ -14,7 +14,7 @@ export function TopAppBar({ onMenu }: { onMenu: () => void }) {
       >
         <Icon name="menu" />
       </button>
-      <Brand />
+      <BrandLink />
       <ThemeToggle />
     </header>
   )
