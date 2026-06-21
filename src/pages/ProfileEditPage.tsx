@@ -9,10 +9,7 @@ export default function ProfileEditPage() {
       </header>
       <Card className="flex items-center gap-3 text-on-surface-variant">
         <Icon name="construction" className="text-2xl text-primary" />
-        <p className="text-sm">
-          Formularz edycji (<code className="text-primary">PATCH /api/v1/users/me/profile</code>)
-          dodamy w GH-11.
-        </p>
+        <p className="text-sm">Edycja profilu będzie wkrótce dostępna.</p>
       </Card>
       <ButtonLink to={ROUTES.profile} variant="secondary" iconLeft="arrow_back">
         Wróć do profilu

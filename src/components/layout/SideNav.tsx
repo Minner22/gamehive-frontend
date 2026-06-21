@@ -88,7 +88,12 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
 
       <div className="mt-auto space-y-3 border-t border-outline-variant/20 px-4 pt-4">
         {user && (
-          <div className="flex items-center gap-3 px-1">
+          <NavLink
+            to={ROUTES.profile}
+            onClick={onNavigate}
+            title="Przejdź do profilu"
+            className="flex items-center gap-3 rounded-xl px-1 py-1.5 transition-colors hover:bg-surface-container-high"
+          >
             <HexAvatar
               name={user.username}
               src={user.profile?.profilePictureUrl}
@@ -100,7 +105,7 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
               </p>
               <p className="truncate text-xs text-on-surface-variant">{user.email}</p>
             </div>
-          </div>
+          </NavLink>
         )}
         <div className="flex items-center justify-between">
           {user ? (
