@@ -1,5 +1,6 @@
 import { useAuth } from '@/auth/AuthContext'
 import { Badge, ButtonLink, Card, HexAvatar, Icon, Section } from '@/components/ui'
+import { displayRoles } from '@/lib/roles'
 import { ROUTES } from '@/routes/paths'
 
 /** Formatuje datę ISO (YYYY-MM-DD) na czytelną polską; surową zwraca w razie błędu. */
@@ -31,13 +32,6 @@ function Field({ icon, label, value }: { icon: string; label: string; value?: st
   )
 }
 
-// ROLE_USER to domyślna rola (nie pokazujemy); z reszty ścinamy prefiks ROLE_.
-function visibleRoles(roles: readonly string[] | undefined): string[] {
-  return (roles ?? [])
-    .filter((role) => role !== 'ROLE_USER')
-    .map((role) => role.replace(/^ROLE_/, ''))
-}
-
 export default function ProfilePage() {
   const { user } = useAuth()
   if (!user) return null // ProtectedRoute gwarantuje usera; guard dla TS
@@ -61,7 +55,7 @@ export default function ProfilePage() {
             ) : (
               <Badge tone="danger">Nieaktywne</Badge>
             )}
-            {visibleRoles(user.roles).map((role) => (
+            {displayRoles(user.roles).map((role) => (
               <Badge key={role} tone="gold">
                 {role}
               </Badge>
