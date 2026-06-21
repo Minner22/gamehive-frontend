@@ -48,6 +48,9 @@
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
 
+  /* Przyciemnienie tła pod modalem (Material 3 scrim). */
+  --color-scrim: #000000;
+
   /* --- Tła i powierzchnie (tonal layering, brak linii 1px) --- */
   --color-background: #f3faff;
   --color-on-background: #071e27;

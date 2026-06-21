@@ -11,6 +11,7 @@ import {
   Badge,
   Button,
   HexAvatar,
+  Icon,
   Input,
   Section,
   Spinner,
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { displayRoles } from '@/lib/roles'
+import { UserActionsDialog } from './UserActionsDialog'
 
 const PAGE_SIZE = 20
 
@@ -29,27 +31,40 @@ const SEARCH_MODES: { value: SearchMode; label: string }[] = [
   { value: 'id', label: 'ID' },
 ]
 
-function UserRow({ user }: { user: UserResponseDto }) {
+function UserRow({
+  user,
+  onSelect,
+}: {
+  user: UserResponseDto
+  onSelect: (user: UserResponseDto) => void
+}) {
   return (
-    <li className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3">
-      <HexAvatar name={user.username} src={user.profile?.profilePictureUrl} size={40} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-on-surface">{user.username}</p>
-        <p className="truncate text-sm text-on-surface-variant">{user.email}</p>
-        <p className="truncate font-mono text-xs text-on-surface-variant/50" title={user.id}>
-          {user.id}
-        </p>
-      </div>
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-        {displayRoles(user.roles).map((r) => (
-          <Badge key={r} tone="gold">
-            {r}
+    <li>
+      <button
+        type="button"
+        onClick={() => onSelect(user)}
+        className="flex w-full items-center gap-3 rounded-2xl bg-surface-container-low p-3 text-left transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        <HexAvatar name={user.username} src={user.profile?.profilePictureUrl} size={40} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-on-surface">{user.username}</p>
+          <p className="truncate text-sm text-on-surface-variant">{user.email}</p>
+          <p className="truncate font-mono text-xs text-on-surface-variant/50" title={user.id}>
+            {user.id}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+          {displayRoles(user.roles).map((r) => (
+            <Badge key={r} tone="gold">
+              {r}
+            </Badge>
+          ))}
+          <Badge tone={user.enabled ? 'success' : 'danger'}>
+            {user.enabled ? 'Aktywny' : 'Nieaktywny'}
           </Badge>
-        ))}
-        <Badge tone={user.enabled ? 'success' : 'danger'}>
-          {user.enabled ? 'Aktywny' : 'Nieaktywny'}
-        </Badge>
-      </div>
+        </div>
+        <Icon name="chevron_right" className="shrink-0 text-on-surface-variant/50" />
+      </button>
     </li>
   )
 }
@@ -71,6 +86,9 @@ export default function AdminUsersPage() {
   const [searching, setSearching] = useState(false)
   // null = brak wyszukiwania (pokaż listę); 'notfound' = brak wyniku.
   const [result, setResult] = useState<UserResponseDto | 'notfound' | null>(null)
+
+  // Użytkownik wybrany do akcji (otwiera dialog).
+  const [selected, setSelected] = useState<UserResponseDto | null>(null)
 
   // Stan ładowania ustawiamy w handlerach (zdarzenia), efekt robi tylko fetch
   // i setState w callbackach — bez synchronicznego setState w ciele efektu.
@@ -129,6 +147,28 @@ export default function AdminUsersPage() {
     setQuery('')
   }
 
+  // Po akcji aktualizujemy stan lokalnie (lista + ewentualny wynik wyszukiwania
+  // + otwarty dialog), bez ponownego pobierania.
+  const handleUpdated = (u: UserResponseDto) => {
+    setData((d) => (d ? { ...d, content: d.content.map((x) => (x.id === u.id ? u : x)) } : d))
+    setResult((r) => (r && r !== 'notfound' && r.id === u.id ? u : r))
+    setSelected(u)
+  }
+
+  const handleDeleted = (id: string) => {
+    setData((d) =>
+      d
+        ? {
+            ...d,
+            content: d.content.filter((x) => x.id !== id),
+            totalElements: Math.max(d.totalElements - 1, 0),
+          }
+        : d,
+    )
+    setResult((r) => (r && r !== 'notfound' && r.id === id ? null : r))
+    setSelected(null)
+  }
+
   return (
     <div className="space-y-6">
       <header>
@@ -184,7 +224,7 @@ export default function AdminUsersPage() {
             </p>
           ) : (
             <ul className="space-y-2">
-              <UserRow user={result} />
+              <UserRow user={result} onSelect={setSelected} />
             </ul>
           )}
         </Section>
@@ -209,7 +249,7 @@ export default function AdminUsersPage() {
             <>
               <ul className="space-y-2" aria-live="polite" aria-busy={loading}>
                 {data.content.map((u) => (
-                  <UserRow key={u.id} user={u} />
+                  <UserRow key={u.id} user={u} onSelect={setSelected} />
                 ))}
               </ul>
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -241,6 +281,16 @@ export default function AdminUsersPage() {
             </>
           )}
         </Section>
+      )}
+
+      {selected && (
+        <UserActionsDialog
+          key={selected.id}
+          user={selected}
+          onClose={() => setSelected(null)}
+          onUpdated={handleUpdated}
+          onDeleted={handleDeleted}
+        />
       )}
     </div>
   )
