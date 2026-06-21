@@ -56,6 +56,18 @@ export const passwordResetConfirmSchema = z.object({
 })
 export type PasswordResetConfirmInput = z.infer<typeof passwordResetConfirmSchema>
 
+/** Formularz ustawienia nowego hasła (token pochodzi z URL, nie z formularza). */
+export const passwordResetConfirmFormSchema = z
+  .object({
+    newPassword: password,
+    confirmNewPassword: z.string().min(1, 'Powtórz hasło'),
+  })
+  .refine((d) => d.newPassword === d.confirmNewPassword, {
+    message: 'Hasła nie są takie same',
+    path: ['confirmNewPassword'],
+  })
+export type PasswordResetConfirmFormInput = z.infer<typeof passwordResetConfirmFormSchema>
+
 export const resendActivationSchema = z.object({ email })
 export type ResendActivationInput = z.infer<typeof resendActivationSchema>
 
