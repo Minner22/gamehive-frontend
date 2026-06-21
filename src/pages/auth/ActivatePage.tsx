@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AuthCard } from '@/components/layout/AuthCard'
-import { Button, ButtonLink, Icon, Input, Spinner } from '@/components/ui'
+import { AuthResult } from '@/components/layout/AuthResult'
+import { Button, ButtonLink, Input, Spinner } from '@/components/ui'
 import { activateAccount, resendActivation } from '@/api/auth'
 import { resendActivationSchema, type ResendActivationInput } from '@/lib/validation'
 import { useApiForm } from '@/lib/useApiForm'
@@ -31,10 +32,12 @@ function ResendForm({ defaultEmail }: { defaultEmail: string }) {
 
   if (sentTo) {
     return (
-      <p className="rounded-2xl bg-surface-container-low p-4 text-center text-sm text-on-surface-variant">
-        Jeśli konto <span className="font-semibold text-on-surface">{sentTo}</span> istnieje i
-        nie jest aktywne, wysłaliśmy nowy link aktywacyjny.
-      </p>
+      <AuthResult>
+        <p className="rounded-2xl bg-surface-container-low p-4 text-sm text-on-surface-variant">
+          Jeśli konto <span className="font-semibold text-on-surface">{sentTo}</span> istnieje
+          i nie jest aktywne, wysłaliśmy nowy link aktywacyjny.
+        </p>
+      </AuthResult>
     )
   }
 
@@ -89,17 +92,14 @@ export default function ActivatePage() {
   if (state === 'success') {
     return (
       <AuthCard title="Konto aktywowane">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <span className="hex-flat grid h-14 w-14 place-items-center bg-primary/10">
-            <Icon name="check_circle" filled className="text-2xl text-primary" />
-          </span>
+        <AuthResult icon="check_circle">
           <p className="text-sm text-on-surface-variant">
             Możesz się już zalogować do GameHive.
           </p>
           <ButtonLink to={ROUTES.login} iconRight="login">
             Przejdź do logowania
           </ButtonLink>
-        </div>
+        </AuthResult>
       </AuthCard>
     )
   }

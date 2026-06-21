@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { isAxiosError } from 'axios'
 import { AuthCard } from '@/components/layout/AuthCard'
-import { Button, Icon, Input, PasswordInput } from '@/components/ui'
+import { AuthResult } from '@/components/layout/AuthResult'
+import { Button, Input, PasswordInput } from '@/components/ui'
 import { register as registerUser } from '@/api/auth'
 import { registerFormSchema, registerSchema, type RegisterFormInput } from '@/lib/validation'
 import { useApiForm } from '@/lib/useApiForm'
@@ -15,12 +16,6 @@ const REGISTER_FIELDS = Object.keys(registerSchema.shape)
 
 export default function RegisterPage() {
   const [sentTo, setSentTo] = useState<string | null>(null)
-  const successRef = useRef<HTMLDivElement>(null)
-
-  // Po sukcesie przenieś fokus na potwierdzenie (dla czytników/klawiatury).
-  useEffect(() => {
-    if (sentTo) successRef.current?.focus()
-  }, [sentTo])
 
   const {
     register,
@@ -61,20 +56,13 @@ export default function RegisterPage() {
           </Link>
         }
       >
-        <div
-          ref={successRef}
-          tabIndex={-1}
-          className="flex flex-col items-center gap-3 text-center focus:outline-none"
-        >
-          <span className="hex-flat grid h-14 w-14 place-items-center bg-primary/10">
-            <Icon name="mark_email_unread" className="text-2xl text-primary" />
-          </span>
+        <AuthResult icon="mark_email_unread">
           <p className="text-sm text-on-surface-variant">
             Wysłaliśmy link aktywacyjny na{' '}
             <span className="font-semibold text-on-surface">{sentTo}</span>. Kliknij go,
             aby aktywować konto.
           </p>
-        </div>
+        </AuthResult>
       </AuthCard>
     )
   }
