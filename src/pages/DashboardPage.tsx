@@ -1,5 +1,5 @@
 import { useAuth } from '@/auth/AuthContext'
-import { Badge, ButtonLink, Card, Icon } from '@/components/ui'
+import { Badge, ButtonLink, Card, Icon, Section } from '@/components/ui'
 import { ROUTES } from '@/routes/paths'
 
 // Statystyki wymagają backendu (gry, kolekcje, partie) — Faza 6. Na razie placeholdery.
@@ -20,17 +20,13 @@ function PlaceholderSection({
   desc: string
 }) {
   return (
-    <Card className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-headline text-lg font-bold">{title}</h2>
-        <Badge tone="neutral">Wkrótce</Badge>
-      </div>
+    <Section title={title} action={<Badge tone="neutral">Wkrótce</Badge>}>
       <div className="flex flex-col items-center gap-2 py-8 text-center text-on-surface-variant">
         <Icon name={icon} className="text-4xl opacity-40" />
         <p className="text-sm">{desc}</p>
         <p className="text-xs opacity-70">Dostępne, gdy backend udostępni dane (Faza 6).</p>
       </div>
-    </Card>
+    </Section>
   )
 }
 
@@ -57,7 +53,9 @@ export default function DashboardPage() {
               <Icon name={stat.icon} className="text-2xl text-primary" />
               <Badge tone="neutral">Wkrótce</Badge>
             </div>
-            <p className="text-2xl font-bold text-on-surface-variant/40">—</p>
+            <p className="text-2xl font-bold text-on-surface-variant/40" aria-hidden="true">
+              —
+            </p>
             <p className="text-sm text-on-surface-variant">{stat.label}</p>
           </Card>
         ))}
