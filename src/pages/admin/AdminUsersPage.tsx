@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { isAxiosError } from 'axios'
 import {
   getUserByEmail,
@@ -12,11 +12,12 @@ import {
   Button,
   HexAvatar,
   Input,
-  RouteLoader,
   Section,
+  Spinner,
   useToast,
 } from '@/components/ui'
 import { getApiErrorMessage } from '@/lib/apiError'
+import { displayRoles } from '@/lib/roles'
 
 const PAGE_SIZE = 20
 
@@ -27,11 +28,6 @@ const SEARCH_MODES: { value: SearchMode; label: string }[] = [
   { value: 'email', label: 'E-mail' },
   { value: 'id', label: 'ID' },
 ]
-
-// ROLE_USER to domyślna rola; pokazujemy tylko pozostałe, bez prefiksu ROLE_.
-function extraRoles(roles: readonly string[]): string[] {
-  return roles.filter((r) => r !== 'ROLE_USER').map((r) => r.replace(/^ROLE_/, ''))
-}
 
 function UserRow({ user }: { user: UserResponseDto }) {
   return (
@@ -45,7 +41,7 @@ function UserRow({ user }: { user: UserResponseDto }) {
         </p>
       </div>
       <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-        {extraRoles(user.roles).map((r) => (
+        {displayRoles(user.roles).map((r) => (
           <Badge key={r} tone="gold">
             {r}
           </Badge>
@@ -65,6 +61,10 @@ export default function AdminUsersPage() {
   const [reloadKey, setReloadKey] = useState(0)
   const [data, setData] = useState<PageUserResponseDto | null>(null)
   const [loading, setLoading] = useState(true)
+  // Ostatnio WCZYTANA strona — przy błędzie cofamy do niej `page`, żeby stan
+  // żądania nie rozjechał się z danymi (inaczej ponowny klik trafiałby w tę samą
+  // wartość page i efekt by się nie odpalił → zawieszony loader).
+  const loadedPage = useRef(0)
 
   const [mode, setMode] = useState<SearchMode>('username')
   const [query, setQuery] = useState('')
@@ -77,8 +77,16 @@ export default function AdminUsersPage() {
   useEffect(() => {
     let active = true
     listUsers({ page, size: PAGE_SIZE, sort: ['username,asc'] })
-      .then((d) => active && setData(d))
-      .catch((err) => active && toast.error(getApiErrorMessage(err)))
+      .then((d) => {
+        if (!active) return
+        setData(d)
+        loadedPage.current = d.number
+      })
+      .catch((err) => {
+        if (!active) return
+        toast.error(getApiErrorMessage(err))
+        setPage(loadedPage.current) // cofnij do ostatnio wczytanej strony
+      })
       .finally(() => active && setLoading(false))
     return () => {
       active = false
@@ -137,7 +145,7 @@ export default function AdminUsersPage() {
             <select
               value={mode}
               onChange={(e) => setMode(e.target.value as SearchMode)}
-              className="rounded-xl bg-surface-container-high px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="rounded-xl bg-surface-container-high px-3 py-2.5 text-sm text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {SEARCH_MODES.map((m) => (
                 <option key={m.value} value={m.value}>
@@ -183,7 +191,9 @@ export default function AdminUsersPage() {
         <Section title="Wszyscy użytkownicy">
           {!data ? (
             loading ? (
-              <RouteLoader />
+              <div className="flex justify-center py-8">
+                <Spinner className="text-3xl text-primary" />
+              </div>
             ) : (
               <div className="flex flex-col items-center gap-3 py-8 text-center text-on-surface-variant">
                 <p>Nie udało się wczytać użytkowników.</p>
@@ -196,7 +206,7 @@ export default function AdminUsersPage() {
             <p className="py-4 text-center text-on-surface-variant">Brak użytkowników.</p>
           ) : (
             <>
-              <ul className="space-y-2">
+              <ul className="space-y-2" aria-live="polite" aria-busy={loading}>
                 {data.content.map((u) => (
                   <UserRow key={u.id} user={u} />
                 ))}
