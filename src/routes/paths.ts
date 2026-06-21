@@ -1,6 +1,7 @@
 /** Centralne stałe ścieżek aplikacji — jedno źródło prawdy dla linków i tras. */
 export const ROUTES = {
   home: '/',
+  dashboard: '/dashboard',
   login: '/login',
   register: '/register',
   activate: '/activate',

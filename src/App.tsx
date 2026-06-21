@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import AppShell from '@/components/layout/AppShell'
 import AuthLayout from '@/components/layout/AuthLayout'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import DashboardPage from '@/pages/DashboardPage'
 import HomePage from '@/pages/HomePage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
@@ -36,6 +37,14 @@ export default function App() {
       <Route element={<AppShell />}>
         <Route path={ROUTES.home} element={<HomePage />} />
         <Route path={ROUTES.uiKit} element={<UiKitPage />} />
+        <Route
+          path={ROUTES.dashboard}
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path={ROUTES.profile}
           element={

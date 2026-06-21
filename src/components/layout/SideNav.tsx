@@ -14,7 +14,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: ROUTES.home, icon: 'dashboard', label: 'Start', end: true },
+  { to: ROUTES.dashboard, icon: 'dashboard', label: 'Dashboard' },
   { to: ROUTES.profile, icon: 'person', label: 'Profil' },
   { to: ROUTES.uiKit, icon: 'palette', label: 'UI-kit' },
 ]
