@@ -32,6 +32,13 @@ function Field({ icon, label, value }: { icon: string; label: string; value?: st
   )
 }
 
+// ROLE_USER to domyślna rola (nie pokazujemy); z reszty ścinamy prefiks ROLE_.
+function visibleRoles(roles: readonly string[] | undefined): string[] {
+  return (roles ?? [])
+    .filter((role) => role !== 'ROLE_USER')
+    .map((role) => role.replace(/^ROLE_/, ''))
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Card className="space-y-4">
@@ -64,7 +71,7 @@ export default function ProfilePage() {
             ) : (
               <Badge tone="danger">Nieaktywne</Badge>
             )}
-            {(user.roles ?? []).map((role) => (
+            {visibleRoles(user.roles).map((role) => (
               <Badge key={role} tone="gold">
                 {role}
               </Badge>
