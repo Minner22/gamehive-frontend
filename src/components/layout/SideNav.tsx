@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import { HexAvatar, Icon } from '@/components/ui'
 import { useAuth } from '@/auth/AuthContext'
@@ -48,7 +48,9 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="flex h-full w-64 flex-col bg-surface-container-low py-6">
       <div className="mb-8 px-6">
-        <Brand />
+        <Link to={ROUTES.home} onClick={onNavigate} aria-label="GameHive — strona główna">
+          <Brand />
+        </Link>
         <p className="mt-2 text-sm text-on-surface-variant">The Digital Hearth</p>
       </div>
 
