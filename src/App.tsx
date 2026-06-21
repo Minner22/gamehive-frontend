@@ -8,6 +8,7 @@ import NotFoundPage from '@/pages/NotFoundPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
 import ProfilePage from '@/pages/ProfilePage'
 import UiKitPage from '@/pages/UiKitPage'
+import AdminAuditPage from '@/pages/admin/AdminAuditPage'
 import AdminUsersPage from '@/pages/admin/AdminUsersPage'
 import ActivatePage from '@/pages/auth/ActivatePage'
 import LoginPage from '@/pages/auth/LoginPage'
@@ -67,6 +68,14 @@ export default function App() {
           element={
             <ProtectedRoute role="ROLE_ADMIN">
               <AdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.admin.audit}
+          element={
+            <ProtectedRoute role="ROLE_ADMIN">
+              <AdminAuditPage />
             </ProtectedRoute>
           }
         />

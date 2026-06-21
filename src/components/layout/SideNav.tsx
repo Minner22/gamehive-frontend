@@ -87,6 +87,14 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                 </>
               )}
             </NavLink>
+            <NavLink to={ROUTES.admin.audit} onClick={onNavigate} className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  <Icon name="history" filled={isActive} />
+                  <span>Audyt</span>
+                </>
+              )}
+            </NavLink>
           </>
         )}
 
