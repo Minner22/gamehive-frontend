@@ -55,7 +55,8 @@ src/
   components/
     ui/            # UI-kit Nectar (Button/ButtonLink, Input/PasswordInput, Card, Chip,
                    #   Badge, HexAvatar, Icon, Spinner, Toast) + barrel; '@/components/ui'
-    layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, Brand, ThemeToggle
+    layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, AuthResult,
+                   #   Brand, ThemeToggle
     ProtectedRoute.tsx
   lib/
     cn.ts          # helper klas (clsx + tailwind-merge) — używaj zamiast string concat
@@ -123,7 +124,7 @@ Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user 
   GH-3 ✅ formularze (react-hook-form + zod) + Toast + mapowanie błędów API ·
   GH-4 ✅ AuthContext + bootstrap sesji + ProtectedRoute (z rolą) + api/auth+users.
 - **Faza 2 — auth:** GH-5 landing (odłożony) · GH-6 ✅ rejestracja · GH-7 ✅ login ·
-  GH-8 aktywacja+resend · GH-9 reset hasła.
+  GH-8 ✅ aktywacja+resend+logout · GH-9 reset hasła.
 - **Faza 3 — konto:** GH-10 profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).
 - **Faza 4 — admin:** GH-13 lista userów · GH-14 akcje (role/activate/deactivate/
   force-logout/delete) · GH-15 audyt.

@@ -1,6 +1,7 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/cn'
-import { Icon } from '@/components/ui'
+import { HexAvatar, Icon } from '@/components/ui'
+import { useAuth } from '@/auth/AuthContext'
 import { Brand } from './Brand'
 import { ThemeToggle } from './ThemeToggle'
 import { ROUTES } from '@/routes/paths'
@@ -35,6 +36,15 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 
 /** Lewa nawigacja aplikacji (desktop + zawartość mobilnego szuflady). */
 export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout() // czyści sesję lokalnie nawet przy błędzie serwera
+    onNavigate?.()
+    navigate(ROUTES.home)
+  }
+
   return (
     <nav className="flex h-full w-64 flex-col bg-surface-container-low py-6">
       <div className="mb-8 px-6">
@@ -76,9 +86,44 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t border-outline-variant/20 px-5 pt-4">
-        <span className="text-xs text-on-surface-variant/60">v0 · GH-2</span>
-        <ThemeToggle />
+      <div className="mt-auto space-y-3 border-t border-outline-variant/20 px-4 pt-4">
+        {user && (
+          <div className="flex items-center gap-3 px-1">
+            <HexAvatar
+              name={user.username}
+              src={user.profile?.profilePictureUrl}
+              size={36}
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-on-surface">
+                {user.username}
+              </p>
+              <p className="truncate text-xs text-on-surface-variant">{user.email}</p>
+            </div>
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          {user ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-secondary transition-colors hover:bg-surface-container-high hover:text-primary"
+            >
+              <Icon name="logout" />
+              Wyloguj
+            </button>
+          ) : (
+            <NavLink
+              to={ROUTES.login}
+              onClick={onNavigate}
+              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface-container-high"
+            >
+              <Icon name="login" />
+              Zaloguj się
+            </NavLink>
+          )}
+          <ThemeToggle />
+        </div>
       </div>
     </nav>
   )
