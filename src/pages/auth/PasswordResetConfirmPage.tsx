@@ -36,7 +36,6 @@ export default function PasswordResetConfirmPage() {
     return (
       <AuthCard
         title="Link nieaktualny"
-        subtitle="Link do resetu hasła jest nieprawidłowy lub wygasł."
         footer={
           <Link to={ROUTES.login} className="font-bold text-primary hover:underline">
             Wróć do logowania
@@ -44,6 +43,9 @@ export default function PasswordResetConfirmPage() {
         }
       >
         <AuthResult icon="link_off">
+          <p className="text-sm text-on-surface-variant">
+            Link do resetu hasła jest nieprawidłowy lub wygasł.
+          </p>
           <ButtonLink to={ROUTES.passwordResetRequest} iconRight="send">
             Poproś o nowy link
           </ButtonLink>
@@ -73,8 +75,14 @@ export default function PasswordResetConfirmPage() {
       setDone(true)
     },
     (err) => {
-      if (isAxiosError(err) && err.response?.status === 401) {
-        setTokenError(true) // token nieprawidłowy / wygasły / już użyty
+      if (!isAxiosError(err)) return false
+      const status = err.response?.status
+      const data = err.response?.data as { errors?: unknown[] } | undefined
+      const hasFieldErrors = Array.isArray(data?.errors) && data.errors.length > 0
+      // Token zły/wygasły/użyty: 401 albo 400 bez błędów pól (np. malformed JWT).
+      // 400 z błędami pól (np. słabe hasło) → niżej do handleApiFormError.
+      if (status === 401 || (status === 400 && !hasFieldErrors)) {
+        setTokenError(true)
         return true
       }
       return false
