@@ -3,7 +3,7 @@ import AppShell from '@/components/layout/AppShell'
 import AuthLayout from '@/components/layout/AuthLayout'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import DashboardPage from '@/pages/DashboardPage'
-import HomePage from '@/pages/HomePage'
+import HomeRoute from '@/pages/HomeRoute'
 import NotFoundPage from '@/pages/NotFoundPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
 import ProfilePage from '@/pages/ProfilePage'
@@ -35,7 +35,7 @@ export default function App() {
 
       {/* Aplikacja — szkielet z nawigacją */}
       <Route element={<AppShell />}>
-        <Route path={ROUTES.home} element={<HomePage />} />
+        <Route path={ROUTES.home} element={<HomeRoute />} />
         <Route path={ROUTES.uiKit} element={<UiKitPage />} />
         <Route
           path={ROUTES.dashboard}
