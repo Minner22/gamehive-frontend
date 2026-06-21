@@ -91,6 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await apiLogout()
+    } catch {
+      // Wylogowanie zawsze udaje się lokalnie — błąd serwera ignorujemy.
     } finally {
       setUser(null)
       setStatus('unauthenticated')
