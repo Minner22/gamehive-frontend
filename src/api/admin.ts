@@ -1,5 +1,10 @@
 import apiClient from './client'
-import type { PageUserResponseDto, PageableRequest, UserResponseDto } from './types'
+import type {
+  PageUserResponseDto,
+  PageableRequest,
+  UpdateUserRolesDto,
+  UserResponseDto,
+} from './types'
 
 /** Stronicowana lista użytkowników (panel admina). */
 export async function listUsers({
@@ -37,4 +42,26 @@ export async function getUserByEmail(email: string): Promise<UserResponseDto> {
     `/api/v1/admin/users/by-email/${encodeURIComponent(email)}`,
   )
   return data
+}
+
+// --- Akcje na użytkowniku (odpowiedzi bez body — aktualizujemy stan lokalnie) --
+
+export async function activateUser(id: string): Promise<void> {
+  await apiClient.patch(`/api/v1/admin/users/${id}/activate`)
+}
+
+export async function deactivateUser(id: string): Promise<void> {
+  await apiClient.patch(`/api/v1/admin/users/${id}/deactivate`)
+}
+
+export async function forceLogoutUser(id: string): Promise<void> {
+  await apiClient.post(`/api/v1/admin/users/${id}/force-logout`)
+}
+
+export async function updateUserRoles(id: string, dto: UpdateUserRolesDto): Promise<void> {
+  await apiClient.put(`/api/v1/admin/users/${id}/roles`, dto)
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await apiClient.delete(`/api/v1/admin/users/${id}`)
 }
