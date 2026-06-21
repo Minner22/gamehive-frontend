@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { Brand } from './Brand'
 import { Card } from '@/components/ui'
+import { ROUTES } from '@/routes/paths'
 
 interface AuthCardProps {
   title: string
@@ -15,7 +17,9 @@ export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
   return (
     <Card className="rounded-[2rem] p-8 shadow-ambient md:p-10">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <Brand iconOnly />
+        <Link to={ROUTES.home} aria-label="GameHive — strona główna">
+          <Brand iconOnly />
+        </Link>
         <h1 className="font-headline text-2xl font-bold">{title}</h1>
         {subtitle && <p className="text-sm text-on-surface-variant">{subtitle}</p>}
       </div>
