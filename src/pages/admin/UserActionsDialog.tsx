@@ -9,7 +9,9 @@ import {
 } from '@/api/admin'
 import type { Role, UserResponseDto } from '@/api/types'
 import { Badge, Button, Dialog, HexAvatar, useToast } from '@/components/ui'
+import { cn } from '@/lib/cn'
 import { getApiErrorMessage } from '@/lib/apiError'
+import { ASSIGNABLE_ROLES, displayRoles, roleLabel } from '@/lib/roles'
 
 interface Props {
   user: UserResponseDto
@@ -23,9 +25,14 @@ export function UserActionsDialog({ user, onClose, onUpdated, onDeleted }: Props
   const { user: current } = useAuth()
   const [busy, setBusy] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [roles, setRoles] = useState<Role[]>(user.roles)
 
   const isSelf = current?.id === user.id
-  const isAdmin = user.roles.includes('ROLE_ADMIN')
+
+  // Wszystkie przypisywalne role + ewentualne nietypowe, które user już ma.
+  const allRoles = Array.from(new Set<Role>([...ASSIGNABLE_ROLES, ...user.roles]))
+  const rolesChanged =
+    roles.length !== user.roles.length || roles.some((r) => !user.roles.includes(r))
 
   // Wspólny bieg akcji: blokada przycisków, toast sukcesu/błędu.
   const run = async (key: string, fn: () => Promise<void>, after: () => void, ok: string) => {
@@ -46,18 +53,11 @@ export function UserActionsDialog({ user, onClose, onUpdated, onDeleted }: Props
       ? run('active', () => deactivateUser(user.id), () => onUpdated({ ...user, enabled: false }), 'Konto dezaktywowane')
       : run('active', () => activateUser(user.id), () => onUpdated({ ...user, enabled: true }), 'Konto aktywowane')
 
-  const toggleAdmin = () => {
-    const roles: Role[] = isAdmin
-      ? user.roles.filter((r) => r !== 'ROLE_ADMIN')
-      : [...user.roles, 'ROLE_ADMIN']
-    if (!roles.includes('ROLE_USER')) roles.push('ROLE_USER')
-    run(
-      'roles',
-      () => updateUserRoles(user.id, { roles }),
-      () => onUpdated({ ...user, roles }),
-      isAdmin ? 'Odebrano rolę administratora' : 'Nadano rolę administratora',
-    )
-  }
+  const toggleRole = (role: Role) =>
+    setRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]))
+
+  const saveRoles = () =>
+    run('roles', () => updateUserRoles(user.id, { roles }), () => onUpdated({ ...user, roles }), 'Role zaktualizowane')
 
   const forceLogout = () =>
     run('logout', () => forceLogoutUser(user.id), () => {}, 'Wymuszono wylogowanie')
@@ -75,7 +75,11 @@ export function UserActionsDialog({ user, onClose, onUpdated, onDeleted }: Props
             <p className="truncate text-sm text-on-surface-variant">{user.email}</p>
           </div>
           <div className="ml-auto flex shrink-0 flex-col items-end gap-1">
-            {isAdmin && <Badge tone="gold">ADMIN</Badge>}
+            {displayRoles(user.roles).map((r) => (
+              <Badge key={r} tone="gold">
+                {r}
+              </Badge>
+            ))}
             <Badge tone={user.enabled ? 'success' : 'danger'}>
               {user.enabled ? 'Aktywny' : 'Nieaktywny'}
             </Badge>
@@ -88,35 +92,65 @@ export function UserActionsDialog({ user, onClose, onUpdated, onDeleted }: Props
           </p>
         )}
 
-        <div className="grid gap-2">
+        <Button
+          variant="secondary"
+          fullWidth
+          iconLeft={user.enabled ? 'block' : 'check_circle'}
+          loading={busy === 'active'}
+          disabled={!!busy || (isSelf && user.enabled)}
+          onClick={toggleActive}
+        >
+          {user.enabled ? 'Dezaktywuj konto' : 'Aktywuj konto'}
+        </Button>
+
+        <div className="space-y-2">
+          <p className="px-1 text-sm font-semibold text-on-surface-variant">Role</p>
+          <div className="flex flex-wrap gap-2">
+            {allRoles.map((role) => {
+              const on = roles.includes(role)
+              // Nie pozwól odebrać sobie roli administratora (samoblokada).
+              const locked = isSelf && role === 'ROLE_ADMIN'
+              return (
+                <button
+                  key={role}
+                  type="button"
+                  aria-pressed={on}
+                  disabled={!!busy || locked}
+                  onClick={() => toggleRole(role)}
+                  className={cn(
+                    'rounded-full px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50',
+                    on
+                      ? 'bg-primary-container text-on-primary-container'
+                      : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest',
+                  )}
+                >
+                  {roleLabel(role)}
+                </button>
+              )
+            })}
+          </div>
           <Button
             variant="secondary"
-            iconLeft={user.enabled ? 'block' : 'check_circle'}
-            loading={busy === 'active'}
-            disabled={!!busy || (isSelf && user.enabled)}
-            onClick={toggleActive}
-          >
-            {user.enabled ? 'Dezaktywuj konto' : 'Aktywuj konto'}
-          </Button>
-          <Button
-            variant="secondary"
-            iconLeft="shield_person"
+            size="sm"
+            iconLeft="save"
             loading={busy === 'roles'}
-            disabled={!!busy || (isSelf && isAdmin)}
-            onClick={toggleAdmin}
+            disabled={!!busy || !rolesChanged || roles.length === 0}
+            onClick={saveRoles}
           >
-            {isAdmin ? 'Odbierz rolę administratora' : 'Nadaj rolę administratora'}
-          </Button>
-          <Button
-            variant="secondary"
-            iconLeft="logout"
-            loading={busy === 'logout'}
-            disabled={!!busy || isSelf}
-            onClick={forceLogout}
-          >
-            Wymuś wylogowanie
+            Zapisz role
           </Button>
         </div>
+
+        <Button
+          variant="secondary"
+          fullWidth
+          iconLeft="logout"
+          loading={busy === 'logout'}
+          disabled={!!busy || isSelf}
+          onClick={forceLogout}
+        >
+          Wymuś wylogowanie
+        </Button>
 
         <div className="border-t border-outline-variant/20 pt-4">
           {confirmDelete ? (

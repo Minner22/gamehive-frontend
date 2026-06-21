@@ -40,7 +40,7 @@ export interface UserProfileResponseDto {
   profilePictureUrl?: string
 }
 
-export type Role = 'ROLE_USER' | 'ROLE_ADMIN' | (string & {})
+export type Role = 'ROLE_USER' | 'ROLE_MODERATOR' | 'ROLE_ADMIN' | (string & {})
 
 export interface UserResponseDto {
   id: string // UUID

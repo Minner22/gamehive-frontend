@@ -285,6 +285,7 @@ export default function AdminUsersPage() {
 
       {selected && (
         <UserActionsDialog
+          key={selected.id}
           user={selected}
           onClose={() => setSelected(null)}
           onUpdated={handleUpdated}
