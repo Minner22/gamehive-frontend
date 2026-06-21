@@ -13,6 +13,7 @@ import {
   HexAvatar,
   Icon,
   Input,
+  Pagination,
   Section,
   Spinner,
   useToast,
@@ -252,32 +253,16 @@ export default function AdminUsersPage() {
                   <UserRow key={u.id} user={u} onSelect={setSelected} />
                 ))}
               </ul>
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                <p className="text-sm text-on-surface-variant">
-                  {data.totalElements} użytkownik(ów) · strona {data.number + 1} z{' '}
-                  {Math.max(data.totalPages, 1)}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    iconLeft="chevron_left"
-                    disabled={data.first || loading}
-                    onClick={() => goToPage(data.number - 1)}
-                  >
-                    Poprzednia
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    iconRight="chevron_right"
-                    disabled={data.last || loading}
-                    onClick={() => goToPage(data.number + 1)}
-                  >
-                    Następna
-                  </Button>
-                </div>
-              </div>
+              <Pagination
+                number={data.number}
+                totalPages={data.totalPages}
+                totalElements={data.totalElements}
+                isFirst={data.first}
+                isLast={data.last}
+                disabled={loading}
+                onChange={goToPage}
+                unit="użytkownik(ów)"
+              />
             </>
           )}
         </Section>
