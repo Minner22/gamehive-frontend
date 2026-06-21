@@ -39,7 +39,6 @@ export default function LoginPage() {
     // Po sukcesie status → 'authenticated' i guard <Navigate to={target}> wyżej
     // przekieruje (na from/home) — bez osobnego navigate().
     async (data) => {
-      setInactiveEmail(null)
       await login(data)
     },
     (err) => {
@@ -71,7 +70,15 @@ export default function LoginPage() {
         </>
       }
     >
-      <form onSubmit={onSubmit} className="space-y-5" noValidate>
+      <form
+        onSubmit={(e) => {
+          // Wyczyść notkę przed walidacją — także gdy submit padnie na zodzie.
+          setInactiveEmail(null)
+          void onSubmit(e)
+        }}
+        className="space-y-5"
+        noValidate
+      >
         {inactiveEmail && (
           <div
             role="alert"
