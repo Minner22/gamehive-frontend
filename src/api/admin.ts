@@ -1,5 +1,7 @@
 import apiClient from './client'
 import type {
+  AuditAction,
+  PageAuditLogResponseDto,
   PageUserResponseDto,
   PageableRequest,
   UpdateUserRolesDto,
@@ -64,4 +66,33 @@ export async function updateUserRoles(id: string, dto: UpdateUserRolesDto): Prom
 
 export async function deleteUser(id: string): Promise<void> {
   await apiClient.delete(`/api/v1/admin/users/${id}`)
+}
+
+// --- Dziennik audytu -----------------------------------------------------
+
+export interface AuditLogFilter {
+  targetId?: string
+  actor?: string
+  action?: AuditAction
+  from?: string // ISO-8601 UTC, włącznie
+  to?: string // ISO-8601 UTC, włącznie
+}
+
+export async function listAuditLogs(
+  filter: AuditLogFilter = {},
+  { page = 0, size = 20, sort = ['createdAt,desc'] }: PageableRequest = {},
+): Promise<PageAuditLogResponseDto> {
+  const params = new URLSearchParams()
+  params.set('page', String(page))
+  params.set('size', String(size))
+  for (const s of sort) params.append('sort', s)
+  if (filter.targetId) params.set('targetId', filter.targetId)
+  if (filter.actor) params.set('actor', filter.actor)
+  if (filter.action) params.set('action', filter.action)
+  if (filter.from) params.set('from', filter.from)
+  if (filter.to) params.set('to', filter.to)
+  const { data } = await apiClient.get<PageAuditLogResponseDto>(
+    `/api/v1/admin/audit?${params.toString()}`,
+  )
+  return data
 }
