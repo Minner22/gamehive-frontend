@@ -3,25 +3,30 @@ import { useAuth } from '@/auth/AuthContext'
 import { Badge, ButtonLink, Card, HexAvatar, Icon } from '@/components/ui'
 import { ROUTES } from '@/routes/paths'
 
-function Field({
-  icon,
-  label,
-  value,
-}: {
-  icon: string
-  label: string
-  value?: string
-}) {
+/** Formatuje datę ISO (YYYY-MM-DD) na czytelną polską; surową zwraca w razie błędu. */
+function formatDate(iso?: string): string | undefined {
+  if (!iso) return undefined
+  // Datę bez czasu parsujemy jako lokalną, żeby strefa nie przesunęła dnia.
+  const date = new Date(iso.length === 10 ? `${iso}T00:00:00` : iso)
+  if (Number.isNaN(date.getTime())) return iso
+  return new Intl.DateTimeFormat('pl-PL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
+
+function Field({ icon, label, value }: { icon: string; label: string; value?: string }) {
   return (
     <div className="flex items-start gap-3">
       <Icon name={icon} className="mt-0.5 text-xl text-secondary" />
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant/70">
+        <dt className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant/70">
           {label}
-        </p>
-        <p className="truncate text-sm text-on-surface">
+        </dt>
+        <dd className="truncate text-sm text-on-surface" title={value || undefined}>
           {value || <span className="text-on-surface-variant/50">— nie podano</span>}
-        </p>
+        </dd>
       </div>
     </div>
   )
@@ -31,7 +36,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Card className="space-y-4">
       <h2 className="font-headline text-lg font-bold">{title}</h2>
-      <div className="grid gap-4">{children}</div>
+      <dl className="grid gap-4">{children}</dl>
     </Card>
   )
 }
@@ -59,7 +64,7 @@ export default function ProfilePage() {
             ) : (
               <Badge tone="danger">Nieaktywne</Badge>
             )}
-            {user.roles.map((role) => (
+            {(user.roles ?? []).map((role) => (
               <Badge key={role} tone="gold">
                 {role}
               </Badge>
@@ -76,7 +81,7 @@ export default function ProfilePage() {
           <Field icon="badge" label="Imię" value={profile?.firstName} />
           <Field icon="badge" label="Nazwisko" value={profile?.lastName} />
           <Field icon="call" label="Telefon" value={profile?.phoneNumber} />
-          <Field icon="cake" label="Data urodzenia" value={profile?.dateOfBirth} />
+          <Field icon="cake" label="Data urodzenia" value={formatDate(profile?.dateOfBirth)} />
         </Section>
 
         <Section title="Adres">
