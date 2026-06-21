@@ -4,6 +4,7 @@ import AuthLayout from '@/components/layout/AuthLayout'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import HomePage from '@/pages/HomePage'
 import NotFoundPage from '@/pages/NotFoundPage'
+import ProfileEditPage from '@/pages/ProfileEditPage'
 import ProfilePage from '@/pages/ProfilePage'
 import UiKitPage from '@/pages/UiKitPage'
 import ActivatePage from '@/pages/auth/ActivatePage'
@@ -40,6 +41,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.profileEdit}
+          element={
+            <ProtectedRoute>
+              <ProfileEditPage />
             </ProtectedRoute>
           }
         />
