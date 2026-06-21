@@ -1,6 +1,6 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useState } from 'react'
 import { listAuditLogs, type AuditLogFilter } from '@/api/admin'
-import type { AuditAction, AuditLogResponseDto, PageAuditLogResponseDto } from '@/api/types'
+import type { AuditAction, AuditLogResponseDto } from '@/api/types'
 import {
   Badge,
   Button,
@@ -8,10 +8,11 @@ import {
   Input,
   Pagination,
   Section,
+  Select,
   Spinner,
-  useToast,
 } from '@/components/ui'
-import { getApiErrorMessage } from '@/lib/apiError'
+import { roleLabel } from '@/lib/roles'
+import { usePaginatedList } from '@/lib/usePaginatedList'
 
 const PAGE_SIZE = 20
 
@@ -41,12 +42,52 @@ function toIso(local: string): string | undefined {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
 }
 
+type RoleChange = { before: string[]; after: string[] }
+
+// details przy ROLE_CHANGE to JSON {before, after}. Reszta akcji — zwykły tekst.
+function parseRoleChange(details?: string): RoleChange | null {
+  if (!details) return null
+  try {
+    const parsed = JSON.parse(details)
+    if (Array.isArray(parsed?.before) && Array.isArray(parsed?.after)) {
+      return { before: parsed.before, after: parsed.after }
+    }
+  } catch {
+    /* nie JSON — pokażemy surowo */
+  }
+  return null
+}
+
+function RoleDiff({ change }: { change: RoleChange }) {
+  const added = change.after.filter((r) => !change.before.includes(r))
+  const removed = change.before.filter((r) => !change.after.includes(r))
+  if (added.length === 0 && removed.length === 0) {
+    return <p className="mt-1 text-xs text-on-surface-variant">Role bez zmian</p>
+  }
+  return (
+    <div className="mt-1 flex flex-wrap gap-1.5">
+      {added.map((r) => (
+        <Badge key={`+${r}`} tone="success">
+          + {roleLabel(r)}
+        </Badge>
+      ))}
+      {removed.map((r) => (
+        <Badge key={`-${r}`} tone="danger">
+          − {roleLabel(r)}
+        </Badge>
+      ))}
+    </div>
+  )
+}
+
 function AuditRow({ entry }: { entry: AuditLogResponseDto }) {
   const meta = ACTION_META[entry.action] ?? {
     label: entry.action,
     tone: 'neutral' as ActionTone,
     icon: 'history',
   }
+  const roleChange = entry.action === 'ROLE_CHANGE' ? parseRoleChange(entry.details) : null
+
   return (
     <li className="flex items-start gap-3 rounded-2xl bg-surface-container-low p-3">
       <Icon name={meta.icon} className="mt-0.5 text-xl text-secondary" />
@@ -61,13 +102,15 @@ function AuditRow({ entry }: { entry: AuditLogResponseDto }) {
           <span className="font-semibold">{entry.actor}</span>
           <span className="text-on-surface-variant"> → {entry.targetEmail}</span>
         </p>
-        {entry.details && (
+        {roleChange ? (
+          <RoleDiff change={roleChange} />
+        ) : entry.details ? (
           <p className="truncate text-xs text-on-surface-variant" title={entry.details}>
             {entry.details}
           </p>
-        )}
+        ) : null}
         <p
-          className="truncate font-mono text-[10px] text-on-surface-variant/50"
+          className="mt-0.5 truncate font-mono text-xs text-on-surface-variant/60"
           title={`użytkownik ${entry.targetId} · correlationId ${entry.correlationId}`}
         >
           {entry.correlationId}
@@ -80,49 +123,17 @@ function AuditRow({ entry }: { entry: AuditLogResponseDto }) {
 const EMPTY_DRAFT = { action: '' as '' | AuditAction, actor: '', targetId: '', from: '', to: '' }
 
 export default function AdminAuditPage() {
-  const toast = useToast()
-
-  const [page, setPage] = useState(0)
-  const [reloadKey, setReloadKey] = useState(0)
   const [filters, setFilters] = useState<AuditLogFilter>({})
-  const [data, setData] = useState<PageAuditLogResponseDto | null>(null)
-  const [loading, setLoading] = useState(true)
-  const loadedPage = useRef(0)
+  const fetchPage = useCallback(
+    (page: number) => listAuditLogs(filters, { page, size: PAGE_SIZE }),
+    [filters],
+  )
+  const { data, loading, goToPage, reload } = usePaginatedList(fetchPage)
 
   const [draft, setDraft] = useState(EMPTY_DRAFT)
 
-  useEffect(() => {
-    let active = true
-    listAuditLogs(filters, { page, size: PAGE_SIZE })
-      .then((d) => {
-        if (!active) return
-        setData(d)
-        loadedPage.current = d.number
-      })
-      .catch((err) => {
-        if (!active) return
-        toast.error(getApiErrorMessage(err))
-        setPage(loadedPage.current)
-      })
-      .finally(() => active && setLoading(false))
-    return () => {
-      active = false
-    }
-  }, [page, filters, reloadKey, toast])
-
-  const goToPage = (p: number) => {
-    setLoading(true)
-    setPage(Math.max(p, 0))
-  }
-
-  const reload = () => {
-    setLoading(true)
-    setReloadKey((k) => k + 1)
-  }
-
   const applyFilters = (e: FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setFilters({
       action: draft.action || undefined,
       actor: draft.actor.trim() || undefined,
@@ -130,14 +141,13 @@ export default function AdminAuditPage() {
       from: toIso(draft.from),
       to: toIso(draft.to),
     })
-    setPage(0)
+    goToPage(0) // nowy zestaw filtrów → od pierwszej strony
   }
 
   const clearFilters = () => {
     setDraft(EMPTY_DRAFT)
-    setLoading(true)
     setFilters({})
-    setPage(0)
+    goToPage(0)
   }
 
   return (
@@ -152,23 +162,20 @@ export default function AdminAuditPage() {
       <Section title="Filtry">
         <form onSubmit={applyFilters} className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <label className="flex flex-col gap-1.5">
-              <span className="px-1 text-sm font-semibold text-on-surface-variant">Operacja</span>
-              <select
-                value={draft.action}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, action: e.target.value as '' | AuditAction }))
-                }
-                className="w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3.5 text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Wszystkie</option>
-                {ACTIONS.map((a) => (
-                  <option key={a} value={a}>
-                    {ACTION_META[a].label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="Operacja"
+              value={draft.action}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, action: e.target.value as '' | AuditAction }))
+              }
+            >
+              <option value="">Wszystkie</option>
+              {ACTIONS.map((a) => (
+                <option key={a} value={a}>
+                  {ACTION_META[a].label}
+                </option>
+              ))}
+            </Select>
             <Input
               label="Administrator (e-mail)"
               iconLeft="admin_panel_settings"
@@ -186,12 +193,14 @@ export default function AdminAuditPage() {
             <Input
               label="Od"
               type="datetime-local"
+              hint="czas lokalny"
               value={draft.from}
               onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))}
             />
             <Input
               label="Do"
               type="datetime-local"
+              hint="czas lokalny"
               value={draft.to}
               onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))}
             />
