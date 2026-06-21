@@ -8,7 +8,15 @@ import { profileUpdateSchema, type ProfileUpdateInput } from '@/lib/validation'
 import { useApiForm } from '@/lib/useApiForm'
 import { ROUTES } from '@/routes/paths'
 
-const FIELDS = Object.keys(profileUpdateSchema.shape)
+// Pola mapowalne na błędy serwera — top-level + zagnieżdżone ścieżki adresu,
+// żeby błędy walidacji address.* trafiały pod właściwe pole, nie do toasta.
+const FIELDS = [
+  ...Object.keys(profileUpdateSchema.shape).filter((key) => key !== 'address'),
+  'address.street',
+  'address.city',
+  'address.postalCode',
+  'address.country',
+]
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -51,10 +59,18 @@ export default function ProfileEditPage() {
 
   const onSubmit = submit(async (data) => {
     await updateProfile(data)
-    await refreshUser()
+    // Odświeżenie sesji best-effort — zapis już się udał, błąd getMe nie może
+    // udawać nieudanego zapisu.
+    try {
+      await refreshUser()
+    } catch {
+      /* ignorujemy — dane zapisane, profil odświeży się przy następnym wejściu */
+    }
     toast.success('Profil zaktualizowany')
     navigate(ROUTES.profile)
   })
+
+  if (!user) return null // ProtectedRoute gwarantuje usera; guard dla TS/bezpieczeństwa
 
   return (
     <div className="space-y-6">
@@ -101,6 +117,7 @@ export default function ProfileEditPage() {
           <Input
             label="URL zdjęcia profilowego"
             iconLeft="image"
+            type="url"
             placeholder="https://…"
             hint="Wklej link do obrazka (upload pojawi się później)"
             error={errors.profilePictureUrl?.message}

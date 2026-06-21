@@ -85,12 +85,16 @@ const optionalText = (max: number, label: string) =>
     .optional()
     .transform(emptyToUndefined)
 
-export const addressSchema = z.object({
-  street: optionalText(255, 'Ulica'),
-  city: optionalText(255, 'Miasto'),
-  postalCode: optionalText(20, 'Kod pocztowy'),
-  country: optionalText(100, 'Kraj'),
-})
+export const addressSchema = z
+  .object({
+    street: optionalText(255, 'Ulica'),
+    city: optionalText(255, 'Miasto'),
+    postalCode: optionalText(20, 'Kod pocztowy'),
+    country: optionalText(100, 'Kraj'),
+  })
+  // Wszystkie podpola puste → cały adres undefined (nie wysyłamy {} przy PATCH,
+  // żeby nie nadpisać/wyzerować zapisanego adresu).
+  .transform((addr) => (Object.values(addr).some((v) => v !== undefined) ? addr : undefined))
 
 export const profileUpdateSchema = z.object({
   firstName: optionalText(50, 'Imię'),
