@@ -38,6 +38,10 @@ Przed commitem upewnij się, że `npm run build` i `npm run lint` przechodzą.
   Nie commituj bezpośrednio na `master`.
 - **Stopka commita:** `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
 - **gh CLI:** używany do PR-ów; jeśli niezalogowany, poproś użytkownika o `! gh auth login`.
+- **Tracking — GitHub Project #3 „GameHive"** (`Minner22`, user-level). Dla otwartych
+  zadań **GH-N = faktyczny numer issue**. Zaczynając task → przesuń issue na
+  **In progress**; w PR-ze dopisz **`Closes #N`**, żeby merge zamknął issue i ustawił
+  go na **Done**. (Zamknięte GH-2…GH-10 to historia — tam GH-N ≠ numer.)
 
 ## Architektura
 
@@ -119,14 +123,15 @@ Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user 
 
 ## Roadmapa (skrót)
 
-- **Faza 0 ✅** GH-1 init.
-- **Faza 1 — fundament:** GH-2 ✅ design system Nectar + AppShell + UI-kit (`/ui`) ·
-  GH-3 ✅ formularze (react-hook-form + zod) + Toast + mapowanie błędów API ·
-  GH-4 ✅ AuthContext + bootstrap sesji + ProtectedRoute (z rolą) + api/auth+users.
-- **Faza 2 — auth ✅** (poza odłożonym GH-5 landing): GH-6 rejestracja · GH-7 login ·
+Otwarte zadania śledzone na **Project #3** (GH-N = numer issue). Niżej numery
+zamkniętych (GH-1…GH-10) są historyczne (GH-N ≠ numer issue).
+
+- **Faza 1 — fundament ✅:** GH-1 init · GH-2 design system + AppShell + UI-kit ·
+  GH-3 formularze + Toast + mapowanie błędów · GH-4 AuthContext + bootstrap + ProtectedRoute.
+- **Faza 2 — auth ✅** (poza landingiem **GH-14**, Backlog): GH-6 rejestracja · GH-7 login ·
   GH-8 aktywacja+resend+logout · GH-9 reset hasła.
-- **Faza 3 — konto:** GH-10 ✅ profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).
-- **Faza 4 — admin:** GH-13 lista userów · GH-14 akcje (role/activate/deactivate/
-  force-logout/delete) · GH-15 audyt.
-- **Faza 5 — jakość:** GH-16 testy (Vitest+RTL+MSW) · GH-17 CI · GH-18 (opc.) openapi-typescript.
-- **Faza 6** — produkt poza obecnym backendem (po stronie API najpierw).
+- **Faza 3 — konto:** GH-10 ✅ profil · **GH-20** edycja profilu · GH-21 dashboard (szkielet).
+- **Faza 4 — admin:** GH-22 lista userów · GH-23 akcje (role/activate/deactivate/
+  force-logout/delete) · GH-24 audyt.
+- **Faza 5 — jakość:** GH-25 testy (Vitest+RTL+MSW) · GH-26 CI · GH-27 (opc.) openapi-typescript.
+- **Faza 6 (GH-28…GH-31)** — produkt poza obecnym backendem (po stronie API najpierw).
