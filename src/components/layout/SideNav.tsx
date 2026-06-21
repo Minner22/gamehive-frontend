@@ -37,7 +37,7 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 /** Lewa nawigacja aplikacji (desktop + zawartość mobilnego szuflady). */
 export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user, logout, hasRole } = useAuth()
 
   const handleLogout = async () => {
     await logout() // czyści sesję lokalnie nawet przy błędzie serwera
@@ -69,6 +69,26 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
             )}
           </NavLink>
         ))}
+
+        {hasRole('ROLE_ADMIN') && (
+          <>
+            <p className="px-4 pb-1 pt-5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/60">
+              Administracja
+            </p>
+            <NavLink
+              to={ROUTES.admin.users}
+              onClick={onNavigate}
+              className={navLinkClass}
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon name="group" filled={isActive} />
+                  <span>Użytkownicy</span>
+                </>
+              )}
+            </NavLink>
+          </>
+        )}
 
         <p className="px-4 pb-1 pt-5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/60">
           Wkrótce
