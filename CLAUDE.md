@@ -125,7 +125,7 @@ Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user 
   GH-4 ✅ AuthContext + bootstrap sesji + ProtectedRoute (z rolą) + api/auth+users.
 - **Faza 2 — auth ✅** (poza odłożonym GH-5 landing): GH-6 rejestracja · GH-7 login ·
   GH-8 aktywacja+resend+logout · GH-9 reset hasła.
-- **Faza 3 — konto:** GH-10 profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).
+- **Faza 3 — konto:** GH-10 ✅ profil · GH-11 edycja profilu · GH-12 dashboard (szkielet).
 - **Faza 4 — admin:** GH-13 lista userów · GH-14 akcje (role/activate/deactivate/
   force-logout/delete) · GH-15 audyt.
 - **Faza 5 — jakość:** GH-16 testy (Vitest+RTL+MSW) · GH-17 CI · GH-18 (opc.) openapi-typescript.
