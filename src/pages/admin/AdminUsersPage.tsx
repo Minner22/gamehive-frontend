@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useState } from 'react'
 import { isAxiosError } from 'axios'
 import {
   getUserByEmail,
@@ -6,7 +6,7 @@ import {
   getUserByUsername,
   listUsers,
 } from '@/api/admin'
-import type { PageUserResponseDto, UserResponseDto } from '@/api/types'
+import type { UserResponseDto } from '@/api/types'
 import {
   Badge,
   Button,
@@ -15,11 +15,13 @@ import {
   Input,
   Pagination,
   Section,
+  Select,
   Spinner,
   useToast,
 } from '@/components/ui'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { displayRoles } from '@/lib/roles'
+import { usePaginatedList } from '@/lib/usePaginatedList'
 import { UserActionsDialog } from './UserActionsDialog'
 
 const PAGE_SIZE = 20
@@ -73,14 +75,11 @@ function UserRow({
 export default function AdminUsersPage() {
   const toast = useToast()
 
-  const [page, setPage] = useState(0)
-  const [reloadKey, setReloadKey] = useState(0)
-  const [data, setData] = useState<PageUserResponseDto | null>(null)
-  const [loading, setLoading] = useState(true)
-  // Ostatnio WCZYTANA strona — przy błędzie cofamy do niej `page`, żeby stan
-  // żądania nie rozjechał się z danymi (inaczej ponowny klik trafiałby w tę samą
-  // wartość page i efekt by się nie odpalił → zawieszony loader).
-  const loadedPage = useRef(0)
+  const fetchPage = useCallback(
+    (page: number) => listUsers({ page, size: PAGE_SIZE, sort: ['username,asc'] }),
+    [],
+  )
+  const { data, loading, goToPage, reload, setData } = usePaginatedList(fetchPage)
 
   const [mode, setMode] = useState<SearchMode>('username')
   const [query, setQuery] = useState('')
@@ -90,37 +89,6 @@ export default function AdminUsersPage() {
 
   // Użytkownik wybrany do akcji (otwiera dialog).
   const [selected, setSelected] = useState<UserResponseDto | null>(null)
-
-  // Stan ładowania ustawiamy w handlerach (zdarzenia), efekt robi tylko fetch
-  // i setState w callbackach — bez synchronicznego setState w ciele efektu.
-  useEffect(() => {
-    let active = true
-    listUsers({ page, size: PAGE_SIZE, sort: ['username,asc'] })
-      .then((d) => {
-        if (!active) return
-        setData(d)
-        loadedPage.current = d.number
-      })
-      .catch((err) => {
-        if (!active) return
-        toast.error(getApiErrorMessage(err))
-        setPage(loadedPage.current) // cofnij do ostatnio wczytanej strony
-      })
-      .finally(() => active && setLoading(false))
-    return () => {
-      active = false
-    }
-  }, [page, reloadKey, toast])
-
-  const goToPage = (p: number) => {
-    setLoading(true)
-    setPage(Math.max(p, 0))
-  }
-
-  const reload = () => {
-    setLoading(true)
-    setReloadKey((k) => k + 1)
-  }
 
   const onSearch = async (e: FormEvent) => {
     e.preventDefault()
@@ -181,20 +149,19 @@ export default function AdminUsersPage() {
 
       <Section title="Szukaj użytkownika">
         <form onSubmit={onSearch} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <label className="flex flex-col gap-1.5 sm:w-44">
-            <span className="px-1 text-sm font-semibold text-on-surface-variant">Pole</span>
-            <select
+          <div className="sm:w-44">
+            <Select
+              label="Pole"
               value={mode}
               onChange={(e) => setMode(e.target.value as SearchMode)}
-              className="w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3.5 text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {SEARCH_MODES.map((m) => (
                 <option key={m.value} value={m.value}>
                   {m.label}
                 </option>
               ))}
-            </select>
-          </label>
+            </Select>
+          </div>
           <div className="flex-1">
             <Input
               label="Szukana wartość"
