@@ -139,13 +139,13 @@ export default function AdminUsersPage() {
       </header>
 
       <Section title="Szukaj użytkownika">
-        <form onSubmit={onSearch} className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-on-surface-variant">Pole</span>
+        <form onSubmit={onSearch} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <label className="flex flex-col gap-1.5 sm:w-44">
+            <span className="px-1 text-sm font-semibold text-on-surface-variant">Pole</span>
             <select
               value={mode}
               onChange={(e) => setMode(e.target.value as SearchMode)}
-              className="rounded-xl bg-surface-container-high px-3 py-2.5 text-sm text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-2xl border-0 bg-surface-container-low px-4 py-3.5 text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {SEARCH_MODES.map((m) => (
                 <option key={m.value} value={m.value}>
@@ -154,14 +154,15 @@ export default function AdminUsersPage() {
               ))}
             </select>
           </label>
-          <Input
-            label="Szukana wartość"
-            iconLeft="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={mode === 'email' ? 'jan@example.com' : mode === 'id' ? 'UUID' : 'jan.kowalski'}
-            className="min-w-[12rem] flex-1"
-          />
+          <div className="flex-1">
+            <Input
+              label="Szukana wartość"
+              iconLeft="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={mode === 'email' ? 'jan@example.com' : mode === 'id' ? 'UUID' : 'jan.kowalski'}
+            />
+          </div>
           <Button type="submit" loading={searching} iconLeft="search">
             Szukaj
           </Button>
