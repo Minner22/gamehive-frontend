@@ -1,8 +1,6 @@
-import { Link } from 'react-router-dom'
-import { Brand } from './Brand'
+import { BrandLink } from './BrandLink'
 import { ThemeToggle } from './ThemeToggle'
 import { Icon } from '@/components/ui'
-import { ROUTES } from '@/routes/paths'
 
 /** Górny pasek widoczny tylko na mobile — otwiera szufladę nawigacji. */
 export function TopAppBar({ onMenu }: { onMenu: () => void }) {
@@ -16,9 +14,7 @@ export function TopAppBar({ onMenu }: { onMenu: () => void }) {
       >
         <Icon name="menu" />
       </button>
-      <Link to={ROUTES.home} aria-label="GameHive — strona główna">
-        <Brand />
-      </Link>
+      <BrandLink />
       <ThemeToggle />
     </header>
   )
