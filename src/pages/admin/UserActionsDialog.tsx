@@ -104,8 +104,10 @@ export function UserActionsDialog({ user, onClose, onUpdated, onDeleted }: Props
         </Button>
 
         <div className="space-y-2">
-          <p className="px-1 text-sm font-semibold text-on-surface-variant">Role</p>
-          <div className="flex flex-wrap gap-2">
+          <p id="roles-label" className="px-1 text-sm font-semibold text-on-surface-variant">
+            Role
+          </p>
+          <div className="flex flex-wrap gap-2" role="group" aria-labelledby="roles-label">
             {allRoles.map((role) => {
               const on = roles.includes(role)
               // Nie pozwól odebrać sobie roli administratora (samoblokada).
