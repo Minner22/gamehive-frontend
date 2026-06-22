@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '@/auth/AuthContext'
@@ -6,6 +7,7 @@ import { updateProfile } from '@/api/users'
 import { profileUpdateSchema, type ProfileUpdateInput } from '@/lib/validation'
 import { useApiForm } from '@/lib/useApiForm'
 import { ROUTES } from '@/routes/paths'
+import { DeleteAccountDialog } from './DeleteAccountDialog'
 
 // Pola mapowalne na błędy serwera — top-level + zagnieżdżone ścieżki adresu,
 // żeby błędy walidacji address.* trafiały pod właściwe pole, nie do toasta.
@@ -21,6 +23,7 @@ export default function ProfileEditPage() {
   const { user, refreshUser } = useAuth()
   const navigate = useNavigate()
   const profile = user?.profile
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const {
     register,
@@ -160,6 +163,24 @@ export default function ProfileEditPage() {
           </ButtonLink>
         </div>
       </form>
+
+      <Section title="Strefa niebezpieczna">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-on-surface-variant">
+            Usunięcie konta jest trwałe i nieodwracalne.
+          </p>
+          <Button
+            variant="ghost"
+            iconLeft="delete"
+            className="shrink-0 text-error hover:bg-error/10"
+            onClick={() => setDeleteOpen(true)}
+          >
+            Usuń konto
+          </Button>
+        </div>
+      </Section>
+
+      {deleteOpen && <DeleteAccountDialog onClose={() => setDeleteOpen(false)} />}
     </div>
   )
 }
