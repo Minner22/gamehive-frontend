@@ -11,6 +11,7 @@ import {
   Select,
   Spinner,
 } from '@/components/ui'
+import { parseRoleChange, roleDiff, type RoleChange } from '@/lib/audit'
 import { roleLabel } from '@/lib/roles'
 import { usePaginatedList } from '@/lib/usePaginatedList'
 
@@ -42,25 +43,8 @@ function toIso(local: string): string | undefined {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
 }
 
-type RoleChange = { before: string[]; after: string[] }
-
-// details przy ROLE_CHANGE to JSON {before, after}. Reszta akcji — zwykły tekst.
-function parseRoleChange(details?: string): RoleChange | null {
-  if (!details) return null
-  try {
-    const parsed = JSON.parse(details)
-    if (Array.isArray(parsed?.before) && Array.isArray(parsed?.after)) {
-      return { before: parsed.before, after: parsed.after }
-    }
-  } catch {
-    /* nie JSON — pokażemy surowo */
-  }
-  return null
-}
-
 function RoleDiff({ change }: { change: RoleChange }) {
-  const added = change.after.filter((r) => !change.before.includes(r))
-  const removed = change.before.filter((r) => !change.after.includes(r))
+  const { added, removed } = roleDiff(change)
   if (added.length === 0 && removed.length === 0) {
     return <p className="mt-1 text-xs text-on-surface-variant">Role bez zmian</p>
   }
