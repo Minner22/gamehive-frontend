@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
-import { RouteLoader } from '@/components/ui'
+import { Button, Icon, RouteLoader } from '@/components/ui'
 import { ROUTES } from '@/routes/paths'
 import type { Role } from '@/api/types'
 
@@ -15,24 +15,32 @@ interface ProtectedRouteProps {
  * Bramka tras wymagających zalogowania (i opcjonalnie roli).
  *
  * - podczas odtwarzania sesji pokazuje loader,
- * - niezalogowany LUB nieudane odtworzenie sesji → /login z zapamiętaniem `from`,
+ * - błąd połączenia przy starcie (5xx/sieć) → ekran „Spróbuj ponownie" — NIE
+ *   wylogowuje, bo ważna sesja mogła nie zostać odtworzona tylko chwilowo,
+ * - niezalogowany (401) → /login z zapamiętaniem `from`,
  * - zalogowany bez wymaganej roli → strona główna.
  */
 export default function ProtectedRoute({ children, role }: ProtectedRouteProps) {
-  const { status, hasRole } = useAuth()
+  const { status, retry, hasRole } = useAuth()
   const location = useLocation()
 
   if (status === 'loading') {
     return <RouteLoader />
   }
 
-  // WORKAROUND (backend #98): przy braku ciasteczka refresh /auth/refresh zwraca
-  // 500 zamiast 401, więc niezalogowany ląduje w statusie 'error', nie
-  // 'unauthenticated'. Dlatego kierujemy na /login każdy stan != 'authenticated'.
-  // Po naprawie #98 przywrócić rozróżnienie: 'unauthenticated' → /login,
-  // 'error' → ekran „Spróbuj ponownie" (useAuth().retry), by nie wyrzucać
-  // zalogowanego z ważną sesją przy chwilowej awarii.
-  if (status !== 'authenticated') {
+  if (status === 'error') {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
+        <Icon name="cloud_off" className="text-4xl text-on-surface-variant" />
+        <p className="text-on-surface-variant">Nie udało się połączyć z serwerem.</p>
+        <Button iconLeft="refresh" onClick={() => void retry()}>
+          Spróbuj ponownie
+        </Button>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated') {
     return <Navigate to={ROUTES.login} replace state={{ from: location }} />
   }
 
