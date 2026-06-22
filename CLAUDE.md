@@ -31,6 +31,8 @@ gier, profile). Konsumuje REST API backendu Spring Boot:
 | `npm run test:run`| testy jednorazowo (CI)                |
 
 Przed commitem upewnij się, że `npm run build`, `npm run lint` i `npm run test:run` przechodzą.
+**CI** (`.github/workflows/ci.yml`, GitHub Actions, Node 22) uruchamia `lint` +
+`test:run` + `build` na każdym PR i pushu do `master`.
 
 **Testy:** Vitest + React Testing Library + MSW (jsdom). Setup i serwer MSW w
 `src/test/` (`setup.ts`, `server.ts`, `handlers.ts` — handlery origin-agnostic `*/...`,
