@@ -27,8 +27,14 @@ gier, profile). Konsumuje REST API backendu Spring Boot:
 | `npm run build`   | `tsc -b` + build produkcyjny          |
 | `npm run preview` | podgląd builda                        |
 | `npm run lint`    | ESLint                                |
+| `npm test`        | testy w trybie watch (Vitest)         |
+| `npm run test:run`| testy jednorazowo (CI)                |
 
-Przed commitem upewnij się, że `npm run build` i `npm run lint` przechodzą.
+Przed commitem upewnij się, że `npm run build`, `npm run lint` i `npm run test:run` przechodzą.
+
+**Testy:** Vitest + React Testing Library + MSW (jsdom). Setup i serwer MSW w
+`src/test/` (`setup.ts`, `server.ts`, `handlers.ts` — handlery origin-agnostic `*/...`,
+bo `VITE_API_BASE_URL` w testach jest pusty). Pliki `*.test.ts(x)` obok kodu.
 
 ## Konwencje (identyczne z backendem)
 
