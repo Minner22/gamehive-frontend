@@ -93,12 +93,14 @@ function AuditRow({ entry }: { entry: AuditLogResponseDto }) {
             {entry.details}
           </p>
         ) : null}
-        <p
-          className="mt-0.5 truncate font-mono text-xs text-on-surface-variant/60"
-          title={`użytkownik ${entry.targetId} · correlationId ${entry.correlationId}`}
-        >
-          {entry.correlationId}
-        </p>
+        {entry.correlationId && (
+          <p
+            className="mt-0.5 truncate font-mono text-xs text-on-surface-variant/60"
+            title={`użytkownik ${entry.targetId} · correlationId ${entry.correlationId}`}
+          >
+            {entry.correlationId}
+          </p>
+        )}
       </div>
     </li>
   )

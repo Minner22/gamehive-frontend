@@ -40,6 +40,7 @@ describe('AuthProvider — bootstrap sesji', () => {
           email: 'ada@gamehive.io',
           enabled: true,
           roles: ['ROLE_USER', 'ROLE_ADMIN'],
+          profile: {},
         }),
       ),
     )

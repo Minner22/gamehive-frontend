@@ -65,12 +65,4 @@ export interface Page<T> {
 
 export type PageUserResponseDto = Page<UserResponseDto>
 export type PageAuditLogResponseDto = Page<AuditLogResponseDto>
-
-// Strażnik rozjazdu: jeśli wygenerowany Page* przestanie pasować do generyka
-// Page<T>, ograniczenie `extends` zerwie kompilację (trzeba zaktualizować Page<T>).
-type AssertAssignable<T extends U, U> = T extends U ? true : never
-export type _PageUserContract = AssertAssignable<Schemas['PageUserResponseDto'], PageUserResponseDto>
-export type _PageAuditContract = AssertAssignable<
-  Schemas['PageAuditLogResponseDto'],
-  PageAuditLogResponseDto
->
+// Strażnik rozjazdu Page<T> ↔ wygenerowany Page*: patrz ./schema.contract.ts
