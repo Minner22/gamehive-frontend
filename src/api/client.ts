@@ -60,7 +60,13 @@ apiClient.interceptors.response.use(
     const url = original?.url ?? ''
 
     const isRefreshCall = url.includes(REFRESH_PATH)
-    const canRetry = Boolean(original) && !original?._retry && !isRefreshCall
+    // 401 z błędem poświadczeń (np. złe hasło potwierdzenia przy usuwaniu konta)
+    // NIE oznacza wygasłego tokenu — nie odświeżamy/nie ponawiamy, tylko zwracamy
+    // błąd, żeby UI mógł go zmapować (inaczej destrukcyjny request poszedłby 2×).
+    const errorCode = (error.response?.data as { errorCode?: string } | undefined)?.errorCode
+    const isCredentialError = errorCode === 'INVALID_PASSWORD'
+    const canRetry =
+      Boolean(original) && !original?._retry && !isRefreshCall && !isCredentialError
 
     if (status === 401 && canRetry) {
       original!._retry = true

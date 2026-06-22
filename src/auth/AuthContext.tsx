@@ -26,6 +26,8 @@ interface AuthContextValue {
   refreshUser: () => Promise<void>
   /** Ponowna próba odtworzenia sesji po stanie 'error'. */
   retry: () => Promise<void>
+  /** Wyczyszczenie sesji lokalnie, gdy serwer już ją zakończył (np. po usunięciu konta). */
+  clearSession: () => void
   hasRole: (role: Role) => boolean
 }
 
@@ -68,25 +70,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void bootstrap()
   }, [bootstrap])
 
-  const login = useCallback(async (dto: LoginDto) => {
-    // Błędy poświadczeń/aktywacji (401/403) lecą z apiLogin jako AxiosError —
-    // strona logowania mapuje je po statusie.
-    await apiLogin(dto)
-    try {
-      setUser(await getMe())
-      setStatus('authenticated')
-    } catch (error) {
-      // Token był ustawiony przez apiLogin — przy błędzie getMe sprzątamy.
-      // Owijamy w zwykły błąd (nie AxiosError), żeby strona logowania NIE
-      // pomyliła awarii pobrania profilu z błędem poświadczeń (np. getMe 401).
-      clearAccessToken()
-      setUser(null)
-      setStatus('unauthenticated')
-      throw new Error('Nie udało się pobrać danych konta po zalogowaniu.', {
-        cause: error,
-      })
-    }
+  // Wyczyszczenie sesji lokalnie (token + stan), gdy serwer ją zakończył lub gdy
+  // sprzątamy po nieudanym logowaniu/wylogowaniu. Jedno źródło sprzątania sesji.
+  const clearSession = useCallback(() => {
+    clearAccessToken()
+    setUser(null)
+    setStatus('unauthenticated')
   }, [])
+
+  const login = useCallback(
+    async (dto: LoginDto) => {
+      // Błędy poświadczeń/aktywacji (401/403) lecą z apiLogin jako AxiosError —
+      // strona logowania mapuje je po statusie.
+      await apiLogin(dto)
+      try {
+        setUser(await getMe())
+        setStatus('authenticated')
+      } catch (error) {
+        // Token był ustawiony przez apiLogin — przy błędzie getMe sprzątamy.
+        // Owijamy w zwykły błąd (nie AxiosError), żeby strona logowania NIE
+        // pomyliła awarii pobrania profilu z błędem poświadczeń (np. getMe 401).
+        clearSession()
+        throw new Error('Nie udało się pobrać danych konta po zalogowaniu.', {
+          cause: error,
+        })
+      }
+    },
+    [clearSession],
+  )
 
   const logout = useCallback(async () => {
     try {
@@ -94,10 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Wylogowanie zawsze udaje się lokalnie — błąd serwera ignorujemy.
     } finally {
-      setUser(null)
-      setStatus('unauthenticated')
+      clearSession()
     }
-  }, [])
+  }, [clearSession])
 
   const refreshUser = useCallback(async () => {
     setUser(await getMe())
@@ -111,9 +121,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       refreshUser,
       retry: bootstrap,
+      clearSession,
       hasRole: (role) => user?.roles?.includes(role) ?? false,
     }),
-    [status, user, login, logout, refreshUser, bootstrap],
+    [status, user, login, logout, refreshUser, bootstrap, clearSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

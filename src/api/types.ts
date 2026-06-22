@@ -22,6 +22,7 @@ export type UserProfileResponseDto = Schemas['UserProfileResponseDto']
 export type UserResponseDto = Schemas['UserResponseDto']
 export type UserProfileUpdateDto = Schemas['UserProfileUpdateDto']
 export type UpdateUserRolesDto = Schemas['UpdateUserRolesDto']
+export type DeleteAccountDto = Schemas['DeleteAccountDto']
 
 /** Role aplikacji (kontrakt typuje `roles` jako string[]). */
 export type Role = 'ROLE_USER' | 'ROLE_MODERATOR' | 'ROLE_ADMIN' | (string & {})
