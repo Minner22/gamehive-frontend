@@ -26,6 +26,8 @@ interface AuthContextValue {
   refreshUser: () => Promise<void>
   /** Ponowna próba odtworzenia sesji po stanie 'error'. */
   retry: () => Promise<void>
+  /** Wyczyszczenie sesji lokalnie, gdy serwer już ją zakończył (np. po usunięciu konta). */
+  clearSession: () => void
   hasRole: (role: Role) => boolean
 }
 
@@ -103,6 +105,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(await getMe())
   }, [])
 
+  const clearSession = useCallback(() => {
+    clearAccessToken()
+    setUser(null)
+    setStatus('unauthenticated')
+  }, [])
+
   const value = useMemo<AuthContextValue>(
     () => ({
       status,
@@ -111,9 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       refreshUser,
       retry: bootstrap,
+      clearSession,
       hasRole: (role) => user?.roles?.includes(role) ?? false,
     }),
-    [status, user, login, logout, refreshUser, bootstrap],
+    [status, user, login, logout, refreshUser, bootstrap, clearSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
