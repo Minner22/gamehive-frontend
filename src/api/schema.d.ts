@@ -238,7 +238,11 @@ export interface paths {
         get: operations["me"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Usunięcie własnego konta
+         * @description Trwale (hard delete) usuwa konto zalogowanego użytkownika po potwierdzeniu hasłem. Operacja jest nieodwracalna: unieważnia wszystkie tokeny odświeżające i bieżący token dostępowy oraz czyści ciasteczko refreshToken. Ostatni administrator nie może usunąć własnego konta.
+         */
+        delete: operations["deleteOwnAccount"];
         options?: never;
         head?: never;
         patch?: never;
@@ -766,6 +770,14 @@ export interface components {
              * @example false
              */
             empty: boolean;
+        };
+        /** @description Potwierdzenie usunięcia konta hasłem. */
+        DeleteAccountDto: {
+            /**
+             * @description Hasło użytkownika, wymagane do potwierdzenia usunięcia konta.
+             * @example password123
+             */
+            password: string;
         };
     };
     responses: never;
@@ -1400,6 +1412,64 @@ export interface operations {
             };
             /** @description Brak lub nieprawidłowy token dostępowy */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    deleteOwnAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountDto"];
+            };
+        };
+        responses: {
+            /** @description Konto usunięte; tokeny unieważnione, ciasteczko wyczyszczone */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Błąd walidacji danych wejściowych (brak hasła) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy albo błędne hasło potwierdzenia (INVALID_PASSWORD) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Ostatni administrator nie może usunąć własnego konta (CANNOT_REMOVE_LAST_ADMIN) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

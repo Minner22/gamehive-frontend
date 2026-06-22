@@ -71,6 +71,12 @@ export type PasswordResetConfirmFormInput = z.infer<typeof passwordResetConfirmF
 export const resendActivationSchema = z.object({ email })
 export type ResendActivationInput = z.infer<typeof resendActivationSchema>
 
+/** Potwierdzenie usunięcia konta hasłem (poprawność weryfikuje backend). */
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, 'Podaj hasło, aby potwierdzić'),
+})
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>
+
 // --- Profil (PATCH, wszystkie pola opcjonalne) --------------------------
 //
 // Puste pole formularza ('') zamieniamy na undefined, żeby przy PATCH nie

@@ -1,5 +1,6 @@
 import apiClient from './client'
 import type {
+  DeleteAccountDto,
   UserProfileResponseDto,
   UserProfileUpdateDto,
   UserResponseDto,
@@ -20,4 +21,10 @@ export async function updateProfile(
     dto,
   )
   return data
+}
+
+/** Trwałe usunięcie własnego konta (po potwierdzeniu hasłem). Po 204 backend
+ *  unieważnia tokeny i czyści ciasteczko refresh — sesję czyścimy też lokalnie. */
+export async function deleteAccount(dto: DeleteAccountDto): Promise<void> {
+  await apiClient.delete('/api/v1/users/me', { data: dto })
 }
