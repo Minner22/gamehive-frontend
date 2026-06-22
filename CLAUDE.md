@@ -29,6 +29,7 @@ gier, profile). Konsumuje REST API backendu Spring Boot:
 | `npm run lint`    | ESLint                                |
 | `npm test`        | testy w trybie watch (Vitest)         |
 | `npm run test:run`| testy jednorazowo (CI)                |
+| `npm run gen:api` | regeneracja typów z OpenAPI (backend) |
 
 Przed commitem upewnij się, że `npm run build`, `npm run lint` i `npm run test:run` przechodzą.
 **CI** (`.github/workflows/ci.yml`, GitHub Actions, Node 22) uruchamia `lint` +
@@ -59,7 +60,8 @@ src/
     client.ts      # instancja Axios: baseURL z VITE_API_BASE_URL, withCredentials,
                    #   interceptor Bearer + single-flight refresh na 401
     tokenStore.ts  # access token TYLKO w pamięci (nie localStorage — ochrona XSS)
-    types.ts       # typy DTO odwzorowujące kontrakt OpenAPI (ręczne)
+    schema.d.ts    # typy z OpenAPI (generowane: npm run gen:api) — NIE edytować
+    types.ts       # aliasy DTO z schema.d.ts + generyk Page<T> i unia Role
     auth.ts        # endpointy /auth/** (login, register, refreshSession, logout, …)
     users.ts       # getMe, updateProfile
   auth/
