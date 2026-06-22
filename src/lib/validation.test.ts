@@ -50,4 +50,24 @@ describe('profileUpdateSchema', () => {
     })
     expect(out.address).toEqual({ city: 'Warszawa' })
   })
+
+  it('phoneNumber: akceptuje E.164, odrzuca błędny', () => {
+    expect(profileUpdateSchema.parse({ phoneNumber: '+48123456789' }).phoneNumber).toBe(
+      '+48123456789',
+    )
+    expect(profileUpdateSchema.safeParse({ phoneNumber: '0048123' }).success).toBe(false)
+    expect(profileUpdateSchema.safeParse({ phoneNumber: '+0123' }).success).toBe(false)
+  })
+
+  it('dateOfBirth: przeszłość OK, przyszłość odrzucona', () => {
+    expect(profileUpdateSchema.safeParse({ dateOfBirth: '1990-01-01' }).success).toBe(true)
+    expect(profileUpdateSchema.safeParse({ dateOfBirth: '3000-01-01' }).success).toBe(false)
+  })
+
+  it('profilePictureUrl: poprawny URL OK, śmieci odrzucone', () => {
+    expect(
+      profileUpdateSchema.safeParse({ profilePictureUrl: 'https://x.io/a.png' }).success,
+    ).toBe(true)
+    expect(profileUpdateSchema.safeParse({ profilePictureUrl: 'notaurl' }).success).toBe(false)
+  })
 })

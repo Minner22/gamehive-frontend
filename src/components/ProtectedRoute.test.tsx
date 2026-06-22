@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
@@ -26,6 +26,13 @@ function renderGuarded(element: ReactNode) {
 }
 
 describe('ProtectedRoute', () => {
+  // Izolacja: współdzielony mock auth resetowany przed każdym testem.
+  beforeEach(() => {
+    auth.status = 'loading'
+    auth.hasRole.mockReset()
+    auth.hasRole.mockReturnValue(false)
+  })
+
   it('status loading → loader, bez treści chronionej', () => {
     auth.status = 'loading'
     renderGuarded(

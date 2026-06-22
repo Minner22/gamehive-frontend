@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import type { UserResponseDto } from '@/api/types'
 import { ToastProvider } from '@/components/ui'
@@ -29,6 +29,10 @@ const adminUser: UserResponseDto = {
 }
 
 describe('UserActionsDialog — samoblokada na własnym koncie', () => {
+  beforeEach(() => {
+    auth.user = null // izolacja: każdy test ustawia własnego zalogowanego usera
+  })
+
   it('na własnym koncie wyłącza akcje mogące zablokować i odebranie sobie admina', () => {
     auth.user = { id: 'me' }
     renderDialog(adminUser)
