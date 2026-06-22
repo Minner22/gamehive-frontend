@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn'
 import { Icon } from './Icon'
 import { Spinner } from './Spinner'
 
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost'
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger'
 type ButtonSize = 'sm' | 'md' | 'lg'
 
 interface ButtonStyleProps {
@@ -35,6 +35,7 @@ const variants: Record<ButtonVariant, string> = {
   tertiary: 'text-primary hover:bg-primary/5',
   ghost:
     'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest',
+  danger: 'bg-error text-on-error hover:bg-error/90',
 }
 
 const sizes: Record<ButtonSize, string> = {

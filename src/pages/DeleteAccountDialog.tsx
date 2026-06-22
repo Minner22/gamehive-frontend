@@ -47,7 +47,10 @@ export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog open onClose={onClose} title="Usuń konto">
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
-        <div className="rounded-2xl bg-error-container/40 p-3 text-sm text-on-error-container">
+        <div
+          role="alert"
+          className="rounded-2xl bg-error-container/40 p-3 text-sm text-on-error-container"
+        >
           Ta operacja jest <b>trwała i nieodwracalna</b> — konto oraz wszystkie dane
           zostaną usunięte.
         </div>
@@ -62,12 +65,7 @@ export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
           <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>
             Anuluj
           </Button>
-          <Button
-            type="submit"
-            loading={isSubmitting}
-            iconLeft="delete"
-            className="bg-error text-on-error hover:bg-error/90"
-          >
+          <Button type="submit" variant="danger" loading={isSubmitting} iconLeft="delete">
             Usuń konto trwale
           </Button>
         </div>

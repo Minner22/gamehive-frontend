@@ -170,11 +170,11 @@ export function UserActionsDialog({ user, onClose, onUpdated, onDeleted }: Props
                   Anuluj
                 </Button>
                 <Button
+                  variant="danger"
                   iconLeft="delete"
                   loading={busy === 'delete'}
                   disabled={!!busy}
                   onClick={remove}
-                  className="bg-error text-on-error hover:bg-error/90"
                 >
                   Usuń trwale
                 </Button>
