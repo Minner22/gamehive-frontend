@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { loginSchema, profileUpdateSchema, registerFormSchema } from './validation'
+import {
+  deleteAccountSchema,
+  loginSchema,
+  profileUpdateSchema,
+  registerFormSchema,
+} from './validation'
+
+describe('deleteAccountSchema', () => {
+  it('wymaga niepustego hasła', () => {
+    expect(deleteAccountSchema.safeParse({ password: '' }).success).toBe(false)
+    expect(deleteAccountSchema.safeParse({ password: 'haslo123' }).success).toBe(true)
+  })
+})
 
 describe('registerFormSchema', () => {
   const base = {
