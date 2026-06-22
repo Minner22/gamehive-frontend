@@ -26,6 +26,7 @@ const adminUser: UserResponseDto = {
   email: 'admin@gamehive.io',
   enabled: true,
   roles: ['ROLE_USER', 'ROLE_ADMIN'],
+  profile: {},
 }
 
 describe('UserActionsDialog — samoblokada na własnym koncie', () => {
@@ -52,6 +53,7 @@ describe('UserActionsDialog — samoblokada na własnym koncie', () => {
       email: 'bob@example.com',
       enabled: true,
       roles: ['ROLE_USER'],
+      profile: {},
     })
 
     expect(screen.queryByText(/To Twoje konto/)).not.toBeInTheDocument()

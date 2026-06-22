@@ -1,149 +1,56 @@
 /**
- * Typy odwzorowujące kontrakt REST GameHive API (OpenAPI 3.1).
- * Utrzymywane ręcznie — przy zmianach w backendzie aktualizować zgodnie
- * ze schematami z /v3/api-docs.
+ * Typy DTO odwzorowujące kontrakt REST GameHive API (OpenAPI 3.1).
+ *
+ * Źródło prawdy: `./schema.d.ts` (generowane `npm run gen:api` z /v3/api-docs).
+ * NIE edytuj `schema.d.ts` ręcznie. Tu trzymamy wygodne aliasy oraz to, czego
+ * OpenAPI nie wyraża: generyk `Page<T>` (Spring Data) i unię `Role`.
  */
+import type { components } from './schema'
+
+type Schemas = components['schemas']
 
 // --- Błędy ---------------------------------------------------------------
 
-export interface ApiError {
-  errorCode?: string
-  message?: string
-}
-
-export interface FieldValidationError {
-  field?: string
-  message?: string
-}
-
-export interface ApiValidationError {
-  errorCode?: string
-  message?: string
-  errors?: FieldValidationError[]
-}
+export type ApiError = Schemas['ApiError']
+export type FieldValidationError = Schemas['FieldValidationError']
+export type ApiValidationError = Schemas['ApiValidationError']
 
 // --- Użytkownik / profil -------------------------------------------------
 
-export interface AddressDto {
-  street?: string
-  city?: string
-  postalCode?: string
-  country?: string
-}
+export type AddressDto = Schemas['AddressDto']
+export type UserProfileResponseDto = Schemas['UserProfileResponseDto']
+export type UserResponseDto = Schemas['UserResponseDto']
+export type UserProfileUpdateDto = Schemas['UserProfileUpdateDto']
+export type UpdateUserRolesDto = Schemas['UpdateUserRolesDto']
 
-export interface UserProfileResponseDto {
-  firstName?: string
-  lastName?: string
-  phoneNumber?: string
-  address?: AddressDto
-  dateOfBirth?: string // ISO YYYY-MM-DD
-  profilePictureUrl?: string
-}
-
+/** Role aplikacji (kontrakt typuje `roles` jako string[]). */
 export type Role = 'ROLE_USER' | 'ROLE_MODERATOR' | 'ROLE_ADMIN' | (string & {})
-
-export interface UserResponseDto {
-  id: string // UUID
-  username: string
-  email: string
-  enabled: boolean
-  roles: Role[]
-  profile?: UserProfileResponseDto
-}
-
-export interface UserProfileUpdateDto {
-  firstName?: string
-  lastName?: string
-  phoneNumber?: string
-  address?: AddressDto
-  dateOfBirth?: string // ISO YYYY-MM-DD
-  profilePictureUrl?: string
-}
-
-export interface UpdateUserRolesDto {
-  roles: Role[]
-}
 
 // --- Uwierzytelnianie ----------------------------------------------------
 
-export interface RegistrationDto {
-  username: string
-  email: string
-  password: string
-}
-
-export interface LoginDto {
-  email: string
-  password: string
-}
-
-export interface PasswordResetRequestDto {
-  email: string
-}
-
-export interface PasswordResetConfirmDto {
-  token: string
-  newPassword: string
-}
-
-export interface ResendActivationEmailDto {
-  email: string
-}
-
-export interface AccessTokenResponseDto {
-  accessToken: string
-}
-
-export interface MessageResponseDto {
-  message: string
-}
+export type RegistrationDto = Schemas['RegistrationDto']
+export type LoginDto = Schemas['LoginDto']
+export type PasswordResetRequestDto = Schemas['PasswordResetRequestDto']
+export type PasswordResetConfirmDto = Schemas['PasswordResetConfirmDto']
+export type ResendActivationEmailDto = Schemas['ResendActivationEmailDto']
+export type AccessTokenResponseDto = Schemas['AccessTokenResponseDto']
+export type MessageResponseDto = Schemas['MessageResponseDto']
 
 // --- Audyt ---------------------------------------------------------------
 
-export type AuditAction =
-  | 'ACTIVATE'
-  | 'DEACTIVATE'
-  | 'DELETE'
-  | 'FORCE_LOGOUT'
-  | 'PASSWORD_CHANGE'
-  | 'ROLE_CHANGE'
-
-export interface AuditLogResponseDto {
-  id: number
-  action: AuditAction
-  targetId: string // UUID
-  targetEmail: string
-  actor: string
-  details?: string
-  correlationId: string
-  createdAt: string // ISO-8601 date-time (UTC)
-}
+/** Rodzaj operacji audytu — unia ze schematu. */
+export type AuditAction = Schemas['AuditLogResponseDto']['action']
+export type AuditLogResponseDto = Schemas['AuditLogResponseDto']
 
 // --- Stronicowanie (Spring Data Page) ------------------------------------
 
-export interface SortObject {
-  empty?: boolean
-  sorted?: boolean
-  unsorted?: boolean
-}
-
-export interface PageableObject {
-  offset?: number
-  paged?: boolean
-  sort?: SortObject
-  pageNumber?: number
-  pageSize?: number
-  unpaged?: boolean
-}
-
 /** Parametry zapytania stronicowanego (Spring Pageable). */
-export interface PageableRequest {
-  page?: number
-  size?: number
-  sort?: string[]
-}
+export type PageableRequest = Schemas['Pageable']
 
-/** Generyczna strona wyników zwracana przez Spring Data. */
+/**
+ * Generyczna strona Spring Data. OpenAPI materializuje ją per typ
+ * (PageUserResponseDto…), ale kształt jest wspólny — tu trzymamy generyk.
+ */
 export interface Page<T> {
   content: T[]
   totalPages: number
@@ -154,9 +61,16 @@ export interface Page<T> {
   first: boolean
   last: boolean
   empty: boolean
-  sort?: SortObject
-  pageable?: PageableObject
 }
 
 export type PageUserResponseDto = Page<UserResponseDto>
 export type PageAuditLogResponseDto = Page<AuditLogResponseDto>
+
+// Strażnik rozjazdu: jeśli wygenerowany Page* przestanie pasować do generyka
+// Page<T>, ograniczenie `extends` zerwie kompilację (trzeba zaktualizować Page<T>).
+type AssertAssignable<T extends U, U> = T extends U ? true : never
+export type _PageUserContract = AssertAssignable<Schemas['PageUserResponseDto'], PageUserResponseDto>
+export type _PageAuditContract = AssertAssignable<
+  Schemas['PageAuditLogResponseDto'],
+  PageAuditLogResponseDto
+>
