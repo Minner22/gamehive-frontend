@@ -1,104 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { listExpansions, type ExpansionLibraryFilter } from '@/api/expansions'
-import { listCategories, listMechanics } from '@/api/taxonomy'
-import type { CategoryDto, MechanicDto, GameExpansionDto, Page } from '@/api/types'
 import { ExpansionCard } from '@/components/games/ExpansionCard'
 import { ExpansionFiltersForm } from '@/components/games/ExpansionFiltersForm'
-import {
-  Button,
-  ButtonLink,
-  EmptyState,
-  ListSkeleton,
-  Pagination,
-  useToast,
-} from '@/components/ui'
-import { getApiErrorMessage } from '@/lib/apiError'
+import { ResultsSection } from '@/components/games/ResultsSection'
+import { Button, ButtonLink, EmptyState } from '@/components/ui'
 import { expansionFiltersToParams, parseExpansionFilters, parsePageParam } from '@/lib/gameFilters'
 import { pluralPl } from '@/lib/plural'
 import { usePaginatedList } from '@/lib/usePaginatedList'
+import { useTaxonomyOptions } from '@/lib/useTaxonomyOptions'
 import { ROUTES } from '@/routes/paths'
 
 const PAGE_SIZE = 12
 
-interface ResultsProps {
-  data: Page<GameExpansionDto> | null
-  loading: boolean
-  onReload: () => void
-  onPageChange: (page: number) => void
-  onClearFilters: () => void
-}
-
-function ExpansionResults({
-  data,
-  loading,
-  onReload,
-  onPageChange,
-  onClearFilters,
-}: Readonly<ResultsProps>) {
-  if (!data) {
-    if (!loading) {
-      return (
-        <EmptyState
-          icon="cloud_off"
-          title="Nie udało się wczytać dodatków"
-          description="Sprawdź połączenie i spróbuj ponownie."
-          action={
-            <Button variant="secondary" iconLeft="refresh" onClick={onReload}>
-              Spróbuj ponownie
-            </Button>
-          }
-        />
-      )
-    }
-    return (
-      <>
-        <output className="sr-only">Ładowanie dodatków…</output>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
-          <ListSkeleton count={6} className="h-44" />
-        </div>
-      </>
-    )
-  }
-
-  if (data.empty) {
-    return (
-      <EmptyState
-        icon="search_off"
-        title="Brak dodatków dla wybranych filtrów"
-        description="Poluzuj kryteria albo wyczyść filtry, żeby zobaczyć wszystkie zatwierdzone dodatki."
-        action={
-          <Button variant="secondary" iconLeft="clear" onClick={onClearFilters}>
-            Wyczyść filtry
-          </Button>
-        }
-      />
-    )
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy={loading}>
-        {data.content.map((expansion) => (
-          <ExpansionCard key={expansion.id} expansion={expansion} showBaseGame />
-        ))}
-      </div>
-      <Pagination
-        number={data.number}
-        totalPages={data.totalPages}
-        totalElements={data.totalElements}
-        isFirst={data.first}
-        isLast={data.last}
-        disabled={loading}
-        onChange={onPageChange}
-        unit={pluralPl(data.totalElements, 'dodatek', 'dodatki', 'dodatków')}
-      />
-    </div>
-  )
-}
-
 export default function ExpansionsLibraryPage() {
-  const toast = useToast()
   const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.toString()
   const filters = useMemo(() => parseExpansionFilters(new URLSearchParams(query)), [query])
@@ -109,24 +24,9 @@ export default function ExpansionsLibraryPage() {
     [filters],
   )
   const { data, loading, goToPage, reload } = usePaginatedList(fetchPage, urlPage)
+  const { categories, mechanics } = useTaxonomyOptions()
 
-  const [categories, setCategories] = useState<CategoryDto[]>([])
-  const [mechanics, setMechanics] = useState<MechanicDto[]>([])
-
-  useEffect(() => {
-    let active = true
-    Promise.all([listCategories(), listMechanics()])
-      .then(([loadedCategories, loadedMechanics]) => {
-        if (!active) return
-        setCategories(loadedCategories)
-        setMechanics(loadedMechanics)
-      })
-      .catch((err) => active && toast.error(getApiErrorMessage(err)))
-    return () => {
-      active = false
-    }
-  }, [toast])
-
+  // „Wstecz"/„dalej" zmienia adres — lista podąża za numerem strony.
   useEffect(() => {
     if (data && data.number !== urlPage) goToPage(urlPage)
   }, [data, urlPage, goToPage])
@@ -189,13 +89,30 @@ export default function ExpansionsLibraryPage() {
         onClear={clearFilters}
       />
 
-      <ExpansionResults
+      <ResultsSection
         data={data}
         loading={loading}
         onReload={reload}
         onPageChange={changePage}
-        onClearFilters={clearFilters}
-      />
+        loadingLabel="Ładowanie dodatków…"
+        errorTitle="Nie udało się wczytać dodatków"
+        unit={pluralPl(data?.totalElements ?? 0, 'dodatek', 'dodatki', 'dodatków')}
+        skeletonClassName="h-44"
+        empty={
+          <EmptyState
+            icon="search_off"
+            title="Brak dodatków dla wybranych filtrów"
+            description="Poluzuj kryteria albo wyczyść filtry, żeby zobaczyć wszystkie zatwierdzone dodatki."
+            action={
+              <Button variant="secondary" iconLeft="clear" onClick={clearFilters}>
+                Wyczyść filtry
+              </Button>
+            }
+          />
+        }
+      >
+        {(expansion) => <ExpansionCard key={expansion.id} expansion={expansion} showBaseGame />}
+      </ResultsSection>
     </div>
   )
 }
