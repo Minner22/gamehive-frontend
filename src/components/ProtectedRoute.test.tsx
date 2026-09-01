@@ -9,7 +9,7 @@ type Status = 'loading' | 'authenticated' | 'unauthenticated' | 'error'
 const auth = vi.hoisted(() => ({
   status: 'loading' as Status,
   retry: vi.fn(),
-  hasRole: vi.fn(() => false),
+  hasRole: vi.fn((_role: string) => false),
 }))
 vi.mock('@/auth/AuthContext', () => ({ useAuth: () => auth }))
 
@@ -86,5 +86,28 @@ describe('ProtectedRoute', () => {
       </ProtectedRoute>,
     )
     expect(screen.getByText('SEKRET')).toBeInTheDocument()
+  })
+
+  // Moderacja wymaga „MODERATOR lub ADMIN" — lista ról działa na zasadzie „którakolwiek".
+  it('lista ról: wystarczy jedna z nich → renderuje treść chronioną', () => {
+    auth.status = 'authenticated'
+    auth.hasRole.mockImplementation((role) => role === 'ROLE_MODERATOR')
+    renderGuarded(
+      <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+        <div>SEKRET</div>
+      </ProtectedRoute>,
+    )
+    expect(screen.getByText('SEKRET')).toBeInTheDocument()
+  })
+
+  it('lista ról: żadna nie pasuje → strona główna', () => {
+    auth.status = 'authenticated'
+    auth.hasRole.mockReturnValue(false)
+    renderGuarded(
+      <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+        <div>SEKRET</div>
+      </ProtectedRoute>,
+    )
+    expect(screen.getByText('STRONA GŁÓWNA')).toBeInTheDocument()
   })
 })
