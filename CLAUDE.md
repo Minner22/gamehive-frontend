@@ -77,7 +77,10 @@ src/
     AuthContext.tsx# AuthProvider (bootstrap sesji) + useAuth (status/user/login/logout/hasRole)
   components/
     ui/            # UI-kit Nectar (Button/ButtonLink, Input/PasswordInput, Card, Chip,
-                   #   Badge, HexAvatar, Icon, Spinner, Toast) + barrel; '@/components/ui'
+                   #   Badge, HexAvatar, Icon, Spinner, Toast, Dialog, Pagination,
+                   #   EmptyState, ListSkeleton) + barrel; '@/components/ui'
+    games/         # komponenty modułu gier (GameCard, ModerationStatusBadge,
+                   #   GameFiltersForm) — reużywane przez bibliotekę, szukanie i Vault
     layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, AuthResult,
                    #   Brand, ThemeToggle
     ProtectedRoute.tsx
@@ -87,7 +90,10 @@ src/
     validation.ts  # schematy zod zgodne z kontraktem API (register/login/profile…)
     apiError.ts    # getApiErrorMessage + applyApiValidationErrors (błędy serwera -> pola)
     formError.ts   # handleApiFormError — wspólna obsługa błędu submitu (pola + toast)
-  pages/           # widoki przypięte do tras
+    usePaginatedList.ts # listy stronicowane (dane/loader/błąd/nawigacja stron)
+    gameFilters.ts # filtry biblioteki ↔ query string (adres = źródło prawdy)
+    plural.ts      # pluralPl — polska odmiana rzeczownika po liczbie
+  pages/           # widoki przypięte do tras (games/ — moduł gier)
   routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
   index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)
   App.tsx          # definicja tras (AppShell vs AuthLayout)

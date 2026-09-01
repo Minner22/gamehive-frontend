@@ -10,17 +10,23 @@ import { getApiErrorMessage } from '@/lib/apiError'
  *
  * Stan ładowania ustawiamy w handlerach (zdarzenia), a efekt robi tylko pobranie
  * i setState w callbackach — bez synchronicznego setState w ciele efektu.
+ *
+ * `initialPage` obsługuje wejście z linku wskazującego dalszą stronę (np. `?page=2`);
+ * czytany jest tylko przy montowaniu — dalsze zmiany idą przez `goToPage`.
  */
-export function usePaginatedList<T>(fetchPage: (page: number) => Promise<Page<T>>) {
+export function usePaginatedList<T>(
+  fetchPage: (page: number) => Promise<Page<T>>,
+  initialPage = 0,
+) {
   const toast = useToast()
-  const [page, setPage] = useState(0)
+  const [page, setPage] = useState(initialPage)
   const [reloadKey, setReloadKey] = useState(0)
   const [data, setData] = useState<Page<T> | null>(null)
   const [loading, setLoading] = useState(true)
   // Ostatnio WCZYTANA strona — przy błędzie cofamy do niej `page`, żeby stan
   // żądania nie rozjechał się z danymi (inaczej ponowny klik trafiałby w tę samą
   // wartość page i efekt by się nie odpalił → zawieszony loader).
-  const loadedPage = useRef(0)
+  const loadedPage = useRef(initialPage)
 
   useEffect(() => {
     let active = true
