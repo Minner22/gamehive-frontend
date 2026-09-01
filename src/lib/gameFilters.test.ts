@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { gameFiltersToParams, parseGameFilters, parsePageParam } from './gameFilters'
+import {
+  gameFiltersToParams,
+  parseGameFilters,
+  parsePageParam,
+  parseSearchFilters,
+  searchFiltersToParams,
+} from './gameFilters'
 
 describe('parseGameFilters', () => {
   it('czyta obsługiwane filtry z adresu', () => {
@@ -56,5 +62,30 @@ describe('gameFiltersToParams', () => {
   it('jest odwrotnością parsowania', () => {
     const filters = { categoryId: 1, players: 4, age: 8 }
     expect(parseGameFilters(gameFiltersToParams(filters, 5))).toEqual(filters)
+  })
+})
+
+describe('filtry wyszukiwarki', () => {
+  it('czyta frazę, zakres i filtry bez własnych kontrolek', () => {
+    const filters = parseSearchFilters(
+      new URLSearchParams('q=agricola&targetType=EXPANSION&authorId=3&baseGameId=7&categoryId=1'),
+    )
+
+    expect(filters).toEqual({
+      q: 'agricola',
+      targetType: 'EXPANSION',
+      authorId: 3,
+      baseGameId: 7,
+      categoryId: 1,
+    })
+  })
+
+  it('ignoruje nieznany zakres i pustą frazę', () => {
+    expect(parseSearchFilters(new URLSearchParams('targetType=HIVE&q=%20%20'))).toEqual({})
+  })
+
+  it('serializacja i parsowanie są wzajemnie odwrotne', () => {
+    const filters = { q: 'ptaki', targetType: 'GAME' as const, authorId: 2, players: 3 }
+    expect(parseSearchFilters(searchFiltersToParams(filters, 4))).toEqual(filters)
   })
 })
