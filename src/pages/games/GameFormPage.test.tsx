@@ -185,4 +185,75 @@ describe('GameFormPage — edycja', () => {
     expect(await screen.findByText(/edycja jest zablokowana/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Zapisz zmiany/ })).toBeDisabled()
   })
+
+  it('zapis zmian wysyła PUT i wraca do szczegółów', async () => {
+    let updated: Record<string, unknown> | null = null
+    mockGame(makeGame({ id: 5, moderationStatus: 'DRAFT' }))
+    server.use(
+      http.put(`${ANY_ORIGIN}/api/v1/games/5`, async ({ request }) => {
+        updated = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json(makeGame({ id: 5 }))
+      }),
+    )
+    renderForm('/games/5/edit')
+
+    await userEvent.clear(await screen.findByLabelText('Tytuł'))
+    await userEvent.type(screen.getByLabelText('Tytuł'), 'Poprawiony tytuł')
+    await userEvent.click(screen.getByRole('button', { name: /Zapisz zmiany/ }))
+
+    await waitFor(() => expect(updated).not.toBeNull())
+    expect(updated).toMatchObject({ title: 'Poprawiony tytuł' })
+    expect(await screen.findByText('SZCZEGÓŁY GRY')).toBeInTheDocument()
+  })
+
+  /** PUT nie zmienia statusu — wysyłka do moderacji to osobne wywołanie. */
+  it('„wyślij do moderacji" w edycji robi PUT i POST /submit', async () => {
+    let submitCalls = 0
+    mockGame(makeGame({ id: 5, moderationStatus: 'REJECTED' }))
+    server.use(
+      http.put(`${ANY_ORIGIN}/api/v1/games/5`, () => HttpResponse.json(makeGame({ id: 5 }))),
+      http.post(`${ANY_ORIGIN}/api/v1/games/5/submit`, () => {
+        submitCalls++
+        return HttpResponse.json(makeGame({ id: 5, moderationStatus: 'PENDING' }))
+      }),
+    )
+    renderForm('/games/5/edit')
+
+    await screen.findByLabelText('Tytuł')
+    await userEvent.click(screen.getByRole('button', { name: /Wyślij do moderacji/ }))
+
+    await waitFor(() => expect(submitCalls).toBe(1))
+  })
+
+  /** Kod domenowy backendu ma trafić przy pole, a nie do ogólnego toastu. */
+  it('INVALID_PLAYER_COUNT z backendu ląduje przy polu „maks. graczy"', async () => {
+    mockGame(makeGame({ id: 5, moderationStatus: 'DRAFT' }))
+    server.use(
+      http.put(`${ANY_ORIGIN}/api/v1/games/5`, () =>
+        HttpResponse.json(
+          { errorCode: 'INVALID_PLAYER_COUNT', message: 'Maksimum nie może być mniejsze od minimum' },
+          { status: 400 },
+        ),
+      ),
+    )
+    renderForm('/games/5/edit')
+
+    await screen.findByLabelText('Tytuł')
+    await userEvent.click(screen.getByRole('button', { name: /Zapisz zmiany/ }))
+
+    expect(
+      await screen.findByText('Maksimum nie może być mniejsze od minimum'),
+    ).toBeInTheDocument()
+  })
+
+  it('nieistniejące zgłoszenie daje ekran „nie znaleziono"', async () => {
+    server.use(
+      http.get(`${ANY_ORIGIN}/api/v1/games/5`, () =>
+        HttpResponse.json({ errorCode: 'GAME_NOT_FOUND' }, { status: 404 }),
+      ),
+    )
+    renderForm('/games/5/edit')
+
+    expect(await screen.findByText('Nie znaleziono zgłoszenia')).toBeInTheDocument()
+  })
 })
