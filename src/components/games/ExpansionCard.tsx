@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import type { GameExpansionDto } from '@/api/types'
 import { Badge, Icon } from '@/components/ui'
+import { ROUTES } from '@/routes/paths'
 import { ModerationStatusBadge } from './ModerationStatusBadge'
 
 /**
@@ -8,8 +10,9 @@ import { ModerationStatusBadge } from './ModerationStatusBadge'
  * z gry bazowej) — czyli to, jak dodatek gra się w praktyce.
  *
  * Dodatek nie ma okładki ani roku wydania (nie ma ich w modelu), więc kafelek
- * jest tekstowy, a nie kopią `GameCard`. Wyróżnienie „to nadpisanie, a to
- * dziedziczenie" wchodzi razem z widokiem dodatków (GH-47).
+ * jest tekstowy, a nie kopią `GameCard`. Rozróżnienie „to nadpisanie, a to
+ * dziedziczenie" pokazuje dopiero strona szczegółów — w siatce liczy się to,
+ * jak dodatek gra się w praktyce, czyli wartości efektywne.
  */
 interface ExpansionCardProps {
   expansion: GameExpansionDto
@@ -42,9 +45,16 @@ export function ExpansionCard({
       : `${expansion.effectiveMinPlayers}–${expansion.effectiveMaxPlayers}`
 
   return (
-    <article className="flex flex-col gap-3 rounded-2xl bg-surface-container-low p-4">
+    <article className="group relative flex flex-col gap-3 rounded-2xl bg-surface-container-low p-4 transition-transform duration-300 ease-out hover:scale-[1.02]">
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-headline text-base font-bold text-on-surface">{expansion.name}</h3>
+        <h3 className="font-headline text-base font-bold text-on-surface transition-colors group-hover:text-primary">
+          <Link
+            to={ROUTES.expansions.detail(expansion.id)}
+            className="before:absolute before:inset-0 before:content-[''] focus-visible:outline-none focus-visible:before:rounded-2xl focus-visible:before:ring-2 focus-visible:before:ring-primary"
+          >
+            {expansion.name}
+          </Link>
+        </h3>
         {expansion.moderationStatus !== 'APPROVED' && (
           <ModerationStatusBadge status={expansion.moderationStatus} className="shrink-0" />
         )}
@@ -79,7 +89,7 @@ export function ExpansionCard({
             {expansion.effectiveMinAge}+
           </Meta>
         </div>
-        {action}
+        {action && <div className="relative">{action}</div>}
       </div>
     </article>
   )
