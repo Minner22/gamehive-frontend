@@ -18,15 +18,13 @@ const NAV_ITEMS: NavItem[] = [
   { to: ROUTES.games.library, icon: 'casino', label: 'Gry', end: true },
   { to: ROUTES.expansions.library, icon: 'extension', label: 'Dodatki' },
   { to: ROUTES.games.search, icon: 'search', label: 'Szukaj' },
+  { to: ROUTES.vault, icon: 'inventory_2', label: 'The Vault' },
   { to: ROUTES.profile, icon: 'person', label: 'Profil' },
   { to: ROUTES.uiKit, icon: 'palette', label: 'UI-kit' },
 ]
 
 // Sekcje produktu czekające na backend (patrz roadmapa, Faza 6).
-const SOON_ITEMS = [
-  { icon: 'inventory_2', label: 'The Vault' },
-  { icon: 'groups', label: 'Hives' },
-]
+const SOON_ITEMS = [{ icon: 'groups', label: 'Hives' }]
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
   return cn(
