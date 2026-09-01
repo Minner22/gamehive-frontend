@@ -7,8 +7,12 @@ import type { Role } from '@/api/types'
 
 interface ProtectedRouteProps {
   children: ReactNode
-  /** Wymagana rola (np. 'ROLE_ADMIN'). Pominięta = wystarczy zalogowanie. */
-  role?: Role
+  /**
+   * Wymagana rola (np. 'ROLE_ADMIN') albo lista ról — wtedy wystarczy
+   * **którakolwiek** z nich (moderacja: MODERATOR lub ADMIN).
+   * Pominięta = wystarczy zalogowanie.
+   */
+  role?: Role | readonly Role[]
 }
 
 /**
@@ -44,8 +48,11 @@ export default function ProtectedRoute({ children, role }: ProtectedRouteProps) 
     return <Navigate to={ROUTES.login} replace state={{ from: location }} />
   }
 
-  if (role && !hasRole(role)) {
-    return <Navigate to={ROUTES.home} replace />
+  if (role !== undefined) {
+    const required = Array.isArray(role) ? role : [role as Role]
+    if (!required.some(hasRole)) {
+      return <Navigate to={ROUTES.home} replace />
+    }
   }
 
   return <>{children}</>

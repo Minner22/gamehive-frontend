@@ -37,6 +37,51 @@ export type ResendActivationEmailDto = Schemas['ResendActivationEmailDto']
 export type AccessTokenResponseDto = Schemas['AccessTokenResponseDto']
 export type MessageResponseDto = Schemas['MessageResponseDto']
 
+// --- Taksonomia (słowniki) -----------------------------------------------
+
+export type PublisherDto = Schemas['PublisherDto']
+export type AuthorDto = Schemas['AuthorDto']
+export type CategoryDto = Schemas['CategoryDto']
+export type MechanicDto = Schemas['MechanicDto']
+export type AuthorRequestDto = Schemas['AuthorRequestDto']
+export type TaxonomyItemRequestDto = Schemas['TaxonomyItemRequestDto']
+
+/**
+ * Status wpisu słownika. Wydawcy i autorzy zgłoszeni „w locie" przy zgłoszeniu
+ * gry powstają jako PENDING i są zatwierdzani kaskadowo razem z grą.
+ */
+export type TaxonomyStatus = NonNullable<PublisherDto['status']>
+
+// --- Gry i dodatki -------------------------------------------------------
+
+export type GameDto = Schemas['GameDto']
+export type GameRequestDto = Schemas['GameRequestDto']
+export type GameExpansionDto = Schemas['GameExpansionDto']
+export type GameExpansionRequestDto = Schemas['GameExpansionRequestDto']
+
+/** Widok moderatora — dokłada submittedBy/reviewedBy/reviewedAt/resubmissionCount. */
+export type GameModerationDto = Schemas['GameModerationDto']
+export type GameExpansionModerationDto = Schemas['GameExpansionModerationDto']
+export type RejectContentRequestDto = Schemas['RejectContentRequestDto']
+
+/** Status w przepływie moderacji: biblioteka to wyłącznie APPROVED. */
+export type ModerationStatus = GameDto['moderationStatus']
+
+// --- Kolekcja („The Vault") ----------------------------------------------
+
+export type GameCollectionItemDto = Schemas['GameCollectionItemDto']
+export type ExpansionCollectionItemDto = Schemas['ExpansionCollectionItemDto']
+
+/** W MVP jedyna wartość to OWNED (enum istnieje pod przyszłe WISHLIST/PLAYED). */
+export type OwnershipStatus = GameCollectionItemDto['ownershipStatus']
+
+// --- Wyszukiwanie --------------------------------------------------------
+
+/** Wynik wyszukiwarki: dokładnie jedno z pól `game`/`expansion` jest wypełnione. */
+export type SearchResultDto = Schemas['SearchResultDto']
+export type SearchTargetType = NonNullable<SearchResultDto['targetType']>
+export type ReindexResultDto = Schemas['ReindexResultDto']
+
 // --- Audyt ---------------------------------------------------------------
 
 /** Rodzaj operacji audytu — unia ze schematu. */
@@ -66,4 +111,13 @@ export interface Page<T> {
 
 export type PageUserResponseDto = Page<UserResponseDto>
 export type PageAuditLogResponseDto = Page<AuditLogResponseDto>
+export type PageGameDto = Page<GameDto>
+export type PageGameModerationDto = Page<GameModerationDto>
+export type PageGameExpansionDto = Page<GameExpansionDto>
+export type PageGameExpansionModerationDto = Page<GameExpansionModerationDto>
+export type PageGameCollectionItemDto = Page<GameCollectionItemDto>
+export type PageExpansionCollectionItemDto = Page<ExpansionCollectionItemDto>
+export type PageSearchResultDto = Page<SearchResultDto>
+export type PagePublisherDto = Page<PublisherDto>
+export type PageAuthorDto = Page<AuthorDto>
 // Strażnik rozjazdu Page<T> ↔ wygenerowany Page*: patrz ./schema.contract.ts

@@ -62,8 +62,17 @@ src/
     tokenStore.ts  # access token TYLKO w pamięci (nie localStorage — ochrona XSS)
     schema.d.ts    # typy z OpenAPI (generowane: npm run gen:api) — NIE edytować
     types.ts       # aliasy DTO z schema.d.ts + generyk Page<T> i unia Role
+    params.ts      # pageParams/setIfPresent — wspólne budowanie query (Spring Data)
     auth.ts        # endpointy /auth/** (login, register, refreshSession, logout, …)
     users.ts       # getMe, updateProfile
+    admin.ts       # /admin/users/** + dziennik audytu
+    games.ts       # biblioteka, szczegóły, moje zgłoszenia, zapis, wyszukiwarka
+    expansions.ts  # dodatki (lustrzane do games.ts, bez roku i okładki)
+    collection.ts  # „The Vault" — /collection/** (bez body, tożsamość z tokenu)
+    taxonomy.ts    # kategorie i mechaniki + podpowiedzi wydawców/autorów (/suggest)
+    moderation.ts  # kolejki i decyzje moderatora (MODERATOR/ADMIN)
+    adminTaxonomy.ts # słowniki admina (kuratorowane listy + stronicowane rosnące)
+    adminSearch.ts # reindeks obu indeksów wyszukiwarki
   auth/
     AuthContext.tsx# AuthProvider (bootstrap sesji) + useAuth (status/user/login/logout/hasRole)
   components/
@@ -87,8 +96,20 @@ src/
 
 - **Sesja/auth:** stan z `useAuth()` (`@/auth/AuthContext`) — `status`/`user`/`login`/
   `logout`/`hasRole`. `AuthProvider` przy starcie odtwarza sesję (`refreshSession` →
-  `getMe`). Trasy chroń przez `<ProtectedRoute>` (opcjonalnie `role="ROLE_ADMIN"`).
-  Wywołania API rób przez `@/api/auth` i `@/api/users`, nie bezpośrednio przez `apiClient`.
+  `getMe`). Trasy chroń przez `<ProtectedRoute>` — `role` przyjmuje pojedynczą rolę
+  (`role="ROLE_ADMIN"`) albo listę, z której wystarczy **którakolwiek**
+  (`role={['ROLE_MODERATOR','ROLE_ADMIN']}` dla moderacji).
+  Wywołania API rób przez moduły z `@/api/*`, nie bezpośrednio przez `apiClient`.
+
+- **Moduł gier — pułapki kontraktu** (pełny opis: `CLAUDE.md` backendu):
+  biblioteka to wyłącznie `moderationStatus = APPROVED`, a „moje zgłoszenia" to własne
+  `DRAFT/PENDING/REJECTED` tej samej encji. `GET /games/{id}` jest enumeration-safe —
+  cudze zgłoszenie daje to samo 404 co nieistniejące id, więc komunikat **nie może**
+  mówić o brakujących uprawnieniach. Pole `submit` jest po stronie backendu prymitywnym
+  `boolean`, więc `games.ts`/`expansions.ts`/`moderation.ts` dokładają je do **każdego**
+  body (brak pola = 400, także na PUT). Dodatek zwraca równolegle wartości własne
+  (`null` = dziedziczy) i `effective*` — UI ma pokazywać różnicę. Pełne listy wydawców
+  i autorów są `@Deprecated` i ucięte do 200 pozycji: jedynym wejściem jest `/suggest`.
 
 - **Formularze:** `react-hook-form` + `zod` (`zodResolver`). Schematy w
   `src/lib/validation.ts` (zgodne z DTO backendu). Po błędzie zapytania:
@@ -123,13 +144,16 @@ Kluczowe tokeny → przenieść do `@theme` (zadanie GH-2):
 
 ## Zakres vs backend (ważne!)
 
-Mockupy opisują szerszy produkt niż obecne API. Backend dziś = **auth + user + admin**.
-- **Buildowalne teraz:** auth flow, profil + edycja, panel admina (users + audit).
-- **Zablokowane backendem:** gry/katalog, The Vault/biblioteka, Hives, moderacja, dashboard
-  z danymi — wymagają nowych endpointów (osobne issues w `gamehive-backend`).
+Backend dziś = **auth + user + admin + gry** (faza „Gry" domknięta: taksonomia, gry,
+dodatki, kolekcje, moderacja, Meilisearch — 59 ścieżek w `/v3/api-docs`).
+- **Buildowalne teraz:** auth flow, profil + edycja, panel admina (users + audit),
+  biblioteka gier i dodatków, wyszukiwarka, zgłoszenia i moderacja treści, The Vault,
+  słowniki taksonomii, reindeks, dashboard na realnych danych.
+- **Zablokowane backendem:** **Hives** (społeczności) — brak jakichkolwiek endpointów;
+  wymaga osobnych issues w `gamehive-backend`.
 - **Rozbieżności do oflagowania:** social login Google/Discord (brak OAuth), login
-  „email lub username" (backend tylko email), upload awatara (backend ma tylko
-  `profilePictureUrl: string`).
+  „email lub username" (backend tylko email), upload awatara oraz okładki gry (backend ma
+  tylko `profilePictureUrl` / `coverImageUrl` jako string — URL, nie plik).
 
 ## Roadmapa (skrót)
 
@@ -144,4 +168,14 @@ zamkniętych (GH-1…GH-10) są historyczne (GH-N ≠ numer issue).
 - **Faza 4 — admin:** GH-22 lista userów · GH-23 akcje (role/activate/deactivate/
   force-logout/delete) · GH-24 audyt.
 - **Faza 5 — jakość:** GH-25 testy (Vitest+RTL+MSW) · GH-26 CI · GH-27 (opc.) openapi-typescript.
-- **Faza 6 (GH-28…GH-31)** — produkt poza obecnym backendem (po stronie API najpierw).
+- **Faza 6 — moduł gier (nadgonienie backendu, GH-43…GH-57):** odczyt → kolekcja →
+  zgłoszenia → moderacja → admin.
+  - odczyt: **GH-43** fundament (typy + warstwa API + trasy + role) · **GH-44** biblioteka gier ·
+    **GH-45** szczegóły gry · **GH-46** wyszukiwarka · **GH-47** dodatki
+  - kolekcja: **GH-48** The Vault
+  - zgłoszenia: **GH-49** formularz gry + Combobox · **GH-50** formularz dodatku ·
+    **GH-51** moje zgłoszenia
+  - moderacja: **GH-52** kolejka gier · **GH-53** kolejka dodatków · **GH-54** edycja/usuwanie
+    z biblioteki
+  - admin: **GH-55** słowniki taksonomii · **GH-56** reindeks · **GH-57** dashboard na realnych danych
+- **Poza obecnym backendem:** Hives (społeczności) — wymaga najpierw API.
