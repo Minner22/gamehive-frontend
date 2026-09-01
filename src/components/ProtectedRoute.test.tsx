@@ -9,7 +9,7 @@ type Status = 'loading' | 'authenticated' | 'unauthenticated' | 'error'
 const auth = vi.hoisted(() => ({
   status: 'loading' as Status,
   retry: vi.fn(),
-  hasRole: vi.fn((_role: string) => false),
+  hasRole: vi.fn<(role: string) => boolean>(() => false),
 }))
 vi.mock('@/auth/AuthContext', () => ({ useAuth: () => auth }))
 
