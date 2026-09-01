@@ -129,3 +129,67 @@ export const profileUpdateSchema = z.object({
 export type ProfileUpdateInput = z.input<typeof profileUpdateSchema>
 /** Payload po walidacji — puste pola jako undefined (gotowe do PATCH). */
 export type ProfileUpdatePayload = z.output<typeof profileUpdateSchema>
+
+// --- Zgłoszenie gry ------------------------------------------------------
+
+/**
+ * Pozycja z pola z podpowiedziami: `id` = wpis istniejący w słowniku,
+ * brak `id` = nazwa wpisana ręcznie, którą backend utworzy w locie.
+ */
+const taxonomyPick = z.object({
+  id: z.number().optional(),
+  label: z.string().min(1),
+  pending: z.boolean().optional(),
+})
+
+/** Rok wydania w przyszłości bywa zapowiedzią, ale nie za dziesięć lat. */
+const MAX_FUTURE_YEARS = 2
+
+/**
+ * Formularz zgłoszenia gry. Odwzorowuje `GameRequestDto` razem z jego
+ * ograniczeniami (tytuł ≤ 255, rok ≥ 1900, wiek 0–21) oraz dwiema regułami,
+ * które backend zwraca jako błędy domenowe: `min <= max` graczy
+ * (`INVALID_PLAYER_COUNT`) i wymagany co najmniej jeden wydawca
+ * (`PUBLISHER_REQUIRED`) oraz kategoria (`CATEGORY_REQUIRED`).
+ */
+export const gameSubmissionSchema = z
+  .object({
+    title: z.string().trim().min(1, 'Podaj tytuł').max(255, 'Tytuł: maksymalnie 255 znaków'),
+    description: z.string().trim().min(1, 'Podaj opis gry'),
+    minPlayers: z.coerce.number().int('Podaj liczbę całkowitą').min(1, 'Co najmniej 1 gracz'),
+    maxPlayers: z.coerce.number().int('Podaj liczbę całkowitą').min(1, 'Co najmniej 1 gracz'),
+    playingTimeMinutes: z.coerce
+      .number()
+      .int('Podaj liczbę całkowitą')
+      .min(1, 'Czas gry w minutach (min. 1)'),
+    yearPublished: z.coerce
+      .number()
+      .int('Podaj liczbę całkowitą')
+      .min(1900, 'Rok wydania od 1900')
+      .max(new Date().getFullYear() + MAX_FUTURE_YEARS, 'Rok wydania z zbyt odległej przyszłości'),
+    minAge: z.coerce.number().int('Podaj liczbę całkowitą').min(0).max(21, 'Wiek gracza: 0–21'),
+    coverImageUrl: z
+      .url('Podaj poprawny URL')
+      .max(512, 'URL: maksymalnie 512 znaków')
+      .or(z.literal(''))
+      .optional()
+      .transform(emptyToUndefined),
+    publishers: z.array(taxonomyPick).min(1, 'Wskaż przynajmniej jednego wydawcę'),
+    authors: z.array(taxonomyPick),
+    categoryIds: z.array(z.number()).min(1, 'Wybierz przynajmniej jedną kategorię'),
+    mechanicIds: z.array(z.number()),
+  })
+  .refine((d) => d.minPlayers <= d.maxPlayers, {
+    message: 'Nie może być mniejsza od minimalnej liczby graczy',
+    path: ['maxPlayers'],
+  })
+  // Nowy autor jedzie do API jako imię + nazwisko, więc sama nazwa nie wystarczy.
+  .refine((d) => d.authors.every((a) => a.id !== undefined || a.label.trim().includes(' ')), {
+    message: 'Nowego autora podaj jako imię i nazwisko',
+    path: ['authors'],
+  })
+
+/** Wartości pól formularza (liczby przychodzą z inputów jako tekst). */
+export type GameSubmissionInput = z.input<typeof gameSubmissionSchema>
+/** Dane po walidacji — gotowe do złożenia `GameRequestDto`. */
+export type GameSubmissionPayload = z.output<typeof gameSubmissionSchema>
