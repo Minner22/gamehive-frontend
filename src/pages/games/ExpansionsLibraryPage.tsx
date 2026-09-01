@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { listExpansions, type ExpansionLibraryFilter } from '@/api/expansions'
 import { ExpansionCard } from '@/components/games/ExpansionCard'
+import { CollectionButton } from '@/components/games/CollectionButton'
 import { ExpansionFiltersForm } from '@/components/games/ExpansionFiltersForm'
 import { ResultsSection } from '@/components/games/ResultsSection'
 import { Button, ButtonLink, EmptyState } from '@/components/ui'
@@ -111,7 +112,16 @@ export default function ExpansionsLibraryPage() {
           />
         }
       >
-        {(expansion) => <ExpansionCard key={expansion.id} expansion={expansion} showBaseGame />}
+        {(expansion) => (
+          <ExpansionCard
+            key={expansion.id}
+            expansion={expansion}
+            showBaseGame
+            action={
+              <CollectionButton target="expansion" id={expansion.id} name={expansion.name} />
+            }
+          />
+        )}
       </ResultsSection>
     </div>
   )

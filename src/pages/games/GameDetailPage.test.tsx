@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/test/server'
+import { TestProviders } from '@/test/TestProviders'
 import { ANY_ORIGIN } from '@/test/handlers'
 import { makeExpansion, makeGame, makePage } from '@/test/fixtures'
 import type { GameDto, GameExpansionDto } from '@/api/types'
@@ -21,10 +22,13 @@ function mockExpansions(expansions: GameExpansionDto[]) {
 function renderDetail(path = '/games/1') {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/games/:id" element={<GameDetailPage />} />
-        <Route path="/games" element={<div>BIBLIOTEKA</div>} />
-      </Routes>
+      <TestProviders>
+        <Routes>
+          <Route path="/games/:id" element={<GameDetailPage />} />
+          <Route path="/games" element={<div>BIBLIOTEKA</div>} />
+          <Route path="/expansions" element={<div>DODATKI</div>} />
+        </Routes>
+      </TestProviders>
     </MemoryRouter>,
   )
 }

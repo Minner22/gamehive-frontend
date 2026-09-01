@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getExpansion } from '@/api/expansions'
 import type { CategoryDto, GameExpansionDto, MechanicDto } from '@/api/types'
 import { ModerationStatusBadge } from '@/components/games/ModerationStatusBadge'
+import { CollectionButton } from '@/components/games/CollectionButton'
 import { Badge, Button, ButtonLink, Card, EmptyState, Icon, Section, Spinner } from '@/components/ui'
 import { resolveCollection, resolvePlayers, resolveValue, type ValueSource } from '@/lib/expansionValues'
 import { useResource } from '@/lib/useResource'
@@ -86,6 +87,12 @@ function ExpansionDetail({ expansion }: Readonly<{ expansion: GameExpansionDto }
           </Link>
         </p>
         <p className="leading-relaxed text-on-surface-variant">{expansion.description}</p>
+        <CollectionButton
+          target="expansion"
+          id={expansion.id}
+          name={expansion.name}
+          size="md"
+        />
       </header>
 
       {expansion.moderationStatus === 'REJECTED' && expansion.rejectionReason && (
