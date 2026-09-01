@@ -5,11 +5,12 @@ import { GameCard } from '@/components/games/GameCard'
 import { CollectionButton } from '@/components/games/CollectionButton'
 import { GameFiltersForm } from '@/components/games/GameFiltersForm'
 import { ResultsSection } from '@/components/games/ResultsSection'
-import { Button, EmptyState } from '@/components/ui'
+import { Button, ButtonLink, EmptyState } from '@/components/ui'
 import { gameFiltersToParams, parseGameFilters, parsePageParam } from '@/lib/gameFilters'
 import { pluralPl } from '@/lib/plural'
 import { usePaginatedList } from '@/lib/usePaginatedList'
 import { useTaxonomyOptions } from '@/lib/useTaxonomyOptions'
+import { ROUTES } from '@/routes/paths'
 
 /** Trzy kolumny na dużym ekranie — strona domyka się równymi rzędami. */
 const PAGE_SIZE = 12
@@ -52,11 +53,16 @@ export default function GamesLibraryPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-headline text-3xl font-extrabold tracking-tight">Biblioteka gier</h1>
-        <p className="mt-1 text-on-surface-variant">
-          Gry zatwierdzone przez moderatorów — wspólny katalog całego ula.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-headline text-3xl font-extrabold tracking-tight">Biblioteka gier</h1>
+          <p className="mt-1 text-on-surface-variant">
+            Gry zatwierdzone przez moderatorów — wspólny katalog całego ula.
+          </p>
+        </div>
+        <ButtonLink to={ROUTES.games.new} iconLeft="add">
+          Zgłoś grę
+        </ButtonLink>
       </header>
 
       {/* key: zmiana adresu (np. „wstecz") odtwarza formularz z nowych filtrów */}

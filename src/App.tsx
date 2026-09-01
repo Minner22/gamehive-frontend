@@ -8,6 +8,7 @@ import NotFoundPage from '@/pages/NotFoundPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
 import ProfilePage from '@/pages/ProfilePage'
 import GameDetailPage from '@/pages/games/GameDetailPage'
+import GameFormPage from '@/pages/games/GameFormPage'
 import ExpansionDetailPage from '@/pages/games/ExpansionDetailPage'
 import ExpansionsLibraryPage from '@/pages/games/ExpansionsLibraryPage'
 import GameSearchPage from '@/pages/games/GameSearchPage'
@@ -66,6 +67,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <GameSearchPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.games.new}
+          element={
+            <ProtectedRoute>
+              <GameFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.games.editPattern}
+          element={
+            <ProtectedRoute>
+              <GameFormPage />
             </ProtectedRoute>
           }
         />
