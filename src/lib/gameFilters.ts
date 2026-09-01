@@ -1,10 +1,12 @@
 /**
- * Filtry biblioteki gier w query stringu — jedno źródło prawdy dla adresu strony.
+ * Filtry modułu gier w query stringu — jedno źródło prawdy dla adresu strony
+ * (biblioteka gier, biblioteka dodatków, wyszukiwarka).
  *
  * Dzięki temu wynik filtrowania da się wkleić komuś w linku, a przycisk „wstecz"
  * cofa do poprzedniego zestawu filtrów. Klucze są takie same jak parametry API,
  * więc nie ma drugiego słownika nazw do utrzymania.
  */
+import type { ExpansionLibraryFilter } from '@/api/expansions'
 import type { GameLibraryFilter, GameSearchFilter } from '@/api/games'
 import type { SearchTargetType } from '@/api/types'
 
@@ -53,6 +55,35 @@ export function parsePageParam(params: URLSearchParams): number {
 export function gameFiltersToParams(filters: GameLibraryFilter, page = 0): URLSearchParams {
   const params = new URLSearchParams()
   for (const key of FILTER_KEYS) {
+    const value = filters[key]
+    if (value !== undefined) params.set(key, String(value))
+  }
+  if (page > 0) params.set('page', String(page))
+  return params
+}
+
+// --- Biblioteka dodatków --------------------------------------------------
+
+/**
+ * Filtry dodatków są węższe niż gier: backend przyjmuje tu wyłącznie `baseGameId`,
+ * `categoryId` i `mechanicId`. `baseGameId` przychodzi zwykle z linku „wszystkie
+ * dodatki do tej gry", nie z kontrolki.
+ */
+export function parseExpansionFilters(params: URLSearchParams): ExpansionLibraryFilter {
+  const filters: ExpansionLibraryFilter = {}
+  for (const key of ['baseGameId', 'categoryId', 'mechanicId'] as const) {
+    const value = parsePositiveInt(params.get(key))
+    if (value !== undefined) filters[key] = value
+  }
+  return filters
+}
+
+export function expansionFiltersToParams(
+  filters: ExpansionLibraryFilter,
+  page = 0,
+): URLSearchParams {
+  const params = new URLSearchParams()
+  for (const key of ['baseGameId', 'categoryId', 'mechanicId'] as const) {
     const value = filters[key]
     if (value !== undefined) params.set(key, String(value))
   }
