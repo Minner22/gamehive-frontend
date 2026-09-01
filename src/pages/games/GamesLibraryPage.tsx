@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { listGames, type GameLibraryFilter } from '@/api/games'
 import { GameCard } from '@/components/games/GameCard'
+import { CollectionButton } from '@/components/games/CollectionButton'
 import { GameFiltersForm } from '@/components/games/GameFiltersForm'
 import { ResultsSection } from '@/components/games/ResultsSection'
 import { Button, EmptyState } from '@/components/ui'
@@ -89,7 +90,13 @@ export default function GamesLibraryPage() {
           />
         }
       >
-        {(game) => <GameCard key={game.id} game={game} />}
+        {(game) => (
+          <GameCard
+            key={game.id}
+            game={game}
+            action={<CollectionButton target="game" id={game.id} name={game.title} />}
+          />
+        )}
       </ResultsSection>
     </div>
   )

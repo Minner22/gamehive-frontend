@@ -4,6 +4,7 @@ import { getGame } from '@/api/games'
 import { listExpansions } from '@/api/expansions'
 import type { GameDto } from '@/api/types'
 import { ExpansionCard } from '@/components/games/ExpansionCard'
+import { CollectionButton } from '@/components/games/CollectionButton'
 import { ModerationStatusBadge } from '@/components/games/ModerationStatusBadge'
 import {
   Badge,
@@ -155,6 +156,8 @@ function GameDetail({ game }: { game: GameDto }) {
               <p className="mt-1 text-sm text-on-error-container">{game.rejectionReason}</p>
             </Card>
           )}
+
+          <CollectionButton target="game" id={game.id} name={game.title} size="md" />
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatTile icon="group" label="Gracze" value={players} />

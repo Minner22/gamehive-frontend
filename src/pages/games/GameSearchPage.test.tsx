@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/test/server'
+import { TestProviders } from '@/test/TestProviders'
 import { ANY_ORIGIN } from '@/test/handlers'
 import { makeExpansion, makeGame, makePage, makeSearchResult } from '@/test/fixtures'
-import { ToastProvider } from '@/components/ui'
 import type { Page, SearchResultDto } from '@/api/types'
 import GameSearchPage from './GameSearchPage'
 
@@ -34,14 +34,14 @@ function mockSearch(page: Page<SearchResultDto>) {
 
 function renderSearch(entry = '/games/search') {
   return render(
-    <ToastProvider>
-      <MemoryRouter initialEntries={[entry]}>
+    <MemoryRouter initialEntries={[entry]}>
+      <TestProviders>
         <Routes>
           <Route path="/games/search" element={<GameSearchPage />} />
           <Route path="/games" element={<div>BIBLIOTEKA</div>} />
         </Routes>
-      </MemoryRouter>
-    </ToastProvider>,
+      </TestProviders>
+    </MemoryRouter>,
   )
 }
 

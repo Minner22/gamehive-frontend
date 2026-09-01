@@ -11,6 +11,7 @@ import GameDetailPage from '@/pages/games/GameDetailPage'
 import ExpansionDetailPage from '@/pages/games/ExpansionDetailPage'
 import ExpansionsLibraryPage from '@/pages/games/ExpansionsLibraryPage'
 import GameSearchPage from '@/pages/games/GameSearchPage'
+import VaultPage from '@/pages/games/VaultPage'
 import GamesLibraryPage from '@/pages/games/GamesLibraryPage'
 import UiKitPage from '@/pages/UiKitPage'
 import AdminAuditPage from '@/pages/admin/AdminAuditPage'
@@ -89,6 +90,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ExpansionDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.vault}
+          element={
+            <ProtectedRoute>
+              <VaultPage />
             </ProtectedRoute>
           }
         />

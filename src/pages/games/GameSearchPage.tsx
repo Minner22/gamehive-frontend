@@ -5,6 +5,7 @@ import { searchGames, type GameLibraryFilter, type GameSearchFilter } from '@/ap
 import type { ApiError, SearchResultDto, SearchTargetType } from '@/api/types'
 import { ExpansionCard } from '@/components/games/ExpansionCard'
 import { GameCard } from '@/components/games/GameCard'
+import { CollectionButton } from '@/components/games/CollectionButton'
 import { GameFiltersForm } from '@/components/games/GameFiltersForm'
 import { ResultsSection } from '@/components/games/ResultsSection'
 import { Button, ButtonLink, Chip, EmptyState, Input, Section } from '@/components/ui'
@@ -39,9 +40,26 @@ function isSearchUnavailable(error: unknown): boolean {
 
 function SearchResult({ result }: Readonly<{ result: SearchResultDto }>) {
   if (result.targetType === 'EXPANSION' && result.expansion) {
-    return <ExpansionCard expansion={result.expansion} showBaseGame />
+    const expansion = result.expansion
+    return (
+      <ExpansionCard
+        expansion={expansion}
+        showBaseGame
+        action={
+          <CollectionButton target="expansion" id={expansion.id} name={expansion.name} />
+        }
+      />
+    )
   }
-  if (result.game) return <GameCard game={result.game} />
+  if (result.game) {
+    const game = result.game
+    return (
+      <GameCard
+        game={game}
+        action={<CollectionButton target="game" id={game.id} name={game.title} />}
+      />
+    )
+  }
   return null
 }
 

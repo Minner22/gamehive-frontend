@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/test/server'
+import { TestProviders } from '@/test/TestProviders'
 import { ANY_ORIGIN } from '@/test/handlers'
 import { makeGame, makePage } from '@/test/fixtures'
-import { ToastProvider } from '@/components/ui'
 import type { GameDto } from '@/api/types'
 import GamesLibraryPage from './GamesLibraryPage'
 
@@ -41,11 +41,11 @@ function mockLibrary(games: GameDto[]) {
 
 function renderLibrary(initialEntry = '/games') {
   return render(
-    <ToastProvider>
-      <MemoryRouter initialEntries={[initialEntry]}>
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <TestProviders>
         <GamesLibraryPage />
-      </MemoryRouter>
-    </ToastProvider>,
+      </TestProviders>
+    </MemoryRouter>,
   )
 }
 
