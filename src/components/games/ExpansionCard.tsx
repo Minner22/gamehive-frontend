@@ -15,6 +15,11 @@ interface ExpansionCardProps {
   expansion: GameExpansionDto
   /** Akcja w stopce (np. „Dodaj do kolekcji" — GH-48). */
   action?: ReactNode
+  /**
+   * Pokaż grę bazową. Na stronie gry byłaby to oczywistość, ale w wynikach
+   * wyszukiwania to jedyna informacja, czego właściwie dotyczy dodatek.
+   */
+  showBaseGame?: boolean
 }
 
 function Meta({ icon, children, title }: { icon: string; children: ReactNode; title: string }) {
@@ -26,7 +31,7 @@ function Meta({ icon, children, title }: { icon: string; children: ReactNode; ti
   )
 }
 
-export function ExpansionCard({ expansion, action }: ExpansionCardProps) {
+export function ExpansionCard({ expansion, action, showBaseGame }: ExpansionCardProps) {
   const players =
     expansion.effectiveMinPlayers === expansion.effectiveMaxPlayers
       ? String(expansion.effectiveMinPlayers)
@@ -40,6 +45,13 @@ export function ExpansionCard({ expansion, action }: ExpansionCardProps) {
           <ModerationStatusBadge status={expansion.moderationStatus} className="shrink-0" />
         )}
       </div>
+
+      {showBaseGame && (
+        <p className="flex items-center gap-1 text-xs text-on-surface-variant">
+          <Icon name="extension" className="text-sm" aria-hidden="true" />
+          Dodatek do: <span className="font-semibold">{expansion.baseGameTitle}</span>
+        </p>
+      )}
 
       <p className="line-clamp-3 text-sm text-on-surface-variant">{expansion.description}</p>
 
