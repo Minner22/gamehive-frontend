@@ -74,8 +74,20 @@ function GameExpansions({ gameId }: { gameId: number }) {
   )
   const { state, reload } = useResource(fetchExpansions)
 
+  // Sekcja pokazuje pierwszą stronę; pełna lista (z filtrami) żyje w bibliotece dodatków.
+  const allExpansionsHref = `${ROUTES.expansions.library}?baseGameId=${gameId}`
+
   return (
-    <Section title="Dodatki">
+    <Section
+      title="Dodatki"
+      action={
+        state.status === 'ok' && !state.data.empty ? (
+          <ButtonLink to={allExpansionsHref} variant="ghost" size="sm" iconRight="arrow_forward">
+            Wszystkie
+          </ButtonLink>
+        ) : null
+      }
+    >
       {state.status === 'loading' && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
           <ListSkeleton count={3} className="h-40" />

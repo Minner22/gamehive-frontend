@@ -2,34 +2,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isAxiosError } from 'axios'
 import { searchGames, type GameLibraryFilter, type GameSearchFilter } from '@/api/games'
-import { listCategories, listMechanics } from '@/api/taxonomy'
-import type {
-  ApiError,
-  CategoryDto,
-  MechanicDto,
-  Page,
-  SearchResultDto,
-  SearchTargetType,
-} from '@/api/types'
+import type { ApiError, SearchResultDto, SearchTargetType } from '@/api/types'
 import { ExpansionCard } from '@/components/games/ExpansionCard'
 import { GameCard } from '@/components/games/GameCard'
 import { GameFiltersForm } from '@/components/games/GameFiltersForm'
-import {
-  Button,
-  ButtonLink,
-  Chip,
-  EmptyState,
-  Input,
-  ListSkeleton,
-  Pagination,
-  Section,
-  useToast,
-} from '@/components/ui'
-import { getApiErrorMessage } from '@/lib/apiError'
+import { ResultsSection } from '@/components/games/ResultsSection'
+import { Button, ButtonLink, Chip, EmptyState, Input, Section } from '@/components/ui'
 import { parsePageParam, parseSearchFilters, searchFiltersToParams } from '@/lib/gameFilters'
 import { pluralPl } from '@/lib/plural'
 import { useDebouncedValue } from '@/lib/useDebouncedValue'
 import { usePaginatedList } from '@/lib/usePaginatedList'
+import { useTaxonomyOptions } from '@/lib/useTaxonomyOptions'
 import { ROUTES } from '@/routes/paths'
 
 const PAGE_SIZE = 12
@@ -62,113 +45,7 @@ function SearchResult({ result }: Readonly<{ result: SearchResultDto }>) {
   return null
 }
 
-interface SearchResultsProps {
-  unavailable: boolean
-  data: Page<SearchResultDto> | null
-  loading: boolean
-  onReload: () => void
-  onPageChange: (page: number) => void
-}
-
-/**
- * Wyniki jako osobny komponent z wczesnymi returnami — ten sam układ przypadków
- * w łańcuchu ternary był nieczytelny (i słusznie zgłoszony przez Sonara).
- */
-function SearchResults({
-  unavailable,
-  data,
-  loading,
-  onReload,
-  onPageChange,
-}: Readonly<SearchResultsProps>) {
-  if (unavailable) {
-    return (
-      <EmptyState
-        icon="search_off"
-        title="Wyszukiwarka jest chwilowo niedostępna"
-        description="Silnik wyszukiwania nie odpowiada. Biblioteka działa normalnie — czyta prosto z bazy."
-        action={
-          <div className="flex flex-wrap justify-center gap-2">
-            <ButtonLink to={ROUTES.games.library} variant="secondary" iconLeft="menu_book">
-              Przejdź do biblioteki
-            </ButtonLink>
-            <Button variant="secondary" iconLeft="refresh" onClick={onReload}>
-              Spróbuj ponownie
-            </Button>
-          </div>
-        }
-      />
-    )
-  }
-
-  if (!data) {
-    if (!loading) {
-      return (
-        <EmptyState
-          icon="cloud_off"
-          title="Nie udało się wyszukać"
-          description="Sprawdź połączenie i spróbuj ponownie."
-          action={
-            <Button variant="secondary" iconLeft="refresh" onClick={onReload}>
-              Spróbuj ponownie
-            </Button>
-          }
-        />
-      )
-    }
-    return (
-      <>
-        <output className="sr-only">Szukanie…</output>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
-          <ListSkeleton count={3} />
-        </div>
-      </>
-    )
-  }
-
-  if (data.empty) {
-    return (
-      <EmptyState
-        icon="search_off"
-        title="Brak trafień"
-        description="Spróbuj innej frazy albo poluzuj filtry — wyszukiwarka obejmuje wyłącznie pozycje zatwierdzone."
-      />
-    )
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy={loading}>
-        {data.content.map((result) => (
-          <SearchResult
-            key={`${result.targetType}-${result.game?.id ?? result.expansion?.id}`}
-            result={result}
-          />
-        ))}
-      </div>
-
-      {data.totalElements >= MAX_TOTAL_HITS && (
-        <p className="text-xs text-on-surface-variant">
-          Pokazujemy pierwsze {MAX_TOTAL_HITS} trafień — zawęź zapytanie, żeby zobaczyć resztę.
-        </p>
-      )}
-
-      <Pagination
-        number={data.number}
-        totalPages={data.totalPages}
-        totalElements={data.totalElements}
-        isFirst={data.first}
-        isLast={data.last}
-        disabled={loading}
-        onChange={onPageChange}
-        unit={pluralPl(data.totalElements, 'trafienie', 'trafienia', 'trafień')}
-      />
-    </div>
-  )
-}
-
 export default function GameSearchPage() {
-  const toast = useToast()
   const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.toString()
   const filters = useMemo(() => parseSearchFilters(new URLSearchParams(query)), [query])
@@ -179,8 +56,7 @@ export default function GameSearchPage() {
   const debouncedTerm = useDebouncedValue(term)
 
   const [unavailable, setUnavailable] = useState(false)
-  const [categories, setCategories] = useState<CategoryDto[]>([])
-  const [mechanics, setMechanics] = useState<MechanicDto[]>([])
+  const { categories, mechanics } = useTaxonomyOptions()
 
   /**
    * Efektywne kryterium: filtry z adresu, ale fraza z opóźnionego pola.
@@ -211,20 +87,6 @@ export default function GameSearchPage() {
   }, [])
 
   const { data, loading, goToPage, reload } = usePaginatedList(fetchPage, urlPage, handleError)
-
-  useEffect(() => {
-    let active = true
-    Promise.all([listCategories(), listMechanics()])
-      .then(([loadedCategories, loadedMechanics]) => {
-        if (!active) return
-        setCategories(loadedCategories)
-        setMechanics(loadedMechanics)
-      })
-      .catch((err) => active && toast.error(getApiErrorMessage(err)))
-    return () => {
-      active = false
-    }
-  }, [toast])
 
   // Fraza po debounce trafia do adresu, żeby wynik dało się wkleić w linku.
   useEffect(() => {
@@ -322,13 +184,56 @@ export default function GameSearchPage() {
         mają tych pól w modelu.
       </p>
 
-      <SearchResults
-        unavailable={unavailable}
-        data={data}
-        loading={loading}
-        onReload={reload}
-        onPageChange={changePage}
-      />
+      {unavailable ? (
+        <EmptyState
+          icon="search_off"
+          title="Wyszukiwarka jest chwilowo niedostępna"
+          description="Silnik wyszukiwania nie odpowiada. Biblioteka działa normalnie — czyta prosto z bazy."
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              <ButtonLink to={ROUTES.games.library} variant="secondary" iconLeft="menu_book">
+                Przejdź do biblioteki
+              </ButtonLink>
+              <Button variant="secondary" iconLeft="refresh" onClick={reload}>
+                Spróbuj ponownie
+              </Button>
+            </div>
+          }
+        />
+      ) : (
+        <ResultsSection
+          data={data}
+          loading={loading}
+          onReload={reload}
+          onPageChange={changePage}
+          loadingLabel="Szukanie…"
+          errorTitle="Nie udało się wyszukać"
+          unit={pluralPl(data?.totalElements ?? 0, 'trafienie', 'trafienia', 'trafień')}
+          skeletonCount={3}
+          empty={
+            <EmptyState
+              icon="search_off"
+              title="Brak trafień"
+              description="Spróbuj innej frazy albo poluzuj filtry — wyszukiwarka obejmuje wyłącznie pozycje zatwierdzone."
+            />
+          }
+          footer={
+            data && data.totalElements >= MAX_TOTAL_HITS ? (
+              <p className="text-xs text-on-surface-variant">
+                Pokazujemy pierwsze {MAX_TOTAL_HITS} trafień — zawęź zapytanie, żeby zobaczyć
+                resztę.
+              </p>
+            ) : null
+          }
+        >
+          {(result) => (
+            <SearchResult
+              key={`${result.targetType}-${result.game?.id ?? result.expansion?.id}`}
+              result={result}
+            />
+          )}
+        </ResultsSection>
+      )}
     </div>
   )
 }

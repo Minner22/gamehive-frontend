@@ -8,6 +8,8 @@ import NotFoundPage from '@/pages/NotFoundPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
 import ProfilePage from '@/pages/ProfilePage'
 import GameDetailPage from '@/pages/games/GameDetailPage'
+import ExpansionDetailPage from '@/pages/games/ExpansionDetailPage'
+import ExpansionsLibraryPage from '@/pages/games/ExpansionsLibraryPage'
 import GameSearchPage from '@/pages/games/GameSearchPage'
 import GamesLibraryPage from '@/pages/games/GamesLibraryPage'
 import UiKitPage from '@/pages/UiKitPage'
@@ -71,6 +73,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <GameDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.expansions.library}
+          element={
+            <ProtectedRoute>
+              <ExpansionsLibraryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.expansions.detailPattern}
+          element={
+            <ProtectedRoute>
+              <ExpansionDetailPage />
             </ProtectedRoute>
           }
         />
