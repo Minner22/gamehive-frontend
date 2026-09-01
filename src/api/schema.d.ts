@@ -4,6 +4,102 @@
  */
 
 export interface paths {
+    "/api/v1/moderation/games/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edytuj zatwierdzoną grę (biblioteka)
+         * @description Dozwolone tylko dla gry w statusie APPROVED. Re-walidacja reguł domenowych (min ≤ max, ≥1 wydawca, ≥1 kategoria); relacje (wydawcy/kategorie/mechaniki/autorzy) są zastępowane w całości. Nowi wydawcy/autorzy dodani przy edycji są od razu zatwierdzani. Pole submit jest ignorowane.
+         */
+        put: operations["updateApprovedGame"];
+        post?: never;
+        /**
+         * Usuń grę (twardy delete)
+         * @description Twarde usunięcie gry w dowolnym statusie oprócz DRAFT (prywatny szkic jest niewidoczny → 404). Gry, do której istnieją dodatki, nie można usunąć — najpierw trzeba usunąć dodatki. Kaskadowo znikają powiązania słownikowe; wpis audytu DELETE przeżywa usunięcie. Operacja nieodwracalna.
+         */
+        delete: operations["deleteGame"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/expansions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edytuj zatwierdzony dodatek (biblioteka)
+         * @description Dozwolone tylko dla dodatku w statusie APPROVED. Re-walidacja reguł domenowych na wartościach efektywnych; własne kategorie i mechaniki są zastępowane w całości. Pola baseGameId i submit są ignorowane.
+         */
+        put: operations["updateApprovedExpansion"];
+        post?: never;
+        /**
+         * Usuń dodatek (twardy delete)
+         * @description Twarde usunięcie dodatku w dowolnym statusie oprócz DRAFT (prywatny szkic jest niewidoczny → 404). Kaskadowo znikają powiązania słownikowe; wpis audytu DELETE przeżywa usunięcie. Gra bazowa pozostaje nietknięta. Operacja nieodwracalna.
+         */
+        delete: operations["deleteExpansion"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/games/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pobierz grę
+         * @description Zwraca grę APPROVED z biblioteki (widoczną dla każdego zalogowanego) albo własne zgłoszenie w dowolnym statusie. Cudze nie-APPROVED i nieistniejące są nierozróżnialne (404).
+         */
+        get: operations["getGame"];
+        /**
+         * Edytuj własne zgłoszenie
+         * @description Dozwolone tylko dla własnego wpisu w statusie DRAFT lub REJECTED. Relacje (wydawcy/kategorie/mechaniki/autorzy) są zastępowane w całości. Pole submit jest ignorowane — status zmienia wyłącznie POST /{id}/submit.
+         */
+        put: operations["updateGame"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expansions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pobierz dodatek
+         * @description Zwraca dodatek APPROVED z biblioteki (widoczny dla każdego zalogowanego) albo własne zgłoszenie w dowolnym statusie. Cudze nie-APPROVED i nieistniejące są nierozróżnialne (404).
+         */
+        get: operations["getExpansion"];
+        /**
+         * Edytuj własne zgłoszenie dodatku
+         * @description Dozwolone tylko dla własnego wpisu w statusie DRAFT lub REJECTED. Własne kategorie i mechaniki są zastępowane w całości. Pola baseGameId i submit są ignorowane — dodatku nie da się przenieść na inną grę, a status zmienia wyłącznie POST /{id}/submit.
+         */
+        put: operations["updateExpansion"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users/{id}/roles": {
         parameters: {
             query?: never;
@@ -19,6 +115,316 @@ export interface paths {
         put: operations["updateUserRoles"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/taxonomy/mechanics/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Zmień nazwę mechaniki */
+        put: operations["renameMechanic"];
+        post?: never;
+        /** Usuń mechanikę */
+        delete: operations["deleteMechanic"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/taxonomy/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Zmień nazwę kategorii */
+        put: operations["renameCategory"];
+        post?: never;
+        /** Usuń kategorię */
+        delete: operations["deleteCategory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/taxonomy/authors/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edytuj autora */
+        put: operations["updateAuthor"];
+        post?: never;
+        /** Usuń autora */
+        delete: operations["deleteAuthor"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/games/{id}/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Odblokuj zgłoszenie po wyczerpaniu limitu poprawek
+         * @description REJECTED → DRAFT: zeruje resubmissionCount i czyści dane recenzji, pozwalając użytkownikowi ponownie edytować i wysłać zgłoszenie.
+         */
+        post: operations["unlock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/games/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Odrzuć zgłoszenie
+         * @description PENDING → REJECTED z wymaganym powodem (widocznym dla autora), ustawia reviewedBy/reviewedAt.
+         */
+        post: operations["reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/games/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Zatwierdź zgłoszenie
+         * @description PENDING → APPROVED, ustawia reviewedBy/reviewedAt. Zatwierdza również wszystkich wydawców i autorów gry o statusie PENDING (w tej samej transakcji).
+         */
+        post: operations["approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/expansions/{id}/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Odblokuj zgłoszenie dodatku po wyczerpaniu limitu poprawek
+         * @description REJECTED → DRAFT: zeruje resubmissionCount i czyści dane recenzji, pozwalając użytkownikowi ponownie edytować i wysłać zgłoszenie.
+         */
+        post: operations["unlock_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/expansions/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Odrzuć zgłoszenie dodatku
+         * @description PENDING → REJECTED z wymaganym powodem (widocznym dla autora), ustawia reviewedBy/reviewedAt.
+         */
+        post: operations["reject_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/expansions/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Zatwierdź zgłoszenie dodatku
+         * @description PENDING → APPROVED, ustawia reviewedBy/reviewedAt. Status gry bazowej jest sprawdzany ponownie — mogła stracić APPROVED po zgłoszeniu dodatku.
+         */
+        post: operations["approve_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Biblioteka gier (stronicowana, tylko APPROVED)
+         * @description Zwraca zatwierdzone gry z globalnej biblioteki. Opcjonalne filtry: wydawca, kategoria, mechanika, liczba graczy, maksymalny czas gry, rok wydania, wiek. Parametry stronicowania: page, size, sort.
+         */
+        get: operations["library"];
+        put?: never;
+        /**
+         * Utwórz zgłoszenie gry
+         * @description Tworzy zgłoszenie przypisane do zalogowanego użytkownika. Pole submit: true = od razu do moderacji (PENDING), false/brak = szkic (DRAFT).
+         */
+        post: operations["createGame"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/games/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Wyślij zgłoszenie do moderacji
+         * @description DRAFT → PENDING (pierwsze wysłanie) albo REJECTED → PENDING (ponowne wysłanie: inkrementuje resubmissionCount i czyści powód odrzucenia). Liczbę ponownych wysyłek ogranicza limit gamehive.moderation.max-resubmissions.
+         */
+        post: operations["submitGame"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expansions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Biblioteka dodatków (stronicowana, tylko APPROVED)
+         * @description Zwraca zatwierdzone dodatki. Opcjonalne filtry: gra bazowa oraz WŁASNE kategorie i mechaniki dodatku (odziedziczone nie są brane pod uwagę). Parametry stronicowania: page, size, sort.
+         */
+        get: operations["library_1"];
+        put?: never;
+        /**
+         * Utwórz zgłoszenie dodatku
+         * @description Tworzy zgłoszenie przypisane do zalogowanego użytkownika. Gra bazowa musi być APPROVED. Pole submit: true = od razu do moderacji (PENDING), false/brak = szkic (DRAFT).
+         */
+        post: operations["createExpansion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expansions/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Wyślij zgłoszenie dodatku do moderacji
+         * @description DRAFT → PENDING (pierwsze wysłanie) albo REJECTED → PENDING (ponowne wysłanie: inkrementuje resubmissionCount i czyści powód odrzucenia). Liczbę ponownych wysyłek ogranicza limit gamehive.moderation.max-resubmissions.
+         */
+        post: operations["submitExpansion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/collection/games/{gameId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dodaj grę do kolekcji
+         * @description Dodaje grę APPROVED do kolekcji zalogowanego użytkownika ze statusem OWNED. Ta sama gra może być w kolekcjach wielu użytkowników — unikat obejmuje parę (użytkownik, gra).
+         */
+        post: operations["addGame"];
+        /**
+         * Usuń grę z kolekcji
+         * @description Usuwa wyłącznie własny wpis. Gra w bibliotece pozostaje nietknięta. Cudzy wpis jest nieodróżnialny od nieistniejącego (404).
+         */
+        delete: operations["removeGame"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/collection/expansions/{expansionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dodaj dodatek do kolekcji
+         * @description Dodaje dodatek APPROVED do kolekcji ze statusem OWNED — niezależnie od tego, czy jego gra bazowa jest w kolekcji.
+         */
+        post: operations["addExpansion"];
+        /**
+         * Usuń dodatek z kolekcji
+         * @description Usuwa wyłącznie własny wpis. Dodatek w bibliotece pozostaje nietknięty.
+         */
+        delete: operations["removeExpansion"];
         options?: never;
         head?: never;
         patch?: never;
@@ -164,6 +570,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/taxonomy/publishers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista wydawców (stronicowana, filtr statusu i frazy)
+         * @description Odpowiedź jest stronicowana, bo lista wydawców rośnie wraz ze zgłoszeniami użytkowników. Fraza `q` dopasowuje fragment nazwy bez względu na wielkość liter; razem ze `status` działa koniunkcyjnie. Domyślnie 20 pozycji sortowanych po nazwie.
+         */
+        get: operations["listPublishers"];
+        put?: never;
+        /**
+         * Utwórz wydawcę
+         * @description Tworzy wydawcę od razu ze statusem APPROVED.
+         */
+        post: operations["createPublisher"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/taxonomy/publishers/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Zatwierdź wydawcę
+         * @description Zmienia status PENDING → APPROVED. Idempotentne: wydawca już APPROVED zwraca 200 bez zmian.
+         */
+        post: operations["approvePublisher"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/taxonomy/mechanics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista mechanik */
+        get: operations["listMechanics"];
+        put?: never;
+        /** Utwórz mechanikę */
+        post: operations["createMechanic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/taxonomy/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista kategorii */
+        get: operations["listCategories"];
+        put?: never;
+        /** Utwórz kategorię */
+        post: operations["createCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/taxonomy/authors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista autorów (stronicowana, filtr statusu i frazy)
+         * @description Jak lista wydawców, ale fraza `q` dopasowuje imię, nazwisko ORAZ pełne „Imię Nazwisko" — po sklejonej nazwie, spójnie z endpointem podpowiedzi. Domyślnie 20 pozycji sortowanych po nazwisku, potem imieniu.
+         */
+        get: operations["listAuthors"];
+        put?: never;
+        /**
+         * Utwórz autora
+         * @description Tworzy autora od razu ze statusem APPROVED.
+         */
+        post: operations["createAuthor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/taxonomy/authors/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Zatwierdź autora
+         * @description Zmienia status PENDING → APPROVED. Idempotentne: autor już APPROVED zwraca 200 bez zmian.
+         */
+        post: operations["approveAuthor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/search/reindex": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Przebuduj indeksy wyszukiwania z bazy
+         * @description Przebudowuje OBA indeksy: treści biblioteki (zatwierdzone gry i dodatki) oraz słowników wydawców i autorów zasilających podpowiedzi. Każdy indeks jest najpierw czyszczony, potem wypychany partiami z bazy. Uwaga na asymetrię reguł: do indeksu treści wpadają wyłącznie pozycje APPROVED, a do indeksu słowników wpisy we WSZYSTKICH statusach. Narzędzie naprawcze po awarii wyszukiwarki — indeksowanie bieżące dzieje się zdarzeniami po decyzjach moderacyjnych i zmianach w słownikach. Na czas przebudowy indeksy bywają chwilowo niekompletne. Jednocześnie może biec tylko jedna przebudowa, wspólna dla obu indeksów. Niepowodzenie przy treści przerywa całość i nie rusza słowników.
+         */
+        post: operations["reindex"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users/me/profile": {
         parameters: {
             query?: never;
@@ -243,6 +793,262 @@ export interface paths {
          * @description Trwale (hard delete) usuwa konto zalogowanego użytkownika po potwierdzeniu hasłem. Operacja jest nieodwracalna: unieważnia wszystkie tokeny odświeżające i bieżący token dostępowy oraz czyści ciasteczko refreshToken. Ostatni administrator nie może usunąć własnego konta.
          */
         delete: operations["deleteOwnAccount"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/taxonomy/publishers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista wydawców (opcjonalny filtr statusu) — PRZESTARZAŁE
+         * @deprecated
+         * @description PRZESTARZAŁE — użyj `GET /api/v1/taxonomy/publishers/suggest?q=`. Lista wydawców rośnie wraz ze zgłoszeniami użytkowników (nowi powstają w locie przy POST /api/v1/games), więc odpowiedź jest UCIĘTA do 200 pozycji posortowanych alfabetycznie — przy większym słowniku NIE jest to komplet danych i nie ma sposobu, by dobrać resztę. Endpoint zostanie usunięty po migracji frontu na /suggest.
+         */
+        get: operations["listPublishers_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/taxonomy/publishers/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Podpowiedzi wydawców (autocomplete)
+         * @description Zwraca do `limit` najlepszych trafień po fragmencie nazwy — w kolejności trafności (Meilisearch) albo alfabetycznie (fallback bazodanowy), więc kolejność NIE jest częścią kontraktu. Wynik obejmuje wpisy w KAŻDYM statusie, także PENDING: formularz zgłoszenia reużywa istniejącą nazwę niezależnie od statusu, a ukrycie oczekującego wydawcy prowokowałoby duplikat, który wpadłby w konflikt unikalności. Pole `status` pozwala oznaczyć wpis jako oczekujący na akceptację. Brak lub pusta fraza zwraca początek listy. `limit` poza zakresem 1–50 jest zaciskany, nie odrzucany. Odpowiedź jest płaską listą — autocomplete nie stronicuje.
+         */
+        get: operations["suggestPublishers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/taxonomy/mechanics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista mechanik */
+        get: operations["listMechanics_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/taxonomy/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista kategorii */
+        get: operations["listCategories_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/taxonomy/authors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista autorów (opcjonalny filtr statusu) — PRZESTARZAŁE
+         * @deprecated
+         * @description PRZESTARZAŁE — użyj `GET /api/v1/taxonomy/authors/suggest?q=`. Lista autorów rośnie wraz ze zgłoszeniami użytkowników (nowi powstają w locie przy POST /api/v1/games), więc odpowiedź jest UCIĘTA do 200 pozycji posortowanych po nazwisku — przy większym słowniku NIE jest to komplet danych i nie ma sposobu, by dobrać resztę. Endpoint zostanie usunięty po migracji frontu na /suggest.
+         */
+        get: operations["listAuthors_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/taxonomy/authors/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Podpowiedzi autorów (autocomplete)
+         * @description Jak podpowiedzi wydawców, ale fraza dopasowuje imię, nazwisko ORAZ pełne „Imię Nazwisko" — dopasowanie idzie po sklejonej nazwie, więc `uwe`, `rosenberg` i `uwe rosen` trafiają w ten sam wpis. Wynik obejmuje autorów w każdym statusie.
+         */
+        get: operations["suggestAuthors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Kolejka zgłoszeń oczekujących (stronicowana)
+         * @description Gry w statusie PENDING oczekujące na decyzję. Parametry stronicowania: page, size, sort.
+         */
+        get: operations["pendingQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moderation/expansions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Kolejka zgłoszeń dodatków (stronicowana)
+         * @description Dodatki w statusie PENDING oczekujące na decyzję. Parametry stronicowania: page, size, sort.
+         */
+        get: operations["pendingQueue_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/games/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Szukaj w bibliotece (gry i dodatki, tylko APPROVED)
+         * @description Fraza q przeszukuje tytuł/nazwę, opis oraz tytuł gry bazowej dodatku. Kolejność wyników to ranking trafności, dlatego parametr sort jest IGNOROWANY — działają tylko page i size. Pusta lub brakująca fraza zwraca wszystko, co pasuje do filtrów. Dodatki są filtrowane po wartościach efektywnych (własnych lub odziedziczonych z gry bazowej); filtry po wydawcy, autorze i roku wydania dopasują wyłącznie gry, bo dodatek nie ma tych pól. Rozmiar strony jest ograniczony do 50, a łączna liczba trafień do limitu maxTotalHits wyszukiwarki (1000).
+         */
+        get: operations["search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/games/my": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Moje zgłoszenia (stronicowane)
+         * @description Zgłoszenia zalogowanego użytkownika w statusach DRAFT/PENDING/REJECTED (zaakceptowane gry należą do globalnej biblioteki). Parametry stronicowania: page, size, sort.
+         */
+        get: operations["mySubmissions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expansions/my": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Moje zgłoszenia dodatków (stronicowane)
+         * @description Zgłoszenia zalogowanego użytkownika w statusach DRAFT/PENDING/REJECTED (zaakceptowane dodatki należą do biblioteki). Parametry stronicowania: page, size, sort.
+         */
+        get: operations["mySubmissions_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/collection/games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Moje gry (stronicowane)
+         * @description Gry w kolekcji zalogowanego użytkownika wraz z pełnymi danymi gry. Parametry stronicowania: page, size, sort.
+         */
+        get: operations["myGames"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/collection/expansions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Moje dodatki (stronicowane)
+         * @description Dodatki w kolekcji zalogowanego użytkownika wraz z wartościami własnymi i efektywnymi. Parametry stronicowania: page, size, sort.
+         */
+        get: operations["myExpansions"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -383,20 +1189,101 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/taxonomy/publishers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Usuń wydawcę */
+        delete: operations["deletePublisher"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Zestaw ról do przypisania użytkownikowi (zastępuje dotychczasowe role). */
-        UpdateUserRolesDto: {
+        /** @description Żądanie edycji autora (imię i nazwisko; para musi być unikalna). */
+        AuthorRequestDto: {
             /**
-             * @description Niepusty zbiór nazw ról z prefiksem ROLE_.
-             * @example [
-             *       "ROLE_USER",
-             *       "ROLE_ADMIN"
-             *     ]
+             * @description Imię autora.
+             * @example Uwe
              */
-            roles: string[];
+            firstName: string;
+            /**
+             * @description Nazwisko autora.
+             * @example Rosenberg
+             */
+            lastName: string;
+        };
+        /** @description Żądanie utworzenia (POST) lub edycji (PUT) zgłoszenia gry. Wydawców i autorów można wskazać po id i/lub podać nowych do utworzenia w locie (można mieszać). */
+        GameRequestDto: {
+            /**
+             * @description Tytuł gry.
+             * @example Terraforming Mars
+             */
+            title: string;
+            /**
+             * @description Opis gry.
+             * @example Kolonizacja Marsa w rywalizacji korporacji.
+             */
+            description: string;
+            /**
+             * Format: int32
+             * @description Minimalna liczba graczy.
+             * @example 1
+             */
+            minPlayers: number;
+            /**
+             * Format: int32
+             * @description Maksymalna liczba graczy (>= minPlayers).
+             * @example 5
+             */
+            maxPlayers: number;
+            /**
+             * Format: int32
+             * @description Czas rozgrywki w minutach.
+             * @example 120
+             */
+            playingTimeMinutes: number;
+            /**
+             * Format: int32
+             * @description Rok wydania.
+             * @example 2016
+             */
+            yearPublished: number;
+            /**
+             * Format: int32
+             * @description Minimalny wiek gracza.
+             * @example 12
+             */
+            minAge: number;
+            /**
+             * @description URL okładki (opcjonalny).
+             * @example https://example.com/cover.jpg
+             */
+            coverImageUrl?: string;
+            /** @description Id istniejących wydawców. Razem z newPublisherNames musi dać >= 1 wydawcę. */
+            publisherIds?: number[];
+            /** @description Nazwy nowych wydawców — utworzeni w locie ze statusem PENDING (istniejąca nazwa = reuse istniejącego wpisu). */
+            newPublisherNames?: string[];
+            /** @description Id kategorii (>= 1; kategorie są kuratorowane, nietworzone w locie). */
+            categoryIds?: number[];
+            /** @description Id mechanik (opcjonalne; mechaniki są kuratorowane, nietworzone w locie). */
+            mechanicIds?: number[];
+            /** @description Id istniejących autorów (opcjonalni). */
+            authorIds?: number[];
+            /** @description Nowi autorzy — find-or-create po parze imię+nazwisko (nowa para = PENDING, istniejąca = reuse bez zmiany statusu). */
+            newAuthors?: components["schemas"]["AuthorRequestDto"][];
+            /** @description true = od razu wyślij do moderacji (PENDING), false = zapisz szkic (DRAFT). Używane tylko przy POST; PUT ignoruje to pole — status zmienia wyłącznie POST /{id}/submit. */
+            submit?: boolean;
         };
         ApiValidationError: {
             errorCode?: string;
@@ -410,6 +1297,469 @@ export interface components {
         ApiError: {
             errorCode?: string;
             message?: string;
+        };
+        AuthorDto: {
+            /** Format: int64 */
+            id?: number;
+            firstName?: string;
+            lastName?: string;
+            /** @enum {string} */
+            status?: "APPROVED" | "PENDING";
+        };
+        CategoryDto: {
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+        };
+        /** @description Gra / zgłoszenie w widoku moderacji — z pełnymi metadanymi decyzji. */
+        GameModerationDto: {
+            /**
+             * Format: int64
+             * @description Identyfikator gry.
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Tytuł gry.
+             * @example Terraforming Mars
+             */
+            title: string;
+            /**
+             * @description Opis gry.
+             * @example Kolonizacja Marsa w rywalizacji korporacji.
+             */
+            description: string;
+            /**
+             * Format: int32
+             * @description Minimalna liczba graczy.
+             * @example 1
+             */
+            minPlayers: number;
+            /**
+             * Format: int32
+             * @description Maksymalna liczba graczy.
+             * @example 5
+             */
+            maxPlayers: number;
+            /**
+             * Format: int32
+             * @description Czas rozgrywki w minutach.
+             * @example 120
+             */
+            playingTimeMinutes: number;
+            /**
+             * Format: int32
+             * @description Rok wydania.
+             * @example 2016
+             */
+            yearPublished: number;
+            /**
+             * Format: int32
+             * @description Minimalny wiek gracza.
+             * @example 12
+             */
+            minAge: number;
+            /**
+             * @description URL okładki (opcjonalny).
+             * @example https://example.com/cover.jpg
+             */
+            coverImageUrl?: string;
+            /**
+             * @description Status moderacji (DRAFT/PENDING/APPROVED/REJECTED).
+             * @enum {string}
+             */
+            moderationStatus: "APPROVED" | "DRAFT" | "PENDING" | "REJECTED";
+            /**
+             * @description Powód odrzucenia — tylko dla statusu REJECTED, inaczej null.
+             * @example Duplikat istniejącej gry
+             */
+            rejectionReason?: string;
+            /**
+             * Format: uuid
+             * @description UUID użytkownika, który zgłosił grę.
+             */
+            submittedBy: string;
+            /**
+             * Format: uuid
+             * @description UUID moderatora, który podjął decyzję — null dla DRAFT/PENDING.
+             */
+            reviewedBy?: string;
+            /**
+             * Format: date-time
+             * @description Moment decyzji moderacyjnej — null dla DRAFT/PENDING.
+             */
+            reviewedAt?: string;
+            /**
+             * Format: int32
+             * @description Liczba ponownych wysłań po odrzuceniu.
+             * @example 0
+             */
+            resubmissionCount: number;
+            /** @description Wydawcy gry. */
+            publishers: components["schemas"]["PublisherDto"][];
+            /** @description Kategorie gry. */
+            categories: components["schemas"]["CategoryDto"][];
+            /** @description Mechaniki gry. */
+            mechanics: components["schemas"]["MechanicDto"][];
+            /** @description Autorzy gry. */
+            authors: components["schemas"]["AuthorDto"][];
+        };
+        MechanicDto: {
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+        };
+        PublisherDto: {
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+            /** @enum {string} */
+            status?: "APPROVED" | "PENDING";
+        };
+        /** @description Żądanie utworzenia (POST) lub edycji (PUT) zgłoszenia dodatku. Pola liczbowe i kolekcje są opcjonalnymi nadpisaniami gry bazowej — puste oznacza dziedziczenie. */
+        GameExpansionRequestDto: {
+            /**
+             * Format: int64
+             * @description Id gry bazowej (musi być APPROVED). Wymagane przy POST; PUT ignoruje to pole — dodatku nie da się przenieść na inną grę — więc przy edycji można je pominąć.
+             * @example 1
+             */
+            baseGameId?: number;
+            /**
+             * @description Nazwa dodatku.
+             * @example Terraforming Mars: Preludium
+             */
+            name: string;
+            /**
+             * @description Opis dodatku.
+             * @example Przyspiesza start rozgrywki.
+             */
+            description: string;
+            /**
+             * Format: int32
+             * @description Nadpisanie minimalnej liczby graczy (puste = jak w grze bazowej).
+             * @example 2
+             */
+            minPlayers?: number;
+            /**
+             * Format: int32
+             * @description Nadpisanie maksymalnej liczby graczy (puste = jak w grze bazowej).
+             * @example 6
+             */
+            maxPlayers?: number;
+            /**
+             * Format: int32
+             * @description Nadpisanie czasu rozgrywki w minutach (puste = jak w grze bazowej).
+             * @example 150
+             */
+            playingTimeMinutes?: number;
+            /**
+             * Format: int32
+             * @description Nadpisanie minimalnego wieku gracza (puste = jak w grze bazowej).
+             * @example 14
+             */
+            minAge?: number;
+            /** @description Id własnych kategorii dodatku (puste = dziedziczy kategorie gry bazowej). */
+            categoryIds?: number[];
+            /** @description Id własnych mechanik dodatku (puste = dziedziczy mechaniki gry bazowej). */
+            mechanicIds?: number[];
+            /** @description true = od razu wyślij do moderacji (PENDING), false = zapisz szkic (DRAFT). Używane tylko przy POST; PUT ignoruje to pole — status zmienia wyłącznie POST /{id}/submit. */
+            submit?: boolean;
+        };
+        /** @description Dodatek / zgłoszenie dodatku w widoku moderacji — z pełnymi metadanymi decyzji. */
+        GameExpansionModerationDto: {
+            /**
+             * Format: int64
+             * @description Identyfikator dodatku.
+             * @example 1
+             */
+            id: number;
+            /**
+             * Format: int64
+             * @description Identyfikator gry bazowej.
+             * @example 1
+             */
+            baseGameId: number;
+            /**
+             * @description Tytuł gry bazowej.
+             * @example Terraforming Mars
+             */
+            baseGameTitle: string;
+            /**
+             * @description Nazwa dodatku.
+             * @example Terraforming Mars: Preludium
+             */
+            name: string;
+            /**
+             * @description Opis dodatku.
+             * @example Przyspiesza start rozgrywki.
+             */
+            description: string;
+            /**
+             * Format: int32
+             * @description Własne minimum graczy — null oznacza dziedziczenie z gry bazowej.
+             * @example 2
+             */
+            minPlayers?: number;
+            /**
+             * Format: int32
+             * @description Własne maksimum graczy — null oznacza dziedziczenie z gry bazowej.
+             * @example 6
+             */
+            maxPlayers?: number;
+            /**
+             * Format: int32
+             * @description Własny czas rozgrywki — null oznacza dziedziczenie z gry bazowej.
+             * @example 150
+             */
+            playingTimeMinutes?: number;
+            /**
+             * Format: int32
+             * @description Własny minimalny wiek — null oznacza dziedziczenie z gry bazowej.
+             * @example 14
+             */
+            minAge?: number;
+            /**
+             * Format: int32
+             * @description Minimum graczy po uwzględnieniu dziedziczenia.
+             * @example 2
+             */
+            effectiveMinPlayers: number;
+            /**
+             * Format: int32
+             * @description Maksimum graczy po uwzględnieniu dziedziczenia.
+             * @example 6
+             */
+            effectiveMaxPlayers: number;
+            /**
+             * Format: int32
+             * @description Czas rozgrywki po uwzględnieniu dziedziczenia.
+             * @example 150
+             */
+            effectivePlayingTimeMinutes: number;
+            /**
+             * Format: int32
+             * @description Minimalny wiek po uwzględnieniu dziedziczenia.
+             * @example 14
+             */
+            effectiveMinAge: number;
+            /** @description Własne kategorie dodatku — pusta lista oznacza dziedziczenie. */
+            categories: components["schemas"]["CategoryDto"][];
+            /** @description Własne mechaniki dodatku — pusta lista oznacza dziedziczenie. */
+            mechanics: components["schemas"]["MechanicDto"][];
+            /** @description Kategorie po uwzględnieniu dziedziczenia. */
+            effectiveCategories: components["schemas"]["CategoryDto"][];
+            /** @description Mechaniki po uwzględnieniu dziedziczenia. */
+            effectiveMechanics: components["schemas"]["MechanicDto"][];
+            /**
+             * @description Status moderacji (DRAFT/PENDING/APPROVED/REJECTED).
+             * @enum {string}
+             */
+            moderationStatus: "APPROVED" | "DRAFT" | "PENDING" | "REJECTED";
+            /**
+             * @description Powód odrzucenia — tylko dla statusu REJECTED, inaczej null.
+             * @example Opis nie odróżnia dodatku od bazy
+             */
+            rejectionReason?: string;
+            /**
+             * Format: uuid
+             * @description UUID użytkownika, który zgłosił dodatek.
+             */
+            submittedBy: string;
+            /**
+             * Format: uuid
+             * @description UUID moderatora, który podjął decyzję — null dla DRAFT/PENDING.
+             */
+            reviewedBy?: string;
+            /**
+             * Format: date-time
+             * @description Moment decyzji moderacyjnej — null dla DRAFT/PENDING.
+             */
+            reviewedAt?: string;
+            /**
+             * Format: int32
+             * @description Liczba ponownych wysłań po odrzuceniu.
+             * @example 0
+             */
+            resubmissionCount: number;
+        };
+        /** @description Gra / zgłoszenie gry wraz ze statusem moderacji i relacjami słownikowymi. */
+        GameDto: {
+            /**
+             * Format: int64
+             * @description Identyfikator gry.
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Tytuł gry.
+             * @example Terraforming Mars
+             */
+            title: string;
+            /**
+             * @description Opis gry.
+             * @example Kolonizacja Marsa w rywalizacji korporacji.
+             */
+            description: string;
+            /**
+             * Format: int32
+             * @description Minimalna liczba graczy.
+             * @example 1
+             */
+            minPlayers: number;
+            /**
+             * Format: int32
+             * @description Maksymalna liczba graczy.
+             * @example 5
+             */
+            maxPlayers: number;
+            /**
+             * Format: int32
+             * @description Czas rozgrywki w minutach.
+             * @example 120
+             */
+            playingTimeMinutes: number;
+            /**
+             * Format: int32
+             * @description Rok wydania.
+             * @example 2016
+             */
+            yearPublished: number;
+            /**
+             * Format: int32
+             * @description Minimalny wiek gracza.
+             * @example 12
+             */
+            minAge: number;
+            /**
+             * @description URL okładki (opcjonalny).
+             * @example https://example.com/cover.jpg
+             */
+            coverImageUrl?: string;
+            /**
+             * @description Status moderacji (DRAFT/PENDING/APPROVED/REJECTED).
+             * @enum {string}
+             */
+            moderationStatus: "APPROVED" | "DRAFT" | "PENDING" | "REJECTED";
+            /**
+             * @description Powód odrzucenia — tylko dla statusu REJECTED, inaczej null.
+             * @example Duplikat istniejącej gry
+             */
+            rejectionReason?: string;
+            /** @description Wydawcy gry. */
+            publishers: components["schemas"]["PublisherDto"][];
+            /** @description Kategorie gry. */
+            categories: components["schemas"]["CategoryDto"][];
+            /** @description Mechaniki gry. */
+            mechanics: components["schemas"]["MechanicDto"][];
+            /** @description Autorzy gry. */
+            authors: components["schemas"]["AuthorDto"][];
+        };
+        /** @description Dodatek / zgłoszenie dodatku ze statusem moderacji, wartościami własnymi i efektywnymi. */
+        GameExpansionDto: {
+            /**
+             * Format: int64
+             * @description Identyfikator dodatku.
+             * @example 1
+             */
+            id: number;
+            /**
+             * Format: int64
+             * @description Identyfikator gry bazowej.
+             * @example 1
+             */
+            baseGameId: number;
+            /**
+             * @description Tytuł gry bazowej.
+             * @example Terraforming Mars
+             */
+            baseGameTitle: string;
+            /**
+             * @description Nazwa dodatku.
+             * @example Terraforming Mars: Preludium
+             */
+            name: string;
+            /**
+             * @description Opis dodatku.
+             * @example Przyspiesza start rozgrywki.
+             */
+            description: string;
+            /**
+             * Format: int32
+             * @description Własne minimum graczy — null oznacza dziedziczenie z gry bazowej.
+             * @example 2
+             */
+            minPlayers?: number;
+            /**
+             * Format: int32
+             * @description Własne maksimum graczy — null oznacza dziedziczenie z gry bazowej.
+             * @example 6
+             */
+            maxPlayers?: number;
+            /**
+             * Format: int32
+             * @description Własny czas rozgrywki — null oznacza dziedziczenie z gry bazowej.
+             * @example 150
+             */
+            playingTimeMinutes?: number;
+            /**
+             * Format: int32
+             * @description Własny minimalny wiek — null oznacza dziedziczenie z gry bazowej.
+             * @example 14
+             */
+            minAge?: number;
+            /**
+             * Format: int32
+             * @description Minimum graczy po uwzględnieniu dziedziczenia.
+             * @example 2
+             */
+            effectiveMinPlayers: number;
+            /**
+             * Format: int32
+             * @description Maksimum graczy po uwzględnieniu dziedziczenia.
+             * @example 6
+             */
+            effectiveMaxPlayers: number;
+            /**
+             * Format: int32
+             * @description Czas rozgrywki po uwzględnieniu dziedziczenia.
+             * @example 150
+             */
+            effectivePlayingTimeMinutes: number;
+            /**
+             * Format: int32
+             * @description Minimalny wiek po uwzględnieniu dziedziczenia.
+             * @example 14
+             */
+            effectiveMinAge: number;
+            /** @description Własne kategorie dodatku — pusta lista oznacza dziedziczenie. */
+            categories: components["schemas"]["CategoryDto"][];
+            /** @description Własne mechaniki dodatku — pusta lista oznacza dziedziczenie. */
+            mechanics: components["schemas"]["MechanicDto"][];
+            /** @description Kategorie po uwzględnieniu dziedziczenia. */
+            effectiveCategories: components["schemas"]["CategoryDto"][];
+            /** @description Mechaniki po uwzględnieniu dziedziczenia. */
+            effectiveMechanics: components["schemas"]["MechanicDto"][];
+            /**
+             * @description Status moderacji (DRAFT/PENDING/APPROVED/REJECTED).
+             * @enum {string}
+             */
+            moderationStatus: "APPROVED" | "DRAFT" | "PENDING" | "REJECTED";
+            /**
+             * @description Powód odrzucenia — tylko dla statusu REJECTED, inaczej null.
+             * @example Opis nie odróżnia dodatku od bazy
+             */
+            rejectionReason?: string;
+        };
+        /** @description Zestaw ról do przypisania użytkownikowi (zastępuje dotychczasowe role). */
+        UpdateUserRolesDto: {
+            /**
+             * @description Niepusty zbiór nazw ról z prefiksem ROLE_.
+             * @example [
+             *       "ROLE_USER",
+             *       "ROLE_ADMIN"
+             *     ]
+             */
+            roles: string[];
         };
         /** @description Adres użytkownika. */
         AddressDto: {
@@ -498,6 +1848,66 @@ export interface components {
             /** @description Profil użytkownika. */
             profile: components["schemas"]["UserProfileResponseDto"];
         };
+        /** @description Żądanie utworzenia/zmiany nazwy elementu słownika (kategoria, mechanika, wydawca). */
+        TaxonomyItemRequestDto: {
+            /**
+             * @description Nazwa elementu słownika (unikalna).
+             * @example Strategy
+             */
+            name: string;
+        };
+        /** @description Żądanie odrzucenia zgłoszenia (gry albo dodatku). Powód jest widoczny dla autora zgłoszenia. */
+        RejectContentRequestDto: {
+            /**
+             * @description Powód odrzucenia (wymagany, niepusty).
+             * @example Duplikat istniejącej gry
+             */
+            reason: string;
+        };
+        /** @description Gra w prywatnej kolekcji użytkownika. */
+        GameCollectionItemDto: {
+            /**
+             * Format: int64
+             * @description Identyfikator wpisu kolekcji.
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Status posiadania — w MVP zawsze OWNED.
+             * @enum {string}
+             */
+            ownershipStatus: "OWNED";
+            /**
+             * Format: date-time
+             * @description Moment dodania do kolekcji.
+             * @example 2026-08-06T12:00:00Z
+             */
+            addedAt: string;
+            /** @description Dane gry z biblioteki. */
+            game: components["schemas"]["GameDto"];
+        };
+        /** @description Dodatek w prywatnej kolekcji użytkownika. */
+        ExpansionCollectionItemDto: {
+            /**
+             * Format: int64
+             * @description Identyfikator wpisu kolekcji.
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Status posiadania — w MVP zawsze OWNED.
+             * @enum {string}
+             */
+            ownershipStatus: "OWNED";
+            /**
+             * Format: date-time
+             * @description Moment dodania do kolekcji.
+             * @example 2026-08-06T12:00:00Z
+             */
+            addedAt: string;
+            /** @description Dane dodatku z biblioteki. */
+            expansion: components["schemas"]["GameExpansionDto"];
+        };
         /** @description Dane rejestracji nowego konta użytkownika. */
         RegistrationDto: {
             /**
@@ -578,6 +1988,33 @@ export interface components {
              */
             email: string;
         };
+        /** @description Podsumowanie przebudowy indeksów — liczba dokumentów wypchniętych z bazy. */
+        ReindexResultDto: {
+            /**
+             * Format: int64
+             * @description Liczba zaindeksowanych zatwierdzonych gier.
+             * @example 128
+             */
+            games: number;
+            /**
+             * Format: int64
+             * @description Liczba zaindeksowanych zatwierdzonych dodatków.
+             * @example 37
+             */
+            expansions: number;
+            /**
+             * Format: int64
+             * @description Liczba zaindeksowanych wydawców (wszystkie statusy, nie tylko APPROVED).
+             * @example 412
+             */
+            publishers: number;
+            /**
+             * Format: int64
+             * @description Liczba zaindeksowanych autorów (wszystkie statusy, nie tylko APPROVED).
+             * @example 1180
+             */
+            authors: number;
+        };
         /** @description Dane do częściowej aktualizacji profilu zalogowanego użytkownika. Wszystkie pola są opcjonalne — przesyłane są tylko te, które mają zostać zmienione. */
         UserProfileUpdateDto: {
             /**
@@ -616,6 +2053,368 @@ export interface components {
             size?: number;
             sort?: string[];
         };
+        /** @description Stronicowana lista zgłoszeń w widoku moderacji. */
+        PageGameModerationDto: {
+            /** @description Zawartość bieżącej strony. */
+            content: components["schemas"]["GameModerationDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba elementów.
+             * @example 42
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
+        /** @description Stronicowana lista dodatków w widoku moderacji. */
+        PageGameExpansionModerationDto: {
+            /** @description Zawartość bieżącej strony. */
+            content: components["schemas"]["GameExpansionModerationDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba elementów.
+             * @example 42
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
+        /** @description Stronicowana lista zgłoszeń gier. */
+        PageGameDto: {
+            /** @description Zawartość bieżącej strony. */
+            content: components["schemas"]["GameDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba elementów.
+             * @example 42
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
+        /** @description Stronicowana lista trafień wyszukiwania (gry i dodatki w jednym rankingu). */
+        PageSearchResultDto: {
+            /** @description Zawartość bieżącej strony — w kolejności rankingu wyszukiwarki. */
+            content: components["schemas"]["SearchResultDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba trafień zgłoszona przez wyszukiwarkę.
+             * @example 42
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
+        SearchResultDto: {
+            /**
+             * @description Typ trafienia — wskazuje, które z pól poniżej jest wypełnione
+             * @example GAME
+             * @enum {string}
+             */
+            targetType?: "GAME" | "EXPANSION";
+            /** @description Gra — wypełnione tylko dla targetType = GAME */
+            game?: components["schemas"]["GameDto"];
+            /** @description Dodatek — wypełnione tylko dla targetType = EXPANSION */
+            expansion?: components["schemas"]["GameExpansionDto"];
+        };
+        /** @description Stronicowana lista dodatków. */
+        PageGameExpansionDto: {
+            /** @description Zawartość bieżącej strony. */
+            content: components["schemas"]["GameExpansionDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba elementów.
+             * @example 42
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
+        /** @description Stronicowana lista gier w kolekcji. */
+        PageGameCollectionItemDto: {
+            /** @description Zawartość bieżącej strony. */
+            content: components["schemas"]["GameCollectionItemDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba elementów.
+             * @example 42
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
+        /** @description Stronicowana lista dodatków w kolekcji. */
+        PageExpansionCollectionItemDto: {
+            /** @description Zawartość bieżącej strony. */
+            content: components["schemas"]["ExpansionCollectionItemDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba elementów.
+             * @example 42
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
         /** @description Stronicowana lista użytkowników. */
         PageUserResponseDto: {
             /** @description Zawartość bieżącej strony. */
@@ -642,6 +2441,106 @@ export interface components {
              * Format: int32
              * @description Łączna liczba stron.
              * @example 3
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
+        /** @description Stronicowana lista wydawców. */
+        PagePublisherDto: {
+            /** @description Zawartość bieżącej strony. */
+            content: components["schemas"]["PublisherDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba elementów.
+             * @example 412
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 21
+             */
+            totalPages: number;
+            /**
+             * @description Czy to pierwsza strona.
+             * @example true
+             */
+            first: boolean;
+            /**
+             * @description Czy to ostatnia strona.
+             * @example false
+             */
+            last: boolean;
+            /**
+             * Format: int32
+             * @description Liczba elementów na bieżącej stronie.
+             * @example 20
+             */
+            numberOfElements: number;
+            /**
+             * @description Czy strona jest pusta.
+             * @example false
+             */
+            empty: boolean;
+        };
+        /** @description Stronicowana lista autorów. */
+        PageAuthorDto: {
+            /** @description Zawartość bieżącej strony. */
+            content: components["schemas"]["AuthorDto"][];
+            /**
+             * Format: int32
+             * @description Numer bieżącej strony (od 0).
+             * @example 0
+             */
+            number: number;
+            /**
+             * Format: int32
+             * @description Rozmiar strony.
+             * @example 20
+             */
+            size: number;
+            /**
+             * Format: int64
+             * @description Łączna liczba elementów.
+             * @example 1180
+             */
+            totalElements: number;
+            /**
+             * Format: int32
+             * @description Łączna liczba stron.
+             * @example 59
              */
             totalPages: number;
             /**
@@ -788,6 +2687,527 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    updateApprovedGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Gra zaktualizowana */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameModerationDto"];
+                };
+            };
+            /** @description Błąd walidacji (Bean Validation lub INVALID_PLAYER_COUNT / PUBLISHER_REQUIRED / CATEGORY_REQUIRED) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie istnieje (GAME_NOT_FOUND) lub wskazany id słownika nie istnieje (PUBLISHER_NOT_FOUND / CATEGORY_NOT_FOUND / MECHANIC_NOT_FOUND / AUTHOR_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie jest zatwierdzona (GAME_NOT_APPROVED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    deleteGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gra usunięta */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie istnieje lub jest szkicem (GAME_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra ma dodatki i nie może zostać usunięta (GAME_HAS_EXPANSIONS) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    updateApprovedExpansion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameExpansionRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Dodatek zaktualizowany */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameExpansionModerationDto"];
+                };
+            };
+            /** @description Błąd walidacji (Bean Validation lub INVALID_PLAYER_COUNT dla wartości efektywnych) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie istnieje (EXPANSION_NOT_FOUND) lub wskazany id słownika nie istnieje (CATEGORY_NOT_FOUND / MECHANIC_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie jest zatwierdzony (EXPANSION_NOT_APPROVED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    deleteExpansion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dodatek usunięty */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie istnieje lub jest szkicem (EXPANSION_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    getGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Znaleziono grę */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie istnieje albo jest cudzym zgłoszeniem spoza biblioteki (GAME_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    updateGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Zgłoszenie zaktualizowane */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameDto"];
+                };
+            };
+            /** @description Błąd walidacji (Bean Validation lub INVALID_PLAYER_COUNT / PUBLISHER_REQUIRED / CATEGORY_REQUIRED) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Zgłoszenie nie istnieje lub należy do innego użytkownika (GAME_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Zgłoszenie nieedytowalne w bieżącym statusie (GAME_NOT_EDITABLE) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    getExpansion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Znaleziono dodatek */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameExpansionDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie istnieje albo jest cudzym zgłoszeniem spoza biblioteki (EXPANSION_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    updateExpansion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameExpansionRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Zgłoszenie zaktualizowane */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameExpansionDto"];
+                };
+            };
+            /** @description Błąd walidacji (Bean Validation lub INVALID_PLAYER_COUNT dla wartości efektywnych) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Zgłoszenie nie istnieje lub należy do innego użytkownika (EXPANSION_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Zgłoszenie nieedytowalne w bieżącym statusie (EXPANSION_NOT_EDITABLE) albo gra bazowa przestała być zatwierdzona (BASE_GAME_NOT_APPROVED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     updateUserRoles: {
         parameters: {
             query?: never;
@@ -841,6 +3261,1424 @@ export interface operations {
                 };
             };
             /** @description Użytkownik nie istnieje (USER_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    renameMechanic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxonomyItemRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Nazwa zmieniona */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MechanicDto"];
+                };
+            };
+            /** @description Błąd walidacji / niepoprawne id */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Mechanika nie istnieje (MECHANIC_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Nazwa zajęta (MECHANIC_NAME_EXISTS) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    deleteMechanic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mechanika usunięta (brak treści) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Mechanika nie istnieje (MECHANIC_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Mechanika używana przez grę (MECHANIC_IN_USE) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    renameCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxonomyItemRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Nazwa zmieniona */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryDto"];
+                };
+            };
+            /** @description Błąd walidacji / niepoprawne id */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Kategoria nie istnieje (CATEGORY_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Nazwa zajęta (CATEGORY_NAME_EXISTS) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    deleteCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Kategoria usunięta (brak treści) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Kategoria nie istnieje (CATEGORY_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Kategoria używana przez grę (CATEGORY_IN_USE) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    updateAuthor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthorRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Autor zaktualizowany */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthorDto"];
+                };
+            };
+            /** @description Błąd walidacji / niepoprawne id */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Autor nie istnieje (AUTHOR_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Para imię+nazwisko zajęta (AUTHOR_NAME_EXISTS) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    deleteAuthor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Autor usunięty (brak treści) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Autor nie istnieje (AUTHOR_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Autor używany przez grę (AUTHOR_IN_USE) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    unlock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zgłoszenie odblokowane (DRAFT) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameModerationDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie istnieje (GAME_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie jest odrzucona (GAME_NOT_REJECTED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectContentRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Zgłoszenie odrzucone */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameModerationDto"];
+                };
+            };
+            /** @description Brak powodu odrzucenia (REJECTION_REASON_REQUIRED) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie istnieje (GAME_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie jest w kolejce PENDING (GAME_NOT_PENDING) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zgłoszenie zatwierdzone */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameModerationDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie istnieje (GAME_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie jest w kolejce PENDING (GAME_NOT_PENDING) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    unlock_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zgłoszenie odblokowane (DRAFT) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameExpansionModerationDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie istnieje (EXPANSION_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie jest odrzucony (EXPANSION_NOT_REJECTED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    reject_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectContentRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Zgłoszenie odrzucone */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameExpansionModerationDto"];
+                };
+            };
+            /** @description Brak powodu odrzucenia (REJECTION_REASON_REQUIRED) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie istnieje (EXPANSION_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie jest w kolejce PENDING (EXPANSION_NOT_PENDING) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    approve_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zgłoszenie zatwierdzone */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameExpansionModerationDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie istnieje (EXPANSION_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie jest w kolejce PENDING (EXPANSION_NOT_PENDING) albo gra bazowa nie jest zatwierdzona (BASE_GAME_NOT_APPROVED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    library: {
+        parameters: {
+            query: {
+                /** @description Filtr: id wydawcy */
+                publisherId?: number;
+                /** @description Filtr: id kategorii */
+                categoryId?: number;
+                /** @description Filtr: id mechaniki */
+                mechanicId?: number;
+                /** @description Filtr: liczba graczy — gra obsługuje N graczy (minPlayers ≤ N ≤ maxPlayers) */
+                players?: number;
+                /** @description Filtr: maksymalny czas gry w minutach (playingTimeMinutes ≤ wartość) */
+                maxPlayingTime?: number;
+                /** @description Filtr: rok wydania (dokładny) */
+                yearPublished?: number;
+                /** @description Filtr: wiek gracza — gra odpowiednia dla wieku N (minAge ≤ N) */
+                age?: number;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wyników z biblioteki */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageGameDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    createGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Zgłoszenie utworzone */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameDto"];
+                };
+            };
+            /** @description Błąd walidacji (Bean Validation lub INVALID_PLAYER_COUNT / PUBLISHER_REQUIRED / CATEGORY_REQUIRED) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Wskazany id nie istnieje (PUBLISHER_NOT_FOUND / CATEGORY_NOT_FOUND / MECHANIC_NOT_FOUND / AUTHOR_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    submitGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zgłoszenie wysłane do moderacji (PENDING) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Zgłoszenie nie istnieje lub należy do innego użytkownika (GAME_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Zły status (GAME_NOT_EDITABLE) albo wyczerpany limit poprawek (RESUBMISSION_LIMIT_EXCEEDED — status pozostaje REJECTED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    library_1: {
+        parameters: {
+            query: {
+                /** @description Filtr: id gry bazowej */
+                baseGameId?: number;
+                /** @description Filtr: id własnej kategorii dodatku */
+                categoryId?: number;
+                /** @description Filtr: id własnej mechaniki dodatku */
+                mechanicId?: number;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wyników z biblioteki dodatków */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageGameExpansionDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    createExpansion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameExpansionRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Zgłoszenie utworzone */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameExpansionDto"];
+                };
+            };
+            /** @description Błąd walidacji (Bean Validation lub INVALID_PLAYER_COUNT dla wartości efektywnych) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra bazowa nie istnieje (GAME_NOT_FOUND) lub wskazany id słownika nie istnieje (CATEGORY_NOT_FOUND / MECHANIC_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra bazowa nie jest zatwierdzona (BASE_GAME_NOT_APPROVED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    submitExpansion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zgłoszenie wysłane do moderacji (PENDING) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameExpansionDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Zgłoszenie nie istnieje lub należy do innego użytkownika (EXPANSION_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Zły status (EXPANSION_NOT_EDITABLE), wyczerpany limit poprawek (RESUBMISSION_LIMIT_EXCEEDED) albo gra bazowa nie jest zatwierdzona (BASE_GAME_NOT_APPROVED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    addGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gra dodana do kolekcji */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GameCollectionItemDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie istnieje (GAME_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gra nie jest zatwierdzona (GAME_NOT_APPROVED) albo jest już w kolekcji (ALREADY_IN_COLLECTION) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    removeGame: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wpis usunięty z kolekcji */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Gry nie ma w Twojej kolekcji (COLLECTION_ITEM_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    addExpansion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expansionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dodatek dodany do kolekcji */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ExpansionCollectionItemDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie istnieje (EXPANSION_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatek nie jest zatwierdzony (EXPANSION_NOT_APPROVED) albo jest już w kolekcji (ALREADY_IN_COLLECTION) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    removeExpansion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expansionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wpis usunięty z kolekcji */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Dodatku nie ma w Twojej kolekcji (COLLECTION_ITEM_NOT_FOUND) */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1205,6 +5043,663 @@ export interface operations {
             };
         };
     };
+    listPublishers: {
+        parameters: {
+            query: {
+                /** @description Filtr po statusie (PENDING/APPROVED); brak = wszyscy */
+                status?: "APPROVED" | "PENDING";
+                /** @description Filtr: fragment nazwy wydawcy; brak lub pusty = bez filtra */
+                q?: string;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wydawców */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PagePublisherDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    createPublisher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxonomyItemRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Wydawca utworzony */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PublisherDto"];
+                };
+            };
+            /** @description Błąd walidacji */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Nazwa zajęta (PUBLISHER_NAME_EXISTS) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    approvePublisher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wydawca zatwierdzony (lub już był APPROVED) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PublisherDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Wydawca nie istnieje (PUBLISHER_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listMechanics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista mechanik */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MechanicDto"][];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    createMechanic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxonomyItemRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Mechanika utworzona */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MechanicDto"];
+                };
+            };
+            /** @description Błąd walidacji */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Nazwa zajęta (MECHANIC_NAME_EXISTS) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista kategorii */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryDto"][];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    createCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxonomyItemRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Kategoria utworzona */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryDto"];
+                };
+            };
+            /** @description Błąd walidacji */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Nazwa zajęta (CATEGORY_NAME_EXISTS) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listAuthors: {
+        parameters: {
+            query: {
+                /** @description Filtr po statusie (PENDING/APPROVED); brak = wszyscy */
+                status?: "APPROVED" | "PENDING";
+                /** @description Filtr: fragment imienia, nazwiska lub pełnej nazwy; brak = bez filtra */
+                q?: string;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona autorów */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageAuthorDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    createAuthor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthorRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Autor utworzony */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthorDto"];
+                };
+            };
+            /** @description Błąd walidacji */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiValidationError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Autor już istnieje (AUTHOR_NAME_EXISTS) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    approveAuthor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Autor zatwierdzony (lub już był APPROVED) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthorDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Autor nie istnieje (AUTHOR_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    reindex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Indeksy przebudowane, w ciele liczniki dokumentów */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReindexResultDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Przebudowa indeksu już trwa (REINDEX_ALREADY_RUNNING) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera lub odrzucone żądanie wyszukiwarki (SEARCH_FAILED) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Wyszukiwarka nieosiągalna (SEARCH_INDEX_UNAVAILABLE) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     profile: {
         parameters: {
             query?: never;
@@ -1470,6 +5965,660 @@ export interface operations {
             };
             /** @description Ostatni administrator nie może usunąć własnego konta (CANNOT_REMOVE_LAST_ADMIN) */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listPublishers_1: {
+        parameters: {
+            query?: {
+                /** @description Filtr po statusie (PENDING/APPROVED); brak parametru = wszyscy wydawcy) */
+                status?: "APPROVED" | "PENDING";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista wydawców (maks. 200 pozycji) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PublisherDto"][];
+                };
+            };
+            /** @description Nieprawidłowa wartość parametru (VALIDATION_ERROR) — np. niecałkowity `limit` albo nieznany `status` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera lub odrzucone zapytanie wyszukiwarki (SEARCH_FAILED) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    suggestPublishers: {
+        parameters: {
+            query?: {
+                /** @description Fragment nazwy wydawcy; brak lub pusty = początek listy */
+                q?: string;
+                /** @description Maksymalna liczba podpowiedzi (1–50, domyślnie 10) */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista podpowiedzi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PublisherDto"][];
+                };
+            };
+            /** @description Nieprawidłowa wartość parametru (VALIDATION_ERROR) — np. niecałkowity `limit` albo nieznany `status` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera lub odrzucone zapytanie wyszukiwarki (SEARCH_FAILED) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Wyszukiwarka nieosiągalna (SEARCH_INDEX_UNAVAILABLE) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listMechanics_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista mechanik */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MechanicDto"][];
+                };
+            };
+            /** @description Nieprawidłowa wartość parametru (VALIDATION_ERROR) — np. niecałkowity `limit` albo nieznany `status` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera lub odrzucone zapytanie wyszukiwarki (SEARCH_FAILED) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listCategories_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista kategorii */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryDto"][];
+                };
+            };
+            /** @description Nieprawidłowa wartość parametru (VALIDATION_ERROR) — np. niecałkowity `limit` albo nieznany `status` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera lub odrzucone zapytanie wyszukiwarki (SEARCH_FAILED) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listAuthors_1: {
+        parameters: {
+            query?: {
+                /** @description Filtr po statusie (PENDING/APPROVED); brak = wszyscy */
+                status?: "APPROVED" | "PENDING";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista autorów (maks. 200 pozycji) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthorDto"][];
+                };
+            };
+            /** @description Nieprawidłowa wartość parametru (VALIDATION_ERROR) — np. niecałkowity `limit` albo nieznany `status` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera lub odrzucone zapytanie wyszukiwarki (SEARCH_FAILED) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    suggestAuthors: {
+        parameters: {
+            query?: {
+                /** @description Fragment imienia, nazwiska lub pełnej nazwy autora */
+                q?: string;
+                /** @description Maksymalna liczba podpowiedzi (1–50, domyślnie 10) */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lista podpowiedzi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthorDto"][];
+                };
+            };
+            /** @description Nieprawidłowa wartość parametru (VALIDATION_ERROR) — np. niecałkowity `limit` albo nieznany `status` */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera lub odrzucone zapytanie wyszukiwarki (SEARCH_FAILED) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Wyszukiwarka nieosiągalna (SEARCH_INDEX_UNAVAILABLE) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    pendingQueue: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wyników z kolejką moderacji */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageGameModerationDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    pendingQueue_1: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wyników z kolejką moderacji */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageGameExpansionModerationDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    search: {
+        parameters: {
+            query: {
+                /** @description Fraza wyszukiwania (tytuł/nazwa, opis, tytuł gry bazowej) */
+                q?: string;
+                /** @description Filtr: rodzaj treści — GAME albo EXPANSION (brak = jedno i drugie) */
+                targetType?: "GAME" | "EXPANSION";
+                /** @description Filtr: id wydawcy (dopasuje tylko gry) */
+                publisherId?: number;
+                /** @description Filtr: id kategorii */
+                categoryId?: number;
+                /** @description Filtr: id mechaniki */
+                mechanicId?: number;
+                /** @description Filtr: id autora (dopasuje tylko gry) */
+                authorId?: number;
+                /** @description Filtr: id gry bazowej (dopasuje tylko dodatki) */
+                baseGameId?: number;
+                /** @description Filtr: liczba graczy — pozycja obsługuje N graczy (minPlayers ≤ N ≤ maxPlayers) */
+                players?: number;
+                /** @description Filtr: maksymalny czas gry w minutach (playingTimeMinutes ≤ wartość) */
+                maxPlayingTime?: number;
+                /** @description Filtr: rok wydania (dokładny, dopasuje tylko gry) */
+                yearPublished?: number;
+                /** @description Filtr: wiek gracza — pozycja odpowiednia dla wieku N (minAge ≤ N) */
+                age?: number;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona trafień w kolejności rankingu */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageSearchResultDto"];
+                };
+            };
+            /** @description Nieprawidłowa wartość parametru (VALIDATION_ERROR) — np. nieznany targetType albo niecałkowita wartość filtra liczbowego */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera lub odrzucone zapytanie wyszukiwarki (SEARCH_FAILED) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Wyszukiwarka nieosiągalna (SEARCH_INDEX_UNAVAILABLE) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    mySubmissions: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wyników ze zgłoszeniami */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageGameDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    mySubmissions_1: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wyników ze zgłoszeniami */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageGameExpansionDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    myGames: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wyników z kolekcji gier */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageGameCollectionItemDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    myExpansions: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Strona wyników z kolekcji dodatków */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageExpansionCollectionItemDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1929,6 +7078,71 @@ export interface operations {
             };
             /** @description Brak uprawnień (wymagana rola ROLE_ADMIN) */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    deletePublisher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wydawca usunięty (brak treści) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Brak uprawnień (wymagana rola MODERATOR/ADMIN) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Wydawca nie istnieje (PUBLISHER_NOT_FOUND) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Wydawca używany przez grę (PUBLISHER_IN_USE) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
