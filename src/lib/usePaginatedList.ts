@@ -17,6 +17,12 @@ import { getApiErrorMessage } from '@/lib/apiError'
 export function usePaginatedList<T>(
   fetchPage: (page: number) => Promise<Page<T>>,
   initialPage = 0,
+  /**
+   * Własna obsługa błędu; `true` = „obsłużone", wtedy hook nie pokazuje toastu.
+   * Ten sam kontrakt co `submit(action, onError?)` w `useApiForm` — potrzebne
+   * tam, gdzie konkretny kod błędu ma własny ekran (np. 503 z wyszukiwarki).
+   */
+  onError?: (error: unknown) => boolean,
 ) {
   const toast = useToast()
   const [page, setPage] = useState(initialPage)
@@ -27,6 +33,12 @@ export function usePaginatedList<T>(
   // żądania nie rozjechał się z danymi (inaczej ponowny klik trafiałby w tę samą
   // wartość page i efekt by się nie odpalił → zawieszony loader).
   const loadedPage = useRef(initialPage)
+  // Callback w refie, nie w zależnościach efektu: inline'owa funkcja z komponentu
+  // zmienia tożsamość co render, więc w deps oznaczałaby pobieranie w kółko.
+  const onErrorRef = useRef(onError)
+  useEffect(() => {
+    onErrorRef.current = onError
+  })
 
   useEffect(() => {
     let active = true
@@ -38,7 +50,7 @@ export function usePaginatedList<T>(
       })
       .catch((err) => {
         if (!active) return
-        toast.error(getApiErrorMessage(err))
+        if (!onErrorRef.current?.(err)) toast.error(getApiErrorMessage(err))
         setPage(loadedPage.current)
       })
       .finally(() => active && setLoading(false))
