@@ -79,8 +79,9 @@ src/
     ui/            # UI-kit Nectar (Button/ButtonLink, Input/PasswordInput, Card, Chip,
                    #   Badge, HexAvatar, Icon, Spinner, Toast, Dialog, Pagination,
                    #   EmptyState, ListSkeleton) + barrel; '@/components/ui'
-    games/         # komponenty modułu gier (GameCard, ModerationStatusBadge,
-                   #   GameFiltersForm) — reużywane przez bibliotekę, szukanie i Vault
+    games/         # komponenty modułu gier (GameCard, ExpansionCard,
+                   #   ModerationStatusBadge, GameFiltersForm) — reużywane przez
+                   #   bibliotekę, szczegóły, szukanie i Vault
     layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, AuthResult,
                    #   Brand, ThemeToggle
     ProtectedRoute.tsx
@@ -91,6 +92,7 @@ src/
     apiError.ts    # getApiErrorMessage + applyApiValidationErrors (błędy serwera -> pola)
     formError.ts   # handleApiFormError — wspólna obsługa błędu submitu (pola + toast)
     usePaginatedList.ts # listy stronicowane (dane/loader/błąd/nawigacja stron)
+    useResource.ts # pojedynczy zasób (ok/notFound/error) — 404 to osobny stan
     gameFilters.ts # filtry biblioteki ↔ query string (adres = źródło prawdy)
     plural.ts      # pluralPl — polska odmiana rzeczownika po liczbie
   pages/           # widoki przypięte do tras (games/ — moduł gier)
