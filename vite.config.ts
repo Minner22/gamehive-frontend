@@ -26,5 +26,27 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    coverage: {
+      provider: 'v8',
+      // `lcov` czyta SonarCloud, `text` jest po to, żeby lokalne uruchomienie
+      // od razu coś pokazywało; `json-summary` ułatwia szybki podgląd liczb.
+      reporter: ['text', 'lcov', 'json-summary'],
+      reportsDirectory: './coverage',
+      // `include` obejmuje też pliki bez ani jednego testu — inaczej pokrycie
+      // rosłoby przez samo nietestowanie modułu.
+      include: ['src/**/*.{ts,tsx}'],
+      // Wykluczenia w duchu backendu (dto/model/config): kod bez logiki do
+      // przetestowania — generowany, czysto typowy albo należący do samych testów.
+      exclude: [
+        'src/api/schema.d.ts', // generowany z OpenAPI (npm run gen:api)
+        'src/api/schema.contract.ts', // sam strażnik typów, zero runtime'u
+        'src/api/types.ts', // aliasy DTO
+        'src/main.tsx', // punkt wejścia
+        'src/vite-env.d.ts',
+        'src/test/**', // pomoce testowe (MSW, fixture'y)
+        '**/*.test.{ts,tsx}',
+        '**/*.d.ts',
+      ],
+    },
   },
 })

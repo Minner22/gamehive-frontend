@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+coverage
 
 # Materiały robocze / referencyjne designu (mockupy Stitch, podgląd logo) — poza repo
 *.zip

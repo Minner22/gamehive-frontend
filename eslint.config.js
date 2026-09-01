@@ -6,7 +6,9 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'src/api/schema.d.ts']), // generowane przez openapi-typescript
+  // Wyniki buildu i narzędzi: schema.d.ts generuje openapi-typescript,
+  // coverage/ — raport HTML Vitesta (ma własny, cudzy JavaScript).
+  globalIgnores(['dist', 'coverage', 'src/api/schema.d.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

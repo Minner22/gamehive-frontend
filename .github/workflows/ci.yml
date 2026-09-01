@@ -5,20 +5,30 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch:
 
 # Anuluj starsze przebiegi dla tej samej gałęzi (oszczędza minuty CI).
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Akcje przypięte do pełnych SHA (ruchomy tag można podmienić pod tym samym
+# wskaźnikiem) — tego wymaga reguła Sonara o zależnościach workflow.
 jobs:
   verify:
     name: lint · test · build
     runs-on: ubuntu-latest
+    # Na poziomie zadania, żeby krok analizy mógł sprawdzić w `if`, czy sekret istnieje.
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: https://sonarcloud.io
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # Sonar potrzebuje pełnej historii, żeby rozpoznać „nowy kod" i autorów zmian.
+          fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22' # ≥ 20.19 wymagane przez Vite 8 (Rolldown)
           cache: npm
@@ -27,6 +37,20 @@ jobs:
 
       - run: npm run lint
 
-      - run: npm run test:run
+      # Testy z pokryciem — raport lcov czyta potem SonarCloud.
+      - run: npm run test:coverage
 
       - run: npm run build
+
+      - name: Cache SonarQube packages
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      # Brak sekretu (np. PR z forka) pomija analizę zamiast wywracać całe CI.
+      - name: SonarCloud
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
