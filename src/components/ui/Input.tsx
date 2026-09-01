@@ -1,6 +1,7 @@
 import { forwardRef, type InputHTMLAttributes, type ReactNode, useId } from 'react'
 import { cn } from '@/lib/cn'
 import { Icon } from './Icon'
+import { describedById } from './fieldDescription'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -24,11 +25,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ) {
   const reactId = useId()
   const inputId = id ?? reactId
-  const describedBy = error
-    ? `${inputId}-error`
-    : hint
-      ? `${inputId}-hint`
-      : undefined
+  const describedBy = describedById(inputId, error, hint)
 
   return (
     <div className="space-y-1.5">

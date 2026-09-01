@@ -1,5 +1,6 @@
 import { forwardRef, type TextareaHTMLAttributes, useId } from 'react'
 import { cn } from '@/lib/cn'
+import { describedById } from './fieldDescription'
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
@@ -16,7 +17,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
 ) {
   const reactId = useId()
   const fieldId = id ?? reactId
-  const describedBy = error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined
+  const describedBy = describedById(fieldId, error, hint)
 
   return (
     <div className="space-y-1.5">

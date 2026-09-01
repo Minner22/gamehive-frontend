@@ -2,6 +2,7 @@ import { type KeyboardEvent, useEffect, useId, useMemo, useState } from 'react'
 import { cn } from '@/lib/cn'
 import { useDebouncedValue } from '@/lib/useDebouncedValue'
 import { Badge } from './Badge'
+import { describedById } from './fieldDescription'
 import { Icon } from './Icon'
 import { Spinner } from './Spinner'
 
@@ -140,7 +141,7 @@ export function Combobox({
     }
   }
 
-  const describedBy = error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined
+  const describedBy = describedById(fieldId, error, hint)
 
   return (
     <div className="space-y-1.5">
