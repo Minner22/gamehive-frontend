@@ -16,6 +16,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: ROUTES.dashboard, icon: 'dashboard', label: 'Dashboard' },
   { to: ROUTES.games.library, icon: 'casino', label: 'Gry', end: true },
+  { to: ROUTES.expansions.library, icon: 'extension', label: 'Dodatki' },
   { to: ROUTES.games.search, icon: 'search', label: 'Szukaj' },
   { to: ROUTES.profile, icon: 'person', label: 'Profil' },
   { to: ROUTES.uiKit, icon: 'palette', label: 'UI-kit' },
