@@ -29,11 +29,17 @@ gier, profile). Konsumuje REST API backendu Spring Boot:
 | `npm run lint`    | ESLint                                |
 | `npm test`        | testy w trybie watch (Vitest)         |
 | `npm run test:run`| testy jednorazowo (CI)                |
+| `npm run test:coverage` | testy + pokrycie (`coverage/lcov.info` dla Sonara) |
 | `npm run gen:api` | regeneracja typów z OpenAPI (backend) |
 
 Przed commitem upewnij się, że `npm run build`, `npm run lint` i `npm run test:run` przechodzą.
 **CI** (`.github/workflows/ci.yml`, GitHub Actions, Node 22) uruchamia `lint` +
-`test:run` + `build` na każdym PR i pushu do `master`.
+`test:coverage` + `build` na każdym PR i pushu do `master`, a na koniec **analizę
+SonarCloud** (`sonar-project.properties`, organizacja `minner22`, projekt
+`Minner22_gamehive-frontend` — ten sam układ co w backendzie). Krok analizy wykonuje się
+tylko, gdy repo ma sekret `SONAR_TOKEN`; bez niego CI idzie dalej bez Sonara.
+Wykluczenia pokrycia trzymaj **zgodne** w dwóch miejscach: `test.coverage.exclude`
+w `vite.config.ts` i `sonar.coverage.exclusions` w `sonar-project.properties`.
 
 **Testy:** Vitest + React Testing Library + MSW (jsdom). Setup i serwer MSW w
 `src/test/` (`setup.ts`, `server.ts`, `handlers.ts` — handlery origin-agnostic `*/...`,
