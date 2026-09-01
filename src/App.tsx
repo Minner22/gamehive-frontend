@@ -8,6 +8,7 @@ import NotFoundPage from '@/pages/NotFoundPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
 import ProfilePage from '@/pages/ProfilePage'
 import GameDetailPage from '@/pages/games/GameDetailPage'
+import GameSearchPage from '@/pages/games/GameSearchPage'
 import GamesLibraryPage from '@/pages/games/GamesLibraryPage'
 import UiKitPage from '@/pages/UiKitPage'
 import AdminAuditPage from '@/pages/admin/AdminAuditPage'
@@ -54,6 +55,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <GamesLibraryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.games.search}
+          element={
+            <ProtectedRoute>
+              <GameSearchPage />
             </ProtectedRoute>
           }
         />
