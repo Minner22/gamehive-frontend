@@ -101,7 +101,8 @@ src/
     formError.ts   # handleApiFormError — wspólna obsługa błędu submitu (pola + toast)
     usePaginatedList.ts # listy stronicowane (dane/loader/błąd/nawigacja stron)
     useResource.ts # pojedynczy zasób (ok/notFound/error) — 404 to osobny stan
-    gameFilters.ts # filtry biblioteki ↔ query string (adres = źródło prawdy)
+    gameFilters.ts # filtry biblioteki i wyszukiwarki ↔ query string (adres = źródło prawdy)
+    useDebouncedValue.ts # opóźniona wartość (pole szukania nie strzela na literę)
     plural.ts      # pluralPl — polska odmiana rzeczownika po liczbie
   pages/           # widoki przypięte do tras (games/ — moduł gier)
   routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
