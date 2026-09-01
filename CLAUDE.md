@@ -40,6 +40,8 @@ SonarCloud** (`sonar-project.properties`, organizacja `minner22`, projekt
 tylko, gdy repo ma sekret `SONAR_TOKEN`; bez niego CI idzie dalej bez Sonara.
 Wykluczenia pokrycia trzymaj **zgodne** w dwóch miejscach: `test.coverage.exclude`
 w `vite.config.ts` i `sonar.coverage.exclusions` w `sonar-project.properties`.
+Akcje w workflow są przypięte do **pełnych SHA** (z komentarzem, jaka to wersja) —
+ruchomy tag da się podmienić pod tym samym wskaźnikiem i Sonar to zgłasza.
 
 **Testy:** Vitest + React Testing Library + MSW (jsdom). Setup i serwer MSW w
 `src/test/` (`setup.ts`, `server.ts`, `handlers.ts` — handlery origin-agnostic `*/...`,
