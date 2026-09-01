@@ -31,7 +31,11 @@ function Meta({ icon, children, title }: { icon: string; children: ReactNode; ti
   )
 }
 
-export function ExpansionCard({ expansion, action, showBaseGame }: ExpansionCardProps) {
+export function ExpansionCard({
+  expansion,
+  action,
+  showBaseGame,
+}: Readonly<ExpansionCardProps>) {
   const players =
     expansion.effectiveMinPlayers === expansion.effectiveMaxPlayers
       ? String(expansion.effectiveMinPlayers)

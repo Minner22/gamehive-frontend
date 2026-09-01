@@ -3,7 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import { isAxiosError } from 'axios'
 import { searchGames, type GameLibraryFilter, type GameSearchFilter } from '@/api/games'
 import { listCategories, listMechanics } from '@/api/taxonomy'
-import type { ApiError, CategoryDto, MechanicDto, SearchResultDto, SearchTargetType } from '@/api/types'
+import type {
+  ApiError,
+  CategoryDto,
+  MechanicDto,
+  Page,
+  SearchResultDto,
+  SearchTargetType,
+} from '@/api/types'
 import { ExpansionCard } from '@/components/games/ExpansionCard'
 import { GameCard } from '@/components/games/GameCard'
 import { GameFiltersForm } from '@/components/games/GameFiltersForm'
@@ -47,12 +54,117 @@ function isSearchUnavailable(error: unknown): boolean {
   return error.response?.status === 503 || code === 'SEARCH_INDEX_UNAVAILABLE'
 }
 
-function SearchResult({ result }: { result: SearchResultDto }) {
+function SearchResult({ result }: Readonly<{ result: SearchResultDto }>) {
   if (result.targetType === 'EXPANSION' && result.expansion) {
     return <ExpansionCard expansion={result.expansion} showBaseGame />
   }
   if (result.game) return <GameCard game={result.game} />
   return null
+}
+
+interface SearchResultsProps {
+  unavailable: boolean
+  data: Page<SearchResultDto> | null
+  loading: boolean
+  onReload: () => void
+  onPageChange: (page: number) => void
+}
+
+/**
+ * Wyniki jako osobny komponent z wczesnymi returnami — ten sam układ przypadków
+ * w łańcuchu ternary był nieczytelny (i słusznie zgłoszony przez Sonara).
+ */
+function SearchResults({
+  unavailable,
+  data,
+  loading,
+  onReload,
+  onPageChange,
+}: Readonly<SearchResultsProps>) {
+  if (unavailable) {
+    return (
+      <EmptyState
+        icon="search_off"
+        title="Wyszukiwarka jest chwilowo niedostępna"
+        description="Silnik wyszukiwania nie odpowiada. Biblioteka działa normalnie — czyta prosto z bazy."
+        action={
+          <div className="flex flex-wrap justify-center gap-2">
+            <ButtonLink to={ROUTES.games.library} variant="secondary" iconLeft="menu_book">
+              Przejdź do biblioteki
+            </ButtonLink>
+            <Button variant="secondary" iconLeft="refresh" onClick={onReload}>
+              Spróbuj ponownie
+            </Button>
+          </div>
+        }
+      />
+    )
+  }
+
+  if (!data) {
+    if (!loading) {
+      return (
+        <EmptyState
+          icon="cloud_off"
+          title="Nie udało się wyszukać"
+          description="Sprawdź połączenie i spróbuj ponownie."
+          action={
+            <Button variant="secondary" iconLeft="refresh" onClick={onReload}>
+              Spróbuj ponownie
+            </Button>
+          }
+        />
+      )
+    }
+    return (
+      <>
+        <output className="sr-only">Szukanie…</output>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+          <ListSkeleton count={3} />
+        </div>
+      </>
+    )
+  }
+
+  if (data.empty) {
+    return (
+      <EmptyState
+        icon="search_off"
+        title="Brak trafień"
+        description="Spróbuj innej frazy albo poluzuj filtry — wyszukiwarka obejmuje wyłącznie pozycje zatwierdzone."
+      />
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy={loading}>
+        {data.content.map((result) => (
+          <SearchResult
+            key={`${result.targetType}-${result.game?.id ?? result.expansion?.id}`}
+            result={result}
+          />
+        ))}
+      </div>
+
+      {data.totalElements >= MAX_TOTAL_HITS && (
+        <p className="text-xs text-on-surface-variant">
+          Pokazujemy pierwsze {MAX_TOTAL_HITS} trafień — zawęź zapytanie, żeby zobaczyć resztę.
+        </p>
+      )}
+
+      <Pagination
+        number={data.number}
+        totalPages={data.totalPages}
+        totalElements={data.totalElements}
+        isFirst={data.first}
+        isLast={data.last}
+        disabled={loading}
+        onChange={onPageChange}
+        unit={pluralPl(data.totalElements, 'trafienie', 'trafienia', 'trafień')}
+      />
+    </div>
+  )
 }
 
 export default function GameSearchPage() {
@@ -210,79 +322,13 @@ export default function GameSearchPage() {
         mają tych pól w modelu.
       </p>
 
-      {unavailable ? (
-        <EmptyState
-          icon="search_off"
-          title="Wyszukiwarka jest chwilowo niedostępna"
-          description="Silnik wyszukiwania nie odpowiada. Biblioteka działa normalnie — czyta prosto z bazy."
-          action={
-            <div className="flex flex-wrap justify-center gap-2">
-              <ButtonLink to={ROUTES.games.library} variant="secondary" iconLeft="menu_book">
-                Przejdź do biblioteki
-              </ButtonLink>
-              <Button variant="secondary" iconLeft="refresh" onClick={reload}>
-                Spróbuj ponownie
-              </Button>
-            </div>
-          }
-        />
-      ) : !data ? (
-        loading ? (
-          <>
-            <p className="sr-only" role="status">
-              Szukanie…
-            </p>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
-              <ListSkeleton count={3} />
-            </div>
-          </>
-        ) : (
-          <EmptyState
-            icon="cloud_off"
-            title="Nie udało się wyszukać"
-            description="Sprawdź połączenie i spróbuj ponownie."
-            action={
-              <Button variant="secondary" iconLeft="refresh" onClick={reload}>
-                Spróbuj ponownie
-              </Button>
-            }
-          />
-        )
-      ) : data.empty ? (
-        <EmptyState
-          icon="search_off"
-          title="Brak trafień"
-          description="Spróbuj innej frazy albo poluzuj filtry — wyszukiwarka obejmuje wyłącznie pozycje zatwierdzone."
-        />
-      ) : (
-        <div className="space-y-4">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy={loading}>
-            {data.content.map((result) => (
-              <SearchResult
-                key={`${result.targetType}-${result.game?.id ?? result.expansion?.id}`}
-                result={result}
-              />
-            ))}
-          </div>
-
-          {data.totalElements >= MAX_TOTAL_HITS && (
-            <p className="text-xs text-on-surface-variant">
-              Pokazujemy pierwsze {MAX_TOTAL_HITS} trafień — zawęź zapytanie, żeby zobaczyć resztę.
-            </p>
-          )}
-
-          <Pagination
-            number={data.number}
-            totalPages={data.totalPages}
-            totalElements={data.totalElements}
-            isFirst={data.first}
-            isLast={data.last}
-            disabled={loading}
-            onChange={changePage}
-            unit={pluralPl(data.totalElements, 'trafienie', 'trafienia', 'trafień')}
-          />
-        </div>
-      )}
+      <SearchResults
+        unavailable={unavailable}
+        data={data}
+        loading={loading}
+        onReload={reload}
+        onPageChange={changePage}
+      />
     </div>
   )
 }
