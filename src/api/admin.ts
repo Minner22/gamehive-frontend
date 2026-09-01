@@ -1,4 +1,5 @@
 import apiClient from './client'
+import { pageParams, setIfPresent } from './params'
 import type {
   AuditAction,
   PageAuditLogResponseDto,
@@ -9,19 +10,10 @@ import type {
 } from './types'
 
 /** Stronicowana lista użytkowników (panel admina). */
-export async function listUsers({
-  page = 0,
-  size = 20,
-  sort,
-}: PageableRequest = {}): Promise<PageUserResponseDto> {
-  const params = new URLSearchParams()
-  params.set('page', String(page))
-  params.set('size', String(size))
-  // Spring oczekuje powtórzonego `sort` (np. sort=username,asc) — nie tablicy[].
-  for (const s of sort ?? []) params.append('sort', s)
+export async function listUsers(pageable: PageableRequest = {}): Promise<PageUserResponseDto> {
   // Uwaga: endpoint listy ma końcowy slash.
   const { data } = await apiClient.get<PageUserResponseDto>(
-    `/api/v1/admin/users/?${params.toString()}`,
+    `/api/v1/admin/users/?${pageParams(pageable)}`,
   )
   return data
 }
@@ -82,15 +74,12 @@ export async function listAuditLogs(
   filter: AuditLogFilter = {},
   { page = 0, size = 20, sort = ['createdAt,desc'] }: PageableRequest = {},
 ): Promise<PageAuditLogResponseDto> {
-  const params = new URLSearchParams()
-  params.set('page', String(page))
-  params.set('size', String(size))
-  for (const s of sort) params.append('sort', s)
-  if (filter.targetId) params.set('targetId', filter.targetId)
-  if (filter.actor) params.set('actor', filter.actor)
-  if (filter.action) params.set('action', filter.action)
-  if (filter.from) params.set('from', filter.from)
-  if (filter.to) params.set('to', filter.to)
+  const params = pageParams({ page, size, sort })
+  setIfPresent(params, 'targetId', filter.targetId)
+  setIfPresent(params, 'actor', filter.actor)
+  setIfPresent(params, 'action', filter.action)
+  setIfPresent(params, 'from', filter.from)
+  setIfPresent(params, 'to', filter.to)
   const { data } = await apiClient.get<PageAuditLogResponseDto>(
     `/api/v1/admin/audit?${params.toString()}`,
   )
