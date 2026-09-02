@@ -82,11 +82,21 @@ function GameExpansions({ gameId }: { gameId: number }) {
     <Section
       title="Dodatki"
       action={
-        state.status === 'ok' && !state.data.empty ? (
-          <ButtonLink to={allExpansionsHref} variant="ghost" size="sm" iconRight="arrow_forward">
-            Wszystkie
+        <div className="flex flex-wrap gap-2">
+          <ButtonLink
+            to={`${ROUTES.expansions.new}?baseGameId=${gameId}`}
+            variant="ghost"
+            size="sm"
+            iconLeft="add"
+          >
+            Zgłoś dodatek
           </ButtonLink>
-        ) : null
+          {state.status === 'ok' && !state.data.empty && (
+            <ButtonLink to={allExpansionsHref} variant="ghost" size="sm" iconRight="arrow_forward">
+              Wszystkie
+            </ButtonLink>
+          )}
+        </div>
       }
     >
       {state.status === 'loading' && (

@@ -53,12 +53,17 @@ export default function ExpansionsLibraryPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-headline text-3xl font-extrabold tracking-tight">Dodatki</h1>
-        <p className="mt-1 text-on-surface-variant">
-          Zatwierdzone dodatki do gier z biblioteki. Puste pola dodatku znaczą, że dziedziczy je
-          z gry bazowej.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-headline text-3xl font-extrabold tracking-tight">Dodatki</h1>
+          <p className="mt-1 text-on-surface-variant">
+            Zatwierdzone dodatki do gier z biblioteki. Puste pola dodatku znaczą, że dziedziczy je
+            z gry bazowej.
+          </p>
+        </div>
+        <ButtonLink to={ROUTES.expansions.new} iconLeft="add">
+          Zgłoś dodatek
+        </ButtonLink>
       </header>
 
       {filters.baseGameId !== undefined && (
