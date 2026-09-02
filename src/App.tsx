@@ -10,6 +10,7 @@ import ProfilePage from '@/pages/ProfilePage'
 import GameDetailPage from '@/pages/games/GameDetailPage'
 import GameFormPage from '@/pages/games/GameFormPage'
 import ExpansionDetailPage from '@/pages/games/ExpansionDetailPage'
+import ExpansionFormPage from '@/pages/games/ExpansionFormPage'
 import ExpansionsLibraryPage from '@/pages/games/ExpansionsLibraryPage'
 import GameSearchPage from '@/pages/games/GameSearchPage'
 import VaultPage from '@/pages/games/VaultPage'
@@ -99,6 +100,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ExpansionsLibraryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.expansions.new}
+          element={
+            <ProtectedRoute>
+              <ExpansionFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.expansions.editPattern}
+          element={
+            <ProtectedRoute>
+              <ExpansionFormPage />
             </ProtectedRoute>
           }
         />

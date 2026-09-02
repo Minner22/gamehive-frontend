@@ -1,16 +1,15 @@
 import { useCallback } from 'react'
 import { Controller } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
-import { isAxiosError } from 'axios'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createGame, getGame, submitGame, updateGame } from '@/api/games'
 import { suggestAuthors, suggestPublishers } from '@/api/taxonomy'
-import type { ApiError, GameDto, GameRequestDto } from '@/api/types'
+import type { GameDto, GameRequestDto } from '@/api/types'
+import { SubmissionActions } from '@/components/games/SubmissionActions'
+import { TaxonomyChips } from '@/components/games/TaxonomyChips'
 import {
-  Button,
   ButtonLink,
   Card,
-  Chip,
   Combobox,
   EmptyState,
   Input,
@@ -19,6 +18,7 @@ import {
   Textarea,
   type ComboboxItem,
 } from '@/components/ui'
+import { getApiErrorCode, getApiErrorMessage } from '@/lib/apiError'
 import { formatAuthorName, splitAuthorName } from '@/lib/authorName'
 import { useApiForm } from '@/lib/useApiForm'
 import { useResource } from '@/lib/useResource'
@@ -105,11 +105,6 @@ function toRequestDto(values: ReturnType<typeof gameSubmissionSchema.parse>): Ga
   }
 }
 
-function errorCodeOf(error: unknown): string | undefined {
-  if (!isAxiosError(error)) return undefined
-  return (error.response?.data as ApiError | undefined)?.errorCode
-}
-
 interface GameFormProps {
   game?: GameDto
 }
@@ -162,7 +157,7 @@ function GameForm({ game }: Readonly<GameFormProps>) {
 
   /** Błędy domenowe backendu trafiają przy pola, a nie do ogólnego toastu. */
   const handleDomainError = (error: unknown): boolean => {
-    const code = errorCodeOf(error)
+    const code = getApiErrorCode(error)
     if (!code) return false
     if (code === 'GAME_NOT_EDITABLE') {
       toast.error('Zgłoszenie jest już w moderacji — nie można go teraz edytować.')
@@ -171,7 +166,7 @@ function GameForm({ game }: Readonly<GameFormProps>) {
     }
     const field = FIELD_BY_ERROR_CODE[code]
     if (!field) return false
-    setError(field, { message: errorMessage(error, code) })
+    setError(field, { message: getApiErrorMessage(error, code) })
     return true
   }
 
@@ -326,98 +321,40 @@ function GameForm({ game }: Readonly<GameFormProps>) {
               control={control}
               name="categoryIds"
               render={({ field }) => (
-                <fieldset>
-                  <legend className="px-1 pb-2 text-sm font-semibold text-on-surface-variant">
-                    Kategorie
-                  </legend>
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map((category) => (
-                      <Chip
-                        key={category.id}
-                        selected={field.value.includes(category.id!)}
-                        onClick={() =>
-                          field.onChange(
-                            field.value.includes(category.id!)
-                              ? field.value.filter((id) => id !== category.id)
-                              : [...field.value, category.id!],
-                          )
-                        }
-                      >
-                        {category.name}
-                      </Chip>
-                    ))}
-                  </div>
-                  {errors.categoryIds && (
-                    <p role="alert" className="px-1 pt-2 text-xs font-medium text-error">
-                      {errors.categoryIds.message}
-                    </p>
-                  )}
-                </fieldset>
+                <TaxonomyChips
+                  legend="Kategorie"
+                  options={categories}
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.categoryIds?.message}
+                />
               )}
             />
             <Controller
               control={control}
               name="mechanicIds"
               render={({ field }) => (
-                <fieldset>
-                  <legend className="px-1 pb-2 text-sm font-semibold text-on-surface-variant">
-                    Mechaniki
-                  </legend>
-                  <div className="flex flex-wrap gap-2">
-                    {mechanics.map((mechanic) => (
-                      <Chip
-                        key={mechanic.id}
-                        selected={field.value.includes(mechanic.id!)}
-                        onClick={() =>
-                          field.onChange(
-                            field.value.includes(mechanic.id!)
-                              ? field.value.filter((id) => id !== mechanic.id)
-                              : [...field.value, mechanic.id!],
-                          )
-                        }
-                      >
-                        {mechanic.name}
-                      </Chip>
-                    ))}
-                  </div>
-                </fieldset>
+                <TaxonomyChips
+                  legend="Mechaniki"
+                  options={mechanics}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               )}
             />
           </div>
         </Section>
 
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" variant="secondary" iconLeft="save" loading={isSubmitting} disabled={locked}>
-            {editing ? 'Zapisz zmiany' : 'Zapisz szkic'}
-          </Button>
-          <Button
-            type="button"
-            iconLeft="send"
-            loading={isSubmitting}
-            disabled={locked}
-            onClick={save(true)}
-          >
-            Wyślij do moderacji
-          </Button>
-          <ButtonLink
-            to={editing ? ROUTES.games.detail(game.id) : ROUTES.games.library}
-            variant="ghost"
-          >
-            Anuluj
-          </ButtonLink>
-        </div>
+        <SubmissionActions
+          editing={editing}
+          locked={locked}
+          busy={isSubmitting}
+          onSubmitToModeration={save(true)}
+          cancelHref={editing ? ROUTES.games.detail(game.id) : ROUTES.games.library}
+        />
       </form>
     </div>
   )
-}
-
-/** Komunikat serwera, a gdy go brak — czytelny opis znanego kodu. */
-function errorMessage(error: unknown, code: string): string {
-  if (isAxiosError(error)) {
-    const message = (error.response?.data as ApiError | undefined)?.message
-    if (message) return message
-  }
-  return code
 }
 
 /** Ładowanie istniejącego zgłoszenia — osobny komponent, żeby tryb tworzenia

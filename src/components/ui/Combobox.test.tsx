@@ -11,9 +11,11 @@ const OPTIONS: ComboboxItem[] = [
 
 function Harness({
   allowCreate,
+  single,
   fetchOptions = vi.fn(async () => OPTIONS),
 }: {
   allowCreate?: boolean
+  single?: boolean
   fetchOptions?: (query: string) => Promise<ComboboxItem[]>
 }) {
   const [value, setValue] = useState<ComboboxItem[]>([])
@@ -24,6 +26,7 @@ function Harness({
       onChange={setValue}
       fetchOptions={fetchOptions}
       allowCreate={allowCreate}
+      single={single}
     />
   )
 }
@@ -80,6 +83,20 @@ describe('Combobox', () => {
     await userEvent.type(screen.getByRole('combobox'), 'Czegoś takiego nie ma')
 
     expect(screen.queryByRole('option')).not.toBeInTheDocument()
+  })
+
+  /** Tryb pojedynczy: druga pozycja zastępuje pierwszą (np. gra bazowa dodatku). */
+  it('w trybie single wybór zastępuje poprzedni', async () => {
+    render(<Harness single />)
+    const input = screen.getByRole('combobox')
+
+    await userEvent.type(input, 'look')
+    await userEvent.click(await screen.findByRole('option', { name: /Lookout Games/ }))
+    await userEvent.type(input, 'pending')
+    await userEvent.click(await screen.findByRole('option', { name: /Pending Games/ }))
+
+    expect(screen.getByRole('button', { name: 'Usuń: Pending Games' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Usuń: Lookout Games' })).not.toBeInTheDocument()
   })
 
   it('Backspace na pustym polu zdejmuje ostatni wybór', async () => {

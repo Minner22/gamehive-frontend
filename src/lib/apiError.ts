@@ -17,6 +17,16 @@ export function getApiErrorMessage(
   return fallback
 }
 
+/**
+ * Kod błędu domenowego z odpowiedzi (`ApiError.errorCode`). Po nim rozpoznajemy
+ * przypadki, które mają własną obsługę — np. `ALREADY_IN_COLLECTION` czy
+ * `BASE_GAME_NOT_APPROVED` — zamiast pokazywać generyczny komunikat.
+ */
+export function getApiErrorCode(error: unknown): string | undefined {
+  if (!isAxiosError(error)) return undefined
+  return (error.response?.data as ApiError | undefined)?.errorCode
+}
+
 export interface ApiValidationResult {
   /** Czy choć jeden błąd został przypisany do pola formularza. */
   applied: boolean
