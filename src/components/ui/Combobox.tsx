@@ -24,6 +24,10 @@ interface ComboboxProps {
   fetchOptions: (query: string) => Promise<ComboboxItem[]>
   /** Czy z wpisanego tekstu można utworzyć nową pozycję (wydawcy, autorzy — tak; kategorie — nie). */
   allowCreate?: boolean
+  /** Wybór pojedynczy: nowy wybór zastępuje poprzedni (np. gra bazowa dodatku). */
+  single?: boolean
+  /** Pole tylko do odczytu — pokazuje wybór, ale nie pozwala go zmienić. */
+  disabled?: boolean
   placeholder?: string
   hint?: string
   error?: string
@@ -49,6 +53,8 @@ export function Combobox({
   onChange,
   fetchOptions,
   allowCreate,
+  single,
+  disabled,
   placeholder,
   hint,
   error,
@@ -104,7 +110,8 @@ export function Combobox({
     : visibleOptions
 
   const select = (item: ComboboxItem) => {
-    if (!selectedKeys.has(keyOf(item))) onChange([...value, item])
+    if (single) onChange([item])
+    else if (!selectedKeys.has(keyOf(item))) onChange([...value, item])
     setQuery('')
     setActiveIndex(-1)
     setOpen(false)
@@ -157,14 +164,16 @@ export function Combobox({
                 {item.label}
                 {item.id === undefined && <Badge tone="info">nowy</Badge>}
                 {item.pending && <Badge tone="neutral">oczekuje</Badge>}
-                <button
-                  type="button"
-                  onClick={() => removeAt(index)}
-                  aria-label={`Usuń: ${item.label}`}
-                  className="rounded-full p-0.5 hover:bg-on-primary-fixed/10"
-                >
-                  <Icon name="close" className="text-base" />
-                </button>
+                {!disabled && (
+                  <button
+                    type="button"
+                    onClick={() => removeAt(index)}
+                    aria-label={`Usuń: ${item.label}`}
+                    className="rounded-full p-0.5 hover:bg-on-primary-fixed/10"
+                  >
+                    <Icon name="close" className="text-base" />
+                  </button>
+                )}
               </span>
             </li>
           ))}
@@ -184,6 +193,7 @@ export function Combobox({
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           autoComplete="off"
+          disabled={disabled}
           value={query}
           placeholder={placeholder}
           onChange={(e) => {
@@ -198,6 +208,7 @@ export function Combobox({
             'placeholder:text-on-surface-variant/50 transition-all duration-300',
             'focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary',
             error && 'bg-error-container/20 ring-2 ring-error/50 focus:ring-error',
+            disabled && 'cursor-not-allowed opacity-60',
           )}
         />
         {loading && (
