@@ -193,3 +193,44 @@ export const gameSubmissionSchema = z
 export type GameSubmissionInput = z.input<typeof gameSubmissionSchema>
 /** Dane po walidacji — gotowe do złożenia `GameRequestDto`. */
 export type GameSubmissionPayload = z.output<typeof gameSubmissionSchema>
+
+// --- Zgłoszenie dodatku --------------------------------------------------
+
+/**
+ * Formularz zgłoszenia dodatku. Puste pole nadpisania znaczy „dziedziczę z gry
+ * bazowej", więc liczby są **opcjonalne** — inaczej niż w grze, gdzie są wymagane.
+ *
+ * Reguły `min <= max` tu nie ma: backend liczy ją na wartościach **efektywnych**
+ * (własna albo odziedziczona), czego schemat nie wie bez danych gry bazowej —
+ * sprawdza to strona formularza tuż przed wysłaniem.
+ */
+const optionalCount = (label: string) =>
+  z.coerce
+    .number()
+    .int('Podaj liczbę całkowitą')
+    .min(1, `${label}: minimum 1`)
+    .optional()
+    .or(z.literal('').transform(() => undefined))
+
+export const expansionSubmissionSchema = z.object({
+  baseGame: z
+    .array(z.object({ id: z.number().optional(), label: z.string() }))
+    .min(1, 'Wskaż grę bazową'),
+  name: z.string().trim().min(1, 'Podaj nazwę dodatku').max(255, 'Nazwa: maksymalnie 255 znaków'),
+  description: z.string().trim().min(1, 'Podaj opis dodatku'),
+  minPlayers: optionalCount('Min. graczy'),
+  maxPlayers: optionalCount('Maks. graczy'),
+  playingTimeMinutes: optionalCount('Czas gry'),
+  minAge: z.coerce
+    .number()
+    .int('Podaj liczbę całkowitą')
+    .min(0)
+    .max(21, 'Wiek gracza: 0–21')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  categoryIds: z.array(z.number()),
+  mechanicIds: z.array(z.number()),
+})
+
+export type ExpansionSubmissionInput = z.input<typeof expansionSubmissionSchema>
+export type ExpansionSubmissionPayload = z.output<typeof expansionSubmissionSchema>
