@@ -5,7 +5,7 @@
  * NIE edytuj `schema.d.ts` ręcznie. Tu trzymamy wygodne aliasy oraz to, czego
  * OpenAPI nie wyraża: generyk `Page<T>` (Spring Data) i unię `Role`.
  */
-import type { components } from './schema'
+import type { components, paths } from './schema'
 
 type Schemas = components['schemas']
 
@@ -66,6 +66,15 @@ export type RejectContentRequestDto = Schemas['RejectContentRequestDto']
 
 /** Status w przepływie moderacji: biblioteka to wyłącznie APPROVED. */
 export type ModerationStatus = GameDto['moderationStatus']
+
+/**
+ * Statusy, po których wolno filtrować kolejkę moderacji. Backend odrzuca
+ * pozostałe (400): APPROVED znajduje się przez bibliotekę, a DRAFT jest
+ * prywatnym szkicem autora.
+ */
+export type ModerationQueueStatus = NonNullable<
+  NonNullable<paths['/api/v1/moderation/games']['get']['parameters']['query']>['status']
+>
 
 // --- Kolekcja („The Vault") ----------------------------------------------
 

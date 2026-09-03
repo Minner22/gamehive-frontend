@@ -11,6 +11,8 @@ import { ModerationStatusBadge } from './ModerationStatusBadge'
  */
 export interface ModerationEntry {
   id: number
+  /** Status, w jakim zgłoszenie jest teraz — decyduje o dostępnych akcjach. */
+  status: ModerationStatus
   name: string
   /** Kto zgłosił (identyfikator z backendu — DTO nie niesie nazwy użytkownika). */
   submittedBy: string
@@ -24,8 +26,8 @@ export interface ModerationEntry {
 
 interface ModerationCardProps {
   entry: ModerationEntry
-  /** Status po decyzji — `undefined`, dopóki zgłoszenie czeka w kolejce. */
-  decidedAs?: ModerationStatus
+  /** Czy obecny status jest skutkiem decyzji podjętej przed chwilą w tej sesji. */
+  decided?: boolean
   onDecided: (status: ModerationStatus) => void
 }
 
@@ -35,7 +37,7 @@ const DECISION_NOTE: Partial<Record<ModerationStatus, string>> = {
   DRAFT: 'Odblokowane — wróciło do autora jako szkic, licznik poprawek wyzerowany.',
 }
 
-export function ModerationCard({ entry, decidedAs, onDecided }: Readonly<ModerationCardProps>) {
+export function ModerationCard({ entry, decided, onDecided }: Readonly<ModerationCardProps>) {
   const [busy, setBusy] = useState<'approve' | 'reject' | 'unlock' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [rejecting, setRejecting] = useState(false)
@@ -76,10 +78,10 @@ export function ModerationCard({ entry, decidedAs, onDecided }: Readonly<Moderat
     <Card className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-headline text-lg font-bold text-on-surface">{entry.name}</h3>
-        {decidedAs ? (
-          <ModerationStatusBadge status={decidedAs} className="shrink-0" />
-        ) : (
+        {entry.status === 'PENDING' ? (
           <Badge tone="info">Czeka na decyzję</Badge>
+        ) : (
+          <ModerationStatusBadge status={entry.status} className="shrink-0" />
         )}
       </div>
 
@@ -98,8 +100,8 @@ export function ModerationCard({ entry, decidedAs, onDecided }: Readonly<Moderat
 
       {entry.details}
 
-      {decidedAs && (
-        <p className="text-sm text-on-surface-variant">{DECISION_NOTE[decidedAs]}</p>
+      {decided && (
+        <p className="text-sm text-on-surface-variant">{DECISION_NOTE[entry.status]}</p>
       )}
 
       {error && (
@@ -114,7 +116,7 @@ export function ModerationCard({ entry, decidedAs, onDecided }: Readonly<Moderat
           Podgląd
         </ButtonLink>
 
-        {!decidedAs && (
+        {entry.status === 'PENDING' && (
           <>
             <Button
               size="sm"
@@ -136,12 +138,8 @@ export function ModerationCard({ entry, decidedAs, onDecided }: Readonly<Moderat
           </>
         )}
 
-        {/*
-          Odblokowanie ma sens tylko dla zgłoszenia odrzuconego, a backend nie
-          wystawia listy odrzuconych — jedyny moment, gdy moderator ma je pod ręką,
-          to chwila zaraz po własnej decyzji.
-        */}
-        {decidedAs === 'REJECTED' && (
+        {/* Odblokowanie dotyczy wyłącznie zgłoszeń odrzuconych (REJECTED → DRAFT). */}
+        {entry.status === 'REJECTED' && (
           <Button
             size="sm"
             variant="secondary"

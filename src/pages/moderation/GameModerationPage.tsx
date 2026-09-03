@@ -1,14 +1,24 @@
 import { useCallback, useState } from 'react'
-import { approveGame, listPendingGames, rejectGame, unlockGame } from '@/api/moderation'
-import type { GameModerationDto, ModerationStatus } from '@/api/types'
+import { approveGame, listModerationGames, rejectGame, unlockGame } from '@/api/moderation'
+import type { GameModerationDto, ModerationQueueStatus, ModerationStatus } from '@/api/types'
 import { ModerationCard } from '@/components/games/ModerationCard'
 import { ResultsSection } from '@/components/games/ResultsSection'
-import { Badge, EmptyState, Icon } from '@/components/ui'
+import { Badge, Chip, EmptyState, Icon } from '@/components/ui'
 import { pluralPl } from '@/lib/plural'
 import { usePaginatedList } from '@/lib/usePaginatedList'
 import { ROUTES } from '@/routes/paths'
 
 const PAGE_SIZE = 10
+
+/**
+ * Kolejka ma dwa stany do pracy: oczekujące na decyzję i odrzucone, które można
+ * odblokować autorowi. APPROVED i DRAFT backend odrzuca (400) — pierwsze znajduje
+ * się przez bibliotekę, drugie jest prywatnym szkicem autora.
+ */
+const QUEUES: { value: ModerationQueueStatus; label: string }[] = [
+  { value: 'PENDING', label: 'Oczekujące' },
+  { value: 'REJECTED', label: 'Odrzucone' },
+]
 
 /** Dane, na których moderator faktycznie podejmuje decyzję. */
 function GameDetails({ game }: Readonly<{ game: GameModerationDto }>) {
@@ -64,7 +74,11 @@ function GameDetails({ game }: Readonly<{ game: GameModerationDto }>) {
 }
 
 export default function GameModerationPage() {
-  const fetchPage = useCallback((page: number) => listPendingGames({ page, size: PAGE_SIZE }), [])
+  const [queue, setQueue] = useState<ModerationQueueStatus>('PENDING')
+  const fetchPage = useCallback(
+    (page: number) => listModerationGames(queue, { page, size: PAGE_SIZE }),
+    [queue],
+  )
   const { data, loading, goToPage, reload } = usePaginatedList(fetchPage)
 
   // Po decyzji zgłoszenie znika z kolejki po stronie backendu, ale zostaje na ekranie
@@ -82,6 +96,21 @@ export default function GameModerationPage() {
         </p>
       </header>
 
+      <div className="flex flex-wrap items-center gap-2">
+        {QUEUES.map((entry) => (
+          <Chip
+            key={entry.value}
+            selected={queue === entry.value}
+            onClick={() => {
+              setQueue(entry.value)
+              goToPage(0)
+            }}
+          >
+            {entry.label}
+          </Chip>
+        ))}
+      </div>
+
       <ResultsSection
         data={data}
         loading={loading}
@@ -94,18 +123,24 @@ export default function GameModerationPage() {
         empty={
           <EmptyState
             icon="task_alt"
-            title="Kolejka jest pusta"
-            description="Żadne zgłoszenie gry nie czeka teraz na decyzję."
+            title={queue === 'PENDING' ? 'Kolejka jest pusta' : 'Brak odrzuconych zgłoszeń'}
+            description={
+              queue === 'PENDING'
+                ? 'Żadne zgłoszenie gry nie czeka teraz na decyzję.'
+                : 'Nie ma zgłoszeń, które można odblokować autorowi.'
+            }
           />
         }
       >
         {(game) => (
           <ModerationCard
             key={game.id}
-            decidedAs={decisions[game.id]}
+            decided={decisions[game.id] !== undefined}
             onDecided={(status) => setDecisions((current) => ({ ...current, [game.id]: status }))}
             entry={{
               id: game.id,
+              // Decyzja z tej sesji ma pierwszeństwo przed statusem z pobranej strony.
+              status: decisions[game.id] ?? game.moderationStatus,
               name: game.title,
               submittedBy: game.submittedBy,
               resubmissionCount: game.resubmissionCount,

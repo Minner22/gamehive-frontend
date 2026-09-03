@@ -23,12 +23,16 @@ function makeModerationGame(overrides: Partial<GameModerationDto> = {}): GameMod
   }
 }
 
-function mockQueue(items: GameModerationDto[]) {
+let lastQueueStatus: string | null = null
+
+function mockQueue(pending: GameModerationDto[], rejected: GameModerationDto[] = []) {
   queueCalls = 0
+  lastQueueStatus = null
   server.use(
-    http.get(`${ANY_ORIGIN}/api/v1/moderation/games`, () => {
+    http.get(`${ANY_ORIGIN}/api/v1/moderation/games`, ({ request }) => {
       queueCalls++
-      return HttpResponse.json(makePage(items))
+      lastQueueStatus = new URL(request.url).searchParams.get('status')
+      return HttpResponse.json(makePage(lastQueueStatus === 'REJECTED' ? rejected : pending))
     }),
   )
 }
@@ -45,6 +49,7 @@ function renderQueue() {
 
 describe('GameModerationPage', () => {
   beforeEach(() => mockQueue([makeModerationGame()]))
+
 
   it('pokazuje dane, na których podejmuje się decyzję', async () => {
     mockQueue([
@@ -94,7 +99,7 @@ describe('GameModerationPage', () => {
     expect(rejectCalls).toBe(0)
   })
 
-  it('odrzucenie z powodem wysyła go i odsłania odblokowanie', async () => {
+  it('odrzucenie z powodem wysyła go do backendu', async () => {
     let sentReason: string | undefined
     server.use(
       http.post(`${ANY_ORIGIN}/api/v1/moderation/games/1/reject`, async ({ request }) => {
@@ -109,16 +114,40 @@ describe('GameModerationPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /Odrzuć zgłoszenie/ }))
 
     await waitFor(() => expect(sentReason).toBe('Duplikat pozycji'))
-    expect(await screen.findByRole('button', { name: /Odblokuj autorowi/ })).toBeInTheDocument()
   })
 
-  it('odblokowanie wraca do autora jako szkic', async () => {
+  /**
+   * Odrzucone zgłoszenia mają własną kolejkę (backend GH-138) — bez niej moderator
+   * nie miałby jak wrócić do odrzuconej pozycji i odblokować jej autorowi.
+   */
+  it('przełącznik pokazuje kolejkę odrzuconych i pozwala odblokować', async () => {
+    mockQueue(
+      [makeModerationGame()],
+      [makeModerationGame({ id: 2, title: 'Odrzucona gra', moderationStatus: 'REJECTED' })],
+    )
+    server.use(
+      http.post(`${ANY_ORIGIN}/api/v1/moderation/games/2/unlock`, () =>
+        HttpResponse.json(makeModerationGame({ id: 2, moderationStatus: 'DRAFT' })),
+      ),
+    )
+    renderQueue()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Odrzucone' }))
+
+    expect(await screen.findByText('Odrzucona gra')).toBeInTheDocument()
+    expect(lastQueueStatus).toBe('REJECTED')
+    // Zgłoszenie odrzucone nie ma już decyzji do podjęcia — tylko odblokowanie.
+    expect(screen.queryByRole('button', { name: /^Zatwierdź/ })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /Odblokuj autorowi/ }))
+
+    expect(await screen.findByText(/licznik poprawek wyzerowany/)).toBeInTheDocument()
+  })
+
+  it('odrzucenie w kolejce oczekujących odsłania odblokowanie od razu', async () => {
     server.use(
       http.post(`${ANY_ORIGIN}/api/v1/moderation/games/1/reject`, () =>
         HttpResponse.json(makeModerationGame({ moderationStatus: 'REJECTED' })),
-      ),
-      http.post(`${ANY_ORIGIN}/api/v1/moderation/games/1/unlock`, () =>
-        HttpResponse.json(makeModerationGame({ moderationStatus: 'DRAFT' })),
       ),
     )
     renderQueue()
@@ -126,9 +155,8 @@ describe('GameModerationPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: /Odrzuć$/ }))
     await userEvent.type(screen.getByLabelText('Powód odrzucenia'), 'Za mało danych')
     await userEvent.click(screen.getByRole('button', { name: /Odrzuć zgłoszenie/ }))
-    await userEvent.click(await screen.findByRole('button', { name: /Odblokuj autorowi/ }))
 
-    expect(await screen.findByText(/licznik poprawek wyzerowany/)).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /Odblokuj autorowi/ })).toBeInTheDocument()
   })
 
   /** Dwóch moderatorów naraz: drugi ma dostać zrozumiałą informację, nie surowy kod. */
