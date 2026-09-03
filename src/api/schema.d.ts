@@ -922,10 +922,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Kolejka zgłoszeń oczekujących (stronicowana)
-         * @description Gry w statusie PENDING oczekujące na decyzję. Parametry stronicowania: page, size, sort.
+         * Kolejka zgłoszeń (stronicowana)
+         * @description Domyślnie gry w statusie PENDING. Parametr status pozwala przejść na zgłoszenia REJECTED — bez tego odrzuconego zgłoszenia nie da się odnaleźć, a POST /{id}/unlock jest nieosiągalny z interfejsu. APPROVED (biblioteka) i DRAFT (prywatny szkic autora) nie są obsługiwane — inna wartość kończy się 400. Parametry stronicowania: page, size, sort.
          */
-        get: operations["pendingQueue"];
+        get: operations["getGameModerationQueue"];
         put?: never;
         post?: never;
         delete?: never;
@@ -943,9 +943,9 @@ export interface paths {
         };
         /**
          * Kolejka zgłoszeń dodatków (stronicowana)
-         * @description Dodatki w statusie PENDING oczekujące na decyzję. Parametry stronicowania: page, size, sort.
+         * @description Domyślnie dodatki w statusie PENDING. Parametr status pozwala przejść na zgłoszenia REJECTED — bez tego odrzuconego zgłoszenia nie da się odnaleźć, a POST /{id}/unlock jest nieosiągalny z interfejsu. APPROVED (biblioteka) i DRAFT (prywatny szkic autora) nie są obsługiwane — inna wartość kończy się 400. Parametry stronicowania: page, size, sort.
          */
-        get: operations["pendingQueue_1"];
+        get: operations["getExpansionModerationQueue"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6299,9 +6299,11 @@ export interface operations {
             };
         };
     };
-    pendingQueue: {
+    getGameModerationQueue: {
         parameters: {
             query: {
+                /** @description Filtr statusu kolejki: PENDING (domyślnie) albo REJECTED. */
+                status?: "PENDING" | "REJECTED";
                 pageable: components["schemas"]["Pageable"];
             };
             header?: never;
@@ -6317,6 +6319,15 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageGameModerationDto"];
+                };
+            };
+            /** @description Nieobsługiwana wartość parametru status (VALIDATION_ERROR) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
                 };
             };
             /** @description Brak lub nieprawidłowy token dostępowy */
@@ -6348,9 +6359,11 @@ export interface operations {
             };
         };
     };
-    pendingQueue_1: {
+    getExpansionModerationQueue: {
         parameters: {
             query: {
+                /** @description Filtr statusu kolejki: PENDING (domyślnie) albo REJECTED. */
+                status?: "PENDING" | "REJECTED";
                 pageable: components["schemas"]["Pageable"];
             };
             header?: never;
@@ -6366,6 +6379,15 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageGameExpansionModerationDto"];
+                };
+            };
+            /** @description Nieobsługiwana wartość parametru status (VALIDATION_ERROR) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
                 };
             };
             /** @description Brak lub nieprawidłowy token dostępowy */

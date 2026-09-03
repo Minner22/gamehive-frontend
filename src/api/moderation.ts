@@ -13,6 +13,7 @@ import type {
   GameExpansionRequestDto,
   GameModerationDto,
   GameRequestDto,
+  ModerationQueueStatus,
   PageGameExpansionModerationDto,
   PageGameModerationDto,
   PageableRequest,
@@ -25,12 +26,19 @@ type ExpansionRequestPayload = GameExpansionRequestDto & { submit: boolean }
 
 // --- Gry -----------------------------------------------------------------
 
-/** Kolejka zgłoszeń oczekujących (PENDING). */
-export async function listPendingGames(
+/**
+ * Kolejka zgłoszeń. Domyślnie PENDING; `REJECTED` pokazuje zgłoszenia odrzucone —
+ * bez tego filtra nie dałoby się ich odnaleźć, a `unlock` byłby nieosiągalny
+ * (backend GH-138). APPROVED i DRAFT są odrzucane przez walidację.
+ */
+export async function listModerationGames(
+  status: ModerationQueueStatus = 'PENDING',
   pageable: PageableRequest = {},
 ): Promise<PageGameModerationDto> {
+  const params = pageParams(pageable)
+  params.set('status', status)
   const { data } = await apiClient.get<PageGameModerationDto>(
-    `/api/v1/moderation/games?${pageParams(pageable)}`,
+    `/api/v1/moderation/games?${params.toString()}`,
   )
   return data
 }
@@ -81,11 +89,14 @@ export async function deleteGame(id: number): Promise<void> {
 
 // --- Dodatki -------------------------------------------------------------
 
-export async function listPendingExpansions(
+export async function listModerationExpansions(
+  status: ModerationQueueStatus = 'PENDING',
   pageable: PageableRequest = {},
 ): Promise<PageGameExpansionModerationDto> {
+  const params = pageParams(pageable)
+  params.set('status', status)
   const { data } = await apiClient.get<PageGameExpansionModerationDto>(
-    `/api/v1/moderation/expansions?${pageParams(pageable)}`,
+    `/api/v1/moderation/expansions?${params.toString()}`,
   )
   return data
 }
