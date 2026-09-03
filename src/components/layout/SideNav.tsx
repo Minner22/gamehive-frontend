@@ -72,6 +72,22 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
           </NavLink>
         ))}
 
+        {(hasRole('ROLE_MODERATOR') || hasRole('ROLE_ADMIN')) && (
+          <>
+            <p className="px-4 pb-1 pt-5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/60">
+              Moderacja
+            </p>
+            <NavLink to={ROUTES.moderation.games} onClick={onNavigate} className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  <Icon name="gavel" filled={isActive} />
+                  <span>Zgłoszenia gier</span>
+                </>
+              )}
+            </NavLink>
+          </>
+        )}
+
         {hasRole('ROLE_ADMIN') && (
           <>
             <p className="px-4 pb-1 pt-5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/60">
