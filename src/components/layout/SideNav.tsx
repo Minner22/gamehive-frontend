@@ -19,6 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: ROUTES.expansions.library, icon: 'extension', label: 'Dodatki' },
   { to: ROUTES.games.search, icon: 'search', label: 'Szukaj' },
   { to: ROUTES.vault, icon: 'inventory_2', label: 'The Vault' },
+  { to: ROUTES.games.my, icon: 'edit_note', label: 'Moje zgłoszenia' },
   { to: ROUTES.profile, icon: 'person', label: 'Profil' },
   { to: ROUTES.uiKit, icon: 'palette', label: 'UI-kit' },
 ]

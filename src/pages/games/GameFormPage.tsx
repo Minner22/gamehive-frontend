@@ -20,6 +20,7 @@ import {
 } from '@/components/ui'
 import { getApiErrorCode, getApiErrorMessage } from '@/lib/apiError'
 import { formatAuthorName, splitAuthorName } from '@/lib/authorName'
+import { isSubmissionEditable } from '@/lib/moderationStatus'
 import { useApiForm } from '@/lib/useApiForm'
 import { useResource } from '@/lib/useResource'
 import { useTaxonomyOptions } from '@/lib/useTaxonomyOptions'
@@ -49,11 +50,6 @@ const EMPTY_FORM: GameSubmissionInput = {
 }
 
 const FORM_FIELDS = Object.keys(EMPTY_FORM)
-
-/** Edytować można wyłącznie własny szkic albo zgłoszenie odrzucone. */
-function isEditable(game: GameDto): boolean {
-  return game.moderationStatus === 'DRAFT' || game.moderationStatus === 'REJECTED'
-}
 
 function formValuesFromGame(game: GameDto): GameSubmissionInput {
   return {
@@ -113,7 +109,7 @@ function GameForm({ game }: Readonly<GameFormProps>) {
   const navigate = useNavigate()
   const { categories, mechanics } = useTaxonomyOptions()
   const editing = game !== undefined
-  const locked = editing && !isEditable(game)
+  const locked = editing && !isSubmissionEditable(game.moderationStatus)
 
   const form = useApiForm<GameSubmissionInput>(
     {

@@ -24,6 +24,7 @@ import {
   type ComboboxItem,
 } from '@/components/ui'
 import { getApiErrorCode, getApiErrorMessage } from '@/lib/apiError'
+import { isSubmissionEditable } from '@/lib/moderationStatus'
 import { useApiForm } from '@/lib/useApiForm'
 import { useResource } from '@/lib/useResource'
 import { useTaxonomyOptions } from '@/lib/useTaxonomyOptions'
@@ -52,10 +53,6 @@ const EMPTY_FORM: ExpansionSubmissionInput = {
 
 const FORM_FIELDS = Object.keys(EMPTY_FORM)
 
-function isEditable(expansion: GameExpansionDto): boolean {
-  return expansion.moderationStatus === 'DRAFT' || expansion.moderationStatus === 'REJECTED'
-}
-
 /** `''` w polu nadpisania znaczy „dziedziczę" — do API leci wtedy `undefined`. */
 function overrideValue(raw: string | number | undefined): number | undefined {
   if (raw === undefined || raw === '') return undefined
@@ -73,7 +70,7 @@ function ExpansionForm({ expansion, presetBaseGameId }: Readonly<ExpansionFormPr
   const navigate = useNavigate()
   const { categories, mechanics } = useTaxonomyOptions()
   const editing = expansion !== undefined
-  const locked = editing && !isEditable(expansion)
+  const locked = editing && !isSubmissionEditable(expansion.moderationStatus)
 
   const form = useApiForm<ExpansionSubmissionInput>(
     {
