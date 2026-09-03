@@ -13,6 +13,7 @@ import ExpansionDetailPage from '@/pages/games/ExpansionDetailPage'
 import ExpansionFormPage from '@/pages/games/ExpansionFormPage'
 import ExpansionsLibraryPage from '@/pages/games/ExpansionsLibraryPage'
 import GameSearchPage from '@/pages/games/GameSearchPage'
+import MySubmissionsPage from '@/pages/games/MySubmissionsPage'
 import VaultPage from '@/pages/games/VaultPage'
 import GamesLibraryPage from '@/pages/games/GamesLibraryPage'
 import UiKitPage from '@/pages/UiKitPage'
@@ -68,6 +69,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <GameSearchPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.games.my}
+          element={
+            <ProtectedRoute>
+              <MySubmissionsPage />
             </ProtectedRoute>
           }
         />
