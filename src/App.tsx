@@ -14,6 +14,7 @@ import ExpansionFormPage from '@/pages/games/ExpansionFormPage'
 import ExpansionsLibraryPage from '@/pages/games/ExpansionsLibraryPage'
 import GameSearchPage from '@/pages/games/GameSearchPage'
 import MySubmissionsPage from '@/pages/games/MySubmissionsPage'
+import ExpansionModerationPage from '@/pages/moderation/ExpansionModerationPage'
 import GameModerationPage from '@/pages/moderation/GameModerationPage'
 import VaultPage from '@/pages/games/VaultPage'
 import GamesLibraryPage from '@/pages/games/GamesLibraryPage'
@@ -166,6 +167,14 @@ export default function App() {
           element={
             <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
               <GameModerationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.moderation.expansions}
+          element={
+            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+              <ExpansionModerationPage />
             </ProtectedRoute>
           }
         />
