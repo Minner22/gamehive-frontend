@@ -1,30 +1,15 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { approveGame, listModerationGames, rejectGame, unlockGame } from '@/api/moderation'
-import type { GameModerationDto, ModerationQueueStatus, ModerationStatus } from '@/api/types'
-import { ModerationCard } from '@/components/games/ModerationCard'
-import { ResultsSection } from '@/components/games/ResultsSection'
-import { Badge, Chip, EmptyState, Icon } from '@/components/ui'
-import { pluralPl } from '@/lib/plural'
-import { usePaginatedList } from '@/lib/usePaginatedList'
-import { ROUTES } from '@/routes/paths'
-
-const PAGE_SIZE = 10
-
-/**
- * Kolejka ma dwa stany do pracy: oczekujące na decyzję i odrzucone, które można
- * odblokować autorowi. APPROVED i DRAFT backend odrzuca (400) — pierwsze znajduje
- * się przez bibliotekę, drugie jest prywatnym szkicem autora.
- */
-const QUEUES: { value: ModerationQueueStatus; label: string }[] = [
-  { value: 'PENDING', label: 'Oczekujące' },
-  { value: 'REJECTED', label: 'Odrzucone' },
-]
+import type { GameModerationDto, ModerationQueueStatus } from '@/api/types'
+import { ModerationQueue } from '@/components/games/ModerationQueue'
+import { Badge, Icon } from '@/components/ui'
 
 /** Dane, na których moderator faktycznie podejmuje decyzję. */
 function GameDetails({ game }: Readonly<{ game: GameModerationDto }>) {
   return (
     <div className="space-y-3">
-      <p className="line-clamp-3 text-sm text-on-surface-variant">{game.description}</p>
+      {/* Cały opis, bez ucinania: podglądu nie ma dokąd otworzyć — patrz ModerationCard. */}
+      <p className="whitespace-pre-line text-sm text-on-surface-variant">{game.description}</p>
 
       <div className="flex flex-wrap gap-3 text-sm text-on-surface-variant">
         <span className="flex items-center gap-1" title="Liczba graczy">
@@ -74,86 +59,28 @@ function GameDetails({ game }: Readonly<{ game: GameModerationDto }>) {
 }
 
 export default function GameModerationPage() {
-  const [queue, setQueue] = useState<ModerationQueueStatus>('PENDING')
   const fetchPage = useCallback(
-    (page: number) => listModerationGames(queue, { page, size: PAGE_SIZE }),
-    [queue],
+    (status: ModerationQueueStatus, page: number, size: number) =>
+      listModerationGames(status, { page, size }),
+    [],
   )
-  const { data, loading, goToPage, reload } = usePaginatedList(fetchPage)
-
-  // Po decyzji zgłoszenie znika z kolejki po stronie backendu, ale zostaje na ekranie
-  // z widocznym skutkiem — inaczej lista skakałaby moderatorowi pod rękami.
-  const [decisions, setDecisions] = useState<Record<number, ModerationStatus>>({})
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-headline text-3xl font-extrabold tracking-tight">
-          Moderacja: zgłoszenia gier
-        </h1>
-        <p className="mt-1 text-on-surface-variant">
-          Zatwierdzenie dodaje grę do biblioteki i zatwierdza jej nowych wydawców oraz autorów.
-        </p>
-      </header>
-
-      <div className="flex flex-wrap items-center gap-2">
-        {QUEUES.map((entry) => (
-          <Chip
-            key={entry.value}
-            selected={queue === entry.value}
-            onClick={() => {
-              setQueue(entry.value)
-              goToPage(0)
-            }}
-          >
-            {entry.label}
-          </Chip>
-        ))}
-      </div>
-
-      <ResultsSection
-        data={data}
-        loading={loading}
-        onReload={reload}
-        onPageChange={goToPage}
-        loadingLabel="Ładowanie kolejki…"
-        errorTitle="Nie udało się wczytać kolejki"
-        unit={pluralPl(data?.totalElements ?? 0, 'zgłoszenie', 'zgłoszenia', 'zgłoszeń')}
-        skeletonClassName="h-64"
-        empty={
-          <EmptyState
-            icon="task_alt"
-            title={queue === 'PENDING' ? 'Kolejka jest pusta' : 'Brak odrzuconych zgłoszeń'}
-            description={
-              queue === 'PENDING'
-                ? 'Żadne zgłoszenie gry nie czeka teraz na decyzję.'
-                : 'Nie ma zgłoszeń, które można odblokować autorowi.'
-            }
-          />
-        }
-      >
-        {(game) => (
-          <ModerationCard
-            key={game.id}
-            decided={decisions[game.id] !== undefined}
-            onDecided={(status) => setDecisions((current) => ({ ...current, [game.id]: status }))}
-            entry={{
-              id: game.id,
-              // Decyzja z tej sesji ma pierwszeństwo przed statusem z pobranej strony.
-              status: decisions[game.id] ?? game.moderationStatus,
-              name: game.title,
-              submittedBy: game.submittedBy,
-              resubmissionCount: game.resubmissionCount,
-              detailHref: ROUTES.games.detail(game.id),
-              details: <GameDetails game={game} />,
-              approve: async () => (await approveGame(game.id)).moderationStatus,
-              reject: async (reason) =>
-                (await rejectGame(game.id, { reason })).moderationStatus,
-              unlock: async () => (await unlockGame(game.id)).moderationStatus,
-            }}
-          />
-        )}
-      </ResultsSection>
-    </div>
+    <ModerationQueue
+      title="Moderacja: zgłoszenia gier"
+      description="Zatwierdzenie dodaje grę do biblioteki i zatwierdza jej nowych wydawców oraz autorów."
+      subjectGenitive="gry"
+      fetchPage={fetchPage}
+      toEntry={(game) => ({
+        id: game.id,
+        name: game.title,
+        submittedBy: game.submittedBy,
+        resubmissionCount: game.resubmissionCount,
+        details: <GameDetails game={game} />,
+        approve: async () => (await approveGame(game.id)).moderationStatus,
+        reject: async (reason) => (await rejectGame(game.id, { reason })).moderationStatus,
+        unlock: async () => (await unlockGame(game.id)).moderationStatus,
+      })}
+    />
   )
 }
