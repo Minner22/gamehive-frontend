@@ -4,19 +4,11 @@ import { getExpansion } from '@/api/expansions'
 import type { CategoryDto, GameExpansionDto, MechanicDto } from '@/api/types'
 import { ModerationStatusBadge } from '@/components/games/ModerationStatusBadge'
 import { CollectionButton } from '@/components/games/CollectionButton'
+import { SourceNote } from '@/components/games/SourceNote'
 import { Badge, Button, ButtonLink, Card, EmptyState, Icon, Section, Spinner } from '@/components/ui'
 import { resolveCollection, resolvePlayers, resolveValue, type ValueSource } from '@/lib/expansionValues'
 import { useResource } from '@/lib/useResource'
 import { ROUTES } from '@/routes/paths'
-
-/** Podpis pod wartością: skąd ona jest. To sedno tego widoku. */
-function SourceNote({ inherited }: Readonly<{ inherited: boolean }>) {
-  return inherited ? (
-    <span className="text-xs text-on-surface-variant">z gry bazowej</span>
-  ) : (
-    <Badge tone="gold">nadpisane</Badge>
-  )
-}
 
 function StatTile({
   icon,
