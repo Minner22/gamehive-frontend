@@ -94,7 +94,8 @@ src/
                    #   '@/components/ui'
     games/         # komponenty modułu gier (GameCard, ExpansionCard,
                    #   ModerationStatusBadge, Game/ExpansionFiltersForm, SourceNote,
-                   #   ModerationCard + ModerationQueue — wspólne dla gier i dodatków)
+                   #   ModerationCard + ModerationQueue — wspólne dla gier i dodatków,
+                   #   LibraryModeratorActions — edycja/usuwanie pozycji z biblioteki)
     layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, AuthResult,
                    #   Brand, ThemeToggle
     ProtectedRoute.tsx
@@ -124,6 +125,10 @@ src/
   (`role="ROLE_ADMIN"`) albo listę, z której wystarczy **którakolwiek**
   (`role={['ROLE_MODERATOR','ROLE_ADMIN']}` dla moderacji).
   Wywołania API rób przez moduły z `@/api/*`, nie bezpośrednio przez `apiClient`.
+  Formularze gry i dodatku mają dwa tryby: `owner` (własne zgłoszenie, `/games/{id}`)
+  i `moderator` (pozycja z biblioteki, `/moderation/**`, trasy `/moderation/*/:id/edit`).
+  Z kolejki moderacji **nie linkuj** do `/games/{id}` ani `/expansions/{id}` — oba są
+  enumeration-safe, więc moderator dostaje 404 na cudze zgłoszenie.
 
 - **Moduł gier — pułapki kontraktu** (pełny opis: `CLAUDE.md` backendu):
   biblioteka to wyłącznie `moderationStatus = APPROVED`, a „moje zgłoszenia" to własne
