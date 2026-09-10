@@ -110,6 +110,12 @@ function toRequestDto(values: ReturnType<typeof gameSubmissionSchema.parse>): Ga
  */
 export type GameFormMode = 'owner' | 'moderator'
 
+/** Nagłówek zależy od trybu i od tego, czy edytujemy — bez zagnieżdżonego ternary. */
+function formHeading(moderating: boolean, editing: boolean): string {
+  if (moderating) return 'Edycja pozycji z biblioteki'
+  return editing ? 'Edycja zgłoszenia' : 'Zgłoś grę'
+}
+
 interface GameFormProps {
   game?: GameDto
   mode?: GameFormMode
@@ -215,7 +221,7 @@ function GameForm({ game, mode = 'owner' }: Readonly<GameFormProps>) {
     <div className="space-y-6">
       <header>
         <h1 className="font-headline text-3xl font-extrabold tracking-tight">
-          {moderating ? 'Edycja pozycji z biblioteki' : editing ? 'Edycja zgłoszenia' : 'Zgłoś grę'}
+          {formHeading(moderating, editing)}
         </h1>
         <p className="mt-1 text-on-surface-variant">
           {moderating

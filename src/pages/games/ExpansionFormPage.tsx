@@ -64,6 +64,12 @@ function overrideValue(raw: string | number | undefined): number | undefined {
 /** Patrz `GameFormMode`: autor edytuje zgłoszenie, moderator — pozycję z biblioteki. */
 export type ExpansionFormMode = 'owner' | 'moderator'
 
+/** Nagłówek zależy od trybu i od tego, czy edytujemy — bez zagnieżdżonego ternary. */
+function formHeading(moderating: boolean, editing: boolean): string {
+  if (moderating) return 'Edycja dodatku w bibliotece'
+  return editing ? 'Edycja dodatku' : 'Zgłoś dodatek'
+}
+
 interface ExpansionFormProps {
   expansion?: GameExpansionDto
   /** Gra bazowa z adresu (`?baseGameId=`) — wejście z konkretnej gry. */
@@ -234,7 +240,7 @@ function ExpansionForm({
     <div className="space-y-6">
       <header>
         <h1 className="font-headline text-3xl font-extrabold tracking-tight">
-          {moderating ? 'Edycja dodatku w bibliotece' : editing ? 'Edycja dodatku' : 'Zgłoś dodatek'}
+          {formHeading(moderating, editing)}
         </h1>
         <p className="mt-1 text-on-surface-variant">
           Wypełnij tylko to, co dodatek zmienia — resztę przejmie po grze bazowej.
