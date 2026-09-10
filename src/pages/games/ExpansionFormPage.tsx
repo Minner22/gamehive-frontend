@@ -9,6 +9,7 @@ import {
   updateExpansion,
 } from '@/api/expansions'
 import { getGame, searchGames } from '@/api/games'
+import { updateApprovedExpansion } from '@/api/moderation'
 import type { GameDto, GameExpansionDto, GameExpansionRequestDto } from '@/api/types'
 import { SubmissionActions } from '@/components/games/SubmissionActions'
 import { TaxonomyChips } from '@/components/games/TaxonomyChips'
@@ -60,17 +61,30 @@ function overrideValue(raw: string | number | undefined): number | undefined {
   return Number.isFinite(value) ? value : undefined
 }
 
+/** Patrz `GameFormMode`: autor edytuje zgłoszenie, moderator — pozycję z biblioteki. */
+export type ExpansionFormMode = 'owner' | 'moderator'
+
 interface ExpansionFormProps {
   expansion?: GameExpansionDto
   /** Gra bazowa z adresu (`?baseGameId=`) — wejście z konkretnej gry. */
   presetBaseGameId?: number
+  mode?: ExpansionFormMode
 }
 
-function ExpansionForm({ expansion, presetBaseGameId }: Readonly<ExpansionFormProps>) {
+function ExpansionForm({
+  expansion,
+  presetBaseGameId,
+  mode = 'owner',
+}: Readonly<ExpansionFormProps>) {
   const navigate = useNavigate()
   const { categories, mechanics } = useTaxonomyOptions()
   const editing = expansion !== undefined
-  const locked = editing && !isSubmissionEditable(expansion.moderationStatus)
+  const moderating = mode === 'moderator'
+  const locked =
+    editing &&
+    (moderating
+      ? expansion.moderationStatus !== 'APPROVED'
+      : !isSubmissionEditable(expansion.moderationStatus))
 
   const form = useApiForm<ExpansionSubmissionInput>(
     {
@@ -150,6 +164,11 @@ function ExpansionForm({ expansion, presetBaseGameId }: Readonly<ExpansionFormPr
       navigate(ROUTES.expansions.detail(expansion!.id))
       return true
     }
+    if (code === 'EXPANSION_NOT_APPROVED') {
+      toast.error('Tą ścieżką edytuje się wyłącznie pozycje z biblioteki.')
+      navigate(ROUTES.expansions.detail(expansion!.id))
+      return true
+    }
     const field = FIELD_BY_ERROR_CODE[code]
     if (!field) return false
     setError(field, { message: getApiErrorMessage(error, code) })
@@ -183,6 +202,13 @@ function ExpansionForm({ expansion, presetBaseGameId }: Readonly<ExpansionFormPr
         mechanicIds: parsed.mechanicIds,
       }
 
+      if (editing && moderating) {
+        await updateApprovedExpansion(expansion.id, dto)
+        toast.success('Zapisano zmiany w bibliotece.')
+        navigate(ROUTES.expansions.detail(expansion.id))
+        return
+      }
+
       if (editing) {
         await updateExpansion(expansion.id, dto)
         if (sendToModeration) await submitExpansion(expansion.id)
@@ -208,7 +234,7 @@ function ExpansionForm({ expansion, presetBaseGameId }: Readonly<ExpansionFormPr
     <div className="space-y-6">
       <header>
         <h1 className="font-headline text-3xl font-extrabold tracking-tight">
-          {editing ? 'Edycja dodatku' : 'Zgłoś dodatek'}
+          {moderating ? 'Edycja dodatku w bibliotece' : editing ? 'Edycja dodatku' : 'Zgłoś dodatek'}
         </h1>
         <p className="mt-1 text-on-surface-variant">
           Wypełnij tylko to, co dodatek zmienia — resztę przejmie po grze bazowej.
@@ -218,8 +244,9 @@ function ExpansionForm({ expansion, presetBaseGameId }: Readonly<ExpansionFormPr
       {locked && (
         <Card className="bg-error-container">
           <p className="text-sm text-on-error-container">
-            To zgłoszenie czeka na decyzję moderatora albo jest już w bibliotece — edycja jest
-            zablokowana.
+            {moderating
+              ? 'Tą ścieżką edytuje się wyłącznie pozycje z biblioteki — ten dodatek nie jest zatwierdzony.'
+              : 'To zgłoszenie czeka na decyzję moderatora albo jest już w bibliotece — edycja jest zablokowana.'}
           </p>
         </Card>
       )}
@@ -343,7 +370,7 @@ function ExpansionForm({ expansion, presetBaseGameId }: Readonly<ExpansionFormPr
           editing={editing}
           locked={locked}
           busy={isSubmitting}
-          onSubmitToModeration={save(true)}
+          onSubmitToModeration={moderating ? undefined : save(true)}
           cancelHref={
             editing ? ROUTES.expansions.detail(expansion.id) : ROUTES.expansions.library
           }
@@ -354,7 +381,10 @@ function ExpansionForm({ expansion, presetBaseGameId }: Readonly<ExpansionFormPr
 }
 
 /** Ładowanie istniejącego zgłoszenia — osobno, żeby tryb tworzenia nic nie pobierał. */
-function ExpansionEditLoader({ expansionId }: Readonly<{ expansionId: number }>) {
+function ExpansionEditLoader({
+  expansionId,
+  mode,
+}: Readonly<{ expansionId: number; mode: ExpansionFormMode }>) {
   const fetchExpansion = useCallback(() => getExpansion(expansionId), [expansionId])
   const { state } = useResource(fetchExpansion)
 
@@ -391,10 +421,12 @@ function ExpansionEditLoader({ expansionId }: Readonly<{ expansionId: number }>)
     )
   }
 
-  return <ExpansionForm expansion={state.data} />
+  return <ExpansionForm expansion={state.data} mode={mode} />
 }
 
-export default function ExpansionFormPage() {
+export default function ExpansionFormPage({
+  mode = 'owner',
+}: Readonly<{ mode?: ExpansionFormMode }>) {
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
 
@@ -423,5 +455,5 @@ export default function ExpansionFormPage() {
     )
   }
 
-  return <ExpansionEditLoader expansionId={expansionId} />
+  return <ExpansionEditLoader expansionId={expansionId} mode={mode} />
 }

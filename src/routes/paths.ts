@@ -38,6 +38,11 @@ export const ROUTES = {
   moderation: {
     games: '/moderation/games',
     expansions: '/moderation/expansions',
+    /** Edycja pozycji z biblioteki (APPROVED) — inna ścieżka niż edycja własnego zgłoszenia. */
+    editGamePattern: '/moderation/games/:id/edit',
+    editGame: (id: number | string) => `/moderation/games/${id}/edit`,
+    editExpansionPattern: '/moderation/expansions/:id/edit',
+    editExpansion: (id: number | string) => `/moderation/expansions/${id}/edit`,
   },
   admin: {
     users: '/admin/users',
