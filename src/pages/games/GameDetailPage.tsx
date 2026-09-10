@@ -3,7 +3,9 @@ import { useParams } from 'react-router-dom'
 import { getGame } from '@/api/games'
 import { listExpansions } from '@/api/expansions'
 import type { GameDto } from '@/api/types'
+import { deleteGame } from '@/api/moderation'
 import { ExpansionCard } from '@/components/games/ExpansionCard'
+import { LibraryModeratorActions } from '@/components/games/LibraryModeratorActions'
 import { CollectionButton } from '@/components/games/CollectionButton'
 import { ModerationStatusBadge } from '@/components/games/ModerationStatusBadge'
 import {
@@ -168,6 +170,17 @@ function GameDetail({ game }: { game: GameDto }) {
           )}
 
           <CollectionButton target="game" id={game.id} name={game.title} size="md" />
+
+          {game.moderationStatus === 'APPROVED' && (
+            <LibraryModeratorActions
+              kind="game"
+              name={game.title}
+              editHref={ROUTES.moderation.editGame(game.id)}
+              remove={() => deleteGame(game.id)}
+              afterDeleteHref={ROUTES.games.library}
+              expansionsHref={`${ROUTES.expansions.library}?baseGameId=${game.id}`}
+            />
+          )}
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatTile icon="group" label="Gracze" value={players} />

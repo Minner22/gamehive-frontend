@@ -3,6 +3,7 @@ import { Controller } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createGame, getGame, submitGame, updateGame } from '@/api/games'
+import { updateApprovedGame } from '@/api/moderation'
 import { suggestAuthors, suggestPublishers } from '@/api/taxonomy'
 import type { GameDto, GameRequestDto } from '@/api/types'
 import { SubmissionActions } from '@/components/games/SubmissionActions'
@@ -101,15 +102,33 @@ function toRequestDto(values: ReturnType<typeof gameSubmissionSchema.parse>): Ga
   }
 }
 
-interface GameFormProps {
-  game?: GameDto
+/**
+ * `owner` — autor edytuje własne zgłoszenie (DRAFT/REJECTED) przez `/games/{id}`.
+ * `moderator` — moderator edytuje pozycję z biblioteki (APPROVED) przez
+ * `/moderation/games/{id}`: bez wysyłki do moderacji, a nowa taksonomia jest
+ * zatwierdzana od razu, bo pozycja w bibliotece nie może wskazywać na oczekującą.
+ */
+export type GameFormMode = 'owner' | 'moderator'
+
+/** Nagłówek zależy od trybu i od tego, czy edytujemy — bez zagnieżdżonego ternary. */
+function formHeading(moderating: boolean, editing: boolean): string {
+  if (moderating) return 'Edycja pozycji z biblioteki'
+  return editing ? 'Edycja zgłoszenia' : 'Zgłoś grę'
 }
 
-function GameForm({ game }: Readonly<GameFormProps>) {
+interface GameFormProps {
+  game?: GameDto
+  mode?: GameFormMode
+}
+
+function GameForm({ game, mode = 'owner' }: Readonly<GameFormProps>) {
   const navigate = useNavigate()
   const { categories, mechanics } = useTaxonomyOptions()
   const editing = game !== undefined
-  const locked = editing && !isSubmissionEditable(game.moderationStatus)
+  const moderating = mode === 'moderator'
+  const locked =
+    editing &&
+    (moderating ? game.moderationStatus !== 'APPROVED' : !isSubmissionEditable(game.moderationStatus))
 
   const form = useApiForm<GameSubmissionInput>(
     {
@@ -160,6 +179,11 @@ function GameForm({ game }: Readonly<GameFormProps>) {
       navigate(ROUTES.games.detail(game!.id))
       return true
     }
+    if (code === 'GAME_NOT_APPROVED') {
+      toast.error('Tą ścieżką edytuje się wyłącznie pozycje z biblioteki.')
+      navigate(ROUTES.games.detail(game!.id))
+      return true
+    }
     const field = FIELD_BY_ERROR_CODE[code]
     if (!field) return false
     setError(field, { message: getApiErrorMessage(error, code) })
@@ -170,6 +194,13 @@ function GameForm({ game }: Readonly<GameFormProps>) {
     submit(async (values) => {
       const parsed = gameSubmissionSchema.parse(values)
       const dto = toRequestDto(parsed)
+
+      if (editing && moderating) {
+        await updateApprovedGame(game.id, dto)
+        toast.success('Zapisano zmiany w bibliotece.')
+        navigate(ROUTES.games.detail(game.id))
+        return
+      }
 
       if (editing) {
         await updateGame(game.id, dto)
@@ -190,19 +221,21 @@ function GameForm({ game }: Readonly<GameFormProps>) {
     <div className="space-y-6">
       <header>
         <h1 className="font-headline text-3xl font-extrabold tracking-tight">
-          {editing ? 'Edycja zgłoszenia' : 'Zgłoś grę'}
+          {formHeading(moderating, editing)}
         </h1>
         <p className="mt-1 text-on-surface-variant">
-          Zgłoszenie trafia do moderatora — po zatwierdzeniu gra pojawia się w bibliotece dla
-          wszystkich.
+          {moderating
+            ? 'Zmiany trafiają od razu do biblioteki. Nowi wydawcy i autorzy zostaną zatwierdzeni razem z zapisem.'
+            : 'Zgłoszenie trafia do moderatora — po zatwierdzeniu gra pojawia się w bibliotece dla wszystkich.'}
         </p>
       </header>
 
       {locked && (
         <Card className="bg-error-container">
           <p className="text-sm text-on-error-container">
-            To zgłoszenie czeka na decyzję moderatora albo jest już w bibliotece — edycja jest
-            zablokowana.
+            {moderating
+              ? 'Tą ścieżką edytuje się wyłącznie pozycje z biblioteki — ta gra nie jest zatwierdzona.'
+              : 'To zgłoszenie czeka na decyzję moderatora albo jest już w bibliotece — edycja jest zablokowana.'}
           </p>
         </Card>
       )}
@@ -345,7 +378,7 @@ function GameForm({ game }: Readonly<GameFormProps>) {
           editing={editing}
           locked={locked}
           busy={isSubmitting}
-          onSubmitToModeration={save(true)}
+          onSubmitToModeration={moderating ? undefined : save(true)}
           cancelHref={editing ? ROUTES.games.detail(game.id) : ROUTES.games.library}
         />
       </form>
@@ -355,7 +388,7 @@ function GameForm({ game }: Readonly<GameFormProps>) {
 
 /** Ładowanie istniejącego zgłoszenia — osobny komponent, żeby tryb tworzenia
  *  w ogóle nie uruchamiał pobierania. */
-function GameEditLoader({ gameId }: Readonly<{ gameId: number }>) {
+function GameEditLoader({ gameId, mode }: Readonly<{ gameId: number; mode: GameFormMode }>) {
   const fetchGame = useCallback(() => getGame(gameId), [gameId])
   const { state } = useResource(fetchGame)
 
@@ -392,10 +425,10 @@ function GameEditLoader({ gameId }: Readonly<{ gameId: number }>) {
     )
   }
 
-  return <GameForm game={state.data} />
+  return <GameForm game={state.data} mode={mode} />
 }
 
-export default function GameFormPage() {
+export default function GameFormPage({ mode = 'owner' }: Readonly<{ mode?: GameFormMode }>) {
   const { id } = useParams<{ id: string }>()
 
   if (id === undefined) return <GameForm />
@@ -416,5 +449,5 @@ export default function GameFormPage() {
     )
   }
 
-  return <GameEditLoader gameId={gameId} />
+  return <GameEditLoader gameId={gameId} mode={mode} />
 }

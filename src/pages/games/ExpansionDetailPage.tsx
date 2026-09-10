@@ -3,7 +3,9 @@ import { Link, useParams } from 'react-router-dom'
 import { getExpansion } from '@/api/expansions'
 import type { CategoryDto, GameExpansionDto, MechanicDto } from '@/api/types'
 import { ModerationStatusBadge } from '@/components/games/ModerationStatusBadge'
+import { deleteExpansion } from '@/api/moderation'
 import { CollectionButton } from '@/components/games/CollectionButton'
+import { LibraryModeratorActions } from '@/components/games/LibraryModeratorActions'
 import { SourceNote } from '@/components/games/SourceNote'
 import { Badge, Button, ButtonLink, Card, EmptyState, Icon, Section, Spinner } from '@/components/ui'
 import { resolveCollection, resolvePlayers, resolveValue, type ValueSource } from '@/lib/expansionValues'
@@ -85,6 +87,15 @@ function ExpansionDetail({ expansion }: Readonly<{ expansion: GameExpansionDto }
           name={expansion.name}
           size="md"
         />
+        {expansion.moderationStatus === 'APPROVED' && (
+          <LibraryModeratorActions
+            kind="expansion"
+            name={expansion.name}
+            editHref={ROUTES.moderation.editExpansion(expansion.id)}
+            remove={() => deleteExpansion(expansion.id)}
+            afterDeleteHref={ROUTES.expansions.library}
+          />
+        )}
       </header>
 
       {expansion.moderationStatus === 'REJECTED' && expansion.rejectionReason && (

@@ -179,6 +179,22 @@ export default function App() {
           }
         />
         <Route
+          path={ROUTES.moderation.editGamePattern}
+          element={
+            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+              <GameFormPage mode="moderator" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.moderation.editExpansionPattern}
+          element={
+            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+              <ExpansionFormPage mode="moderator" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path={ROUTES.admin.users}
           element={
             <ProtectedRoute role="ROLE_ADMIN">

@@ -6,7 +6,8 @@ interface SubmissionActionsProps {
   /** Zgłoszenie w moderacji albo w bibliotece: zapis zablokowany. */
   locked: boolean
   busy: boolean
-  onSubmitToModeration: () => void
+  /** Brak = bez przycisku wysyłki (edycja moderatorska: pozycja już jest w bibliotece). */
+  onSubmitToModeration?: () => void
   cancelHref: string
 }
 
@@ -27,15 +28,17 @@ export function SubmissionActions({
       <Button type="submit" variant="secondary" iconLeft="save" loading={busy} disabled={locked}>
         {editing ? 'Zapisz zmiany' : 'Zapisz szkic'}
       </Button>
-      <Button
-        type="button"
-        iconLeft="send"
-        loading={busy}
-        disabled={locked}
-        onClick={onSubmitToModeration}
-      >
-        Wyślij do moderacji
-      </Button>
+      {onSubmitToModeration && (
+        <Button
+          type="button"
+          iconLeft="send"
+          loading={busy}
+          disabled={locked}
+          onClick={onSubmitToModeration}
+        >
+          Wyślij do moderacji
+        </Button>
+      )}
       <ButtonLink to={cancelHref} variant="ghost">
         Anuluj
       </ButtonLink>
