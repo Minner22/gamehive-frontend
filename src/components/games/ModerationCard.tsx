@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react'
 import type { ModerationStatus } from '@/api/types'
-import { Badge, Button, ButtonLink, Card, Dialog, Icon, Textarea } from '@/components/ui'
+import { Badge, Button, Card, Dialog, Icon, Textarea } from '@/components/ui'
 import { getApiErrorCode, getApiErrorMessage } from '@/lib/apiError'
 import { ModerationStatusBadge } from './ModerationStatusBadge'
 
@@ -8,6 +8,11 @@ import { ModerationStatusBadge } from './ModerationStatusBadge'
  * Zgłoszenie w widoku moderatora — wspólne dla gier i dodatków, bo decyzje
  * i ich reguły są identyczne. Strona podaje dane do pokazania (`details`)
  * oraz trzy akcje, każda uderzająca we własny endpoint.
+ *
+ * Karta celowo **nie linkuje** do strony gry ani dodatku: `GET /games/{id}` jest
+ * enumeration-safe i oddaje wyłącznie pozycję APPROVED albo własną, więc moderator
+ * dostałby 404 na każde cudze zgłoszenie. Wszystko, czego potrzebuje do decyzji,
+ * jest już w DTO kolejki — dlatego `details` pokazuje je w całości.
  */
 export interface ModerationEntry {
   id: number
@@ -17,7 +22,6 @@ export interface ModerationEntry {
   /** Kto zgłosił (identyfikator z backendu — DTO nie niesie nazwy użytkownika). */
   submittedBy: string
   resubmissionCount: number
-  detailHref: string
   details: ReactNode
   approve: () => Promise<ModerationStatus>
   reject: (reason: string) => Promise<ModerationStatus>
@@ -112,10 +116,6 @@ export function ModerationCard({ entry, decided, onDecided }: Readonly<Moderatio
       )}
 
       <div className="mt-auto flex flex-wrap gap-2">
-        <ButtonLink to={entry.detailHref} size="sm" variant="ghost" iconLeft="visibility">
-          Podgląd
-        </ButtonLink>
-
         {entry.status === 'PENDING' && (
           <>
             <Button

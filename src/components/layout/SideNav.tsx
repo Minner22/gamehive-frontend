@@ -85,6 +85,18 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                 </>
               )}
             </NavLink>
+            <NavLink
+              to={ROUTES.moderation.expansions}
+              onClick={onNavigate}
+              className={navLinkClass}
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon name="extension" filled={isActive} />
+                  <span>Zgłoszenia dodatków</span>
+                </>
+              )}
+            </NavLink>
           </>
         )}
 
