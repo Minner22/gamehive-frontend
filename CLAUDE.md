@@ -96,6 +96,9 @@ src/
                    #   ModerationStatusBadge, Game/ExpansionFiltersForm, SourceNote,
                    #   ModerationCard + ModerationQueue — wspólne dla gier i dodatków,
                    #   LibraryModeratorActions — edycja/usuwanie pozycji z biblioteki)
+    admin/         # słowniki taksonomii: CuratedDictionary (kategorie, mechaniki — pełne
+                   #   listy), GrowingDictionary (wydawcy, autorzy — stronicowane, filtr
+                   #   statusu, ?q=, zatwierdzanie), DictionaryEntryForm, DeleteEntryButton
     layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, AuthResult,
                    #   Brand, ThemeToggle
     ProtectedRoute.tsx
@@ -112,6 +115,7 @@ src/
     expansionValues.ts # dodatek: puste pole = dziedziczenie z gry bazowej
     authorName.ts  # „Imię Nazwisko" ↔ para pól nowego autora (podział na 1. spacji)
     plural.ts      # pluralPl — polska odmiana rzeczownika po liczbie
+    taxonomyErrors.ts # komunikaty słowników: *_IN_USE, *_EXISTS (po sufiksie kodu)
   pages/           # widoki przypięte do tras (games/ — moduł gier, moderation/ — kolejki)
   routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
   index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)

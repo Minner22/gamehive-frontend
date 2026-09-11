@@ -125,6 +125,14 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                 </>
               )}
             </NavLink>
+            <NavLink to={ROUTES.admin.taxonomy} onClick={onNavigate} className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  <Icon name="category" filled={isActive} />
+                  <span>Słowniki</span>
+                </>
+              )}
+            </NavLink>
           </>
         )}
 

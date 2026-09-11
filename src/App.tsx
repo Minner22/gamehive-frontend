@@ -20,6 +20,7 @@ import VaultPage from '@/pages/games/VaultPage'
 import GamesLibraryPage from '@/pages/games/GamesLibraryPage'
 import UiKitPage from '@/pages/UiKitPage'
 import AdminAuditPage from '@/pages/admin/AdminAuditPage'
+import AdminTaxonomyPage from '@/pages/admin/AdminTaxonomyPage'
 import AdminUsersPage from '@/pages/admin/AdminUsersPage'
 import ActivatePage from '@/pages/auth/ActivatePage'
 import LoginPage from '@/pages/auth/LoginPage'
@@ -199,6 +200,14 @@ export default function App() {
           element={
             <ProtectedRoute role="ROLE_ADMIN">
               <AdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.admin.taxonomy}
+          element={
+            <ProtectedRoute role="ROLE_ADMIN">
+              <AdminTaxonomyPage />
             </ProtectedRoute>
           }
         />
