@@ -143,6 +143,10 @@ src/
   body (brak pola = 400, także na PUT). Dodatek zwraca równolegle wartości własne
   (`null` = dziedziczy) i `effective*` — UI ma pokazywać różnicę. Pełne listy wydawców
   i autorów są `@Deprecated` i ucięte do 200 pozycji: jedynym wejściem jest `/suggest`.
+  Uwaga na dwa różne 404: kod domenowy (`GAME_NOT_FOUND`, `USER_NOT_FOUND`…) znaczy „nie ma
+  takiego zasobu", a `RESOURCE_NOT_FOUND` — „nie ma takiej ścieżki", czyli błąd po naszej
+  stronie. Rozróżnia je `isDomainNotFound` z `lib/apiError.ts`; używaj go zamiast gołego
+  porównania `status === 404`, inaczej literówka w `src/api/*` udaje pusty wynik.
 
 - **Formularze:** `react-hook-form` + `zod` (`zodResolver`). Schematy w
   `src/lib/validation.ts` (zgodne z DTO backendu). Po błędzie zapytania:

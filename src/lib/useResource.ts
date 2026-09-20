@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { isAxiosError } from 'axios'
+import { isDomainNotFound } from './apiError'
 
 /**
  * Stan pojedynczego zasobu. `notFound` jest osobnym przypadkiem, a nie zwykłym
@@ -31,8 +31,7 @@ export function useResource<T>(fetchResource: () => Promise<T>) {
       .then((data) => active && setState({ status: 'ok', data }))
       .catch((err) => {
         if (!active) return
-        const notFound = isAxiosError(err) && err.response?.status === 404
-        setState({ status: notFound ? 'notFound' : 'error' })
+        setState({ status: isDomainNotFound(err) ? 'notFound' : 'error' })
       })
     return () => {
       active = false
