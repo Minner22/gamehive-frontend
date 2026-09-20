@@ -133,6 +133,9 @@ src/
   i `moderator` (pozycja z biblioteki, `/moderation/**`, trasy `/moderation/*/:id/edit`).
   Z kolejki moderacji **nie linkuj** do `/games/{id}` ani `/expansions/{id}` — oba są
   enumeration-safe, więc moderator dostaje 404 na cudze zgłoszenie.
+  `/admin/search` (reindeks) mimo prefiksu `admin` jest dostępne dla **MODERATOR lub ADMIN**,
+  dlatego w `SideNav` stoi w sekcji „Moderacja" — sekcja „Administracja" jest pod `ROLE_ADMIN`
+  i schowałaby je moderatorom.
 
 - **Moduł gier — pułapki kontraktu** (pełny opis: `CLAUDE.md` backendu):
   biblioteka to wyłącznie `moderationStatus = APPROVED`, a „moje zgłoszenia" to własne
