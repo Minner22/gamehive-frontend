@@ -27,6 +27,20 @@ export function getApiErrorCode(error: unknown): string | undefined {
   return (error.response?.data as ApiError | undefined)?.errorCode
 }
 
+/**
+ * Czy 404 mówi „nie ma takiego zasobu" (kod domenowy, np. `GAME_NOT_FOUND`),
+ * a nie „nie ma takiej ścieżki". Backend od gamehive-backend#140 odpowiada na
+ * nietrafiony adres `404 RESOURCE_NOT_FOUND` — to błąd naszego zapytania, nie
+ * brak treści, więc ekran ma pokazać błąd zamiast uprzejmego „nie znaleziono".
+ *
+ * 404 bez `errorCode` (np. z proxy) liczymy jako domenowe — tak jak przed zmianą,
+ * żeby ekrany szczegółów nie zaczęły migać błędem na odpowiedzi spoza backendu.
+ */
+export function isDomainNotFound(error: unknown): boolean {
+  if (!isAxiosError(error) || error.response?.status !== 404) return false
+  return getApiErrorCode(error) !== 'RESOURCE_NOT_FOUND'
+}
+
 export interface ApiValidationResult {
   /** Czy choć jeden błąd został przypisany do pola formularza. */
   applied: boolean
