@@ -20,6 +20,7 @@ import VaultPage from '@/pages/games/VaultPage'
 import GamesLibraryPage from '@/pages/games/GamesLibraryPage'
 import UiKitPage from '@/pages/UiKitPage'
 import AdminAuditPage from '@/pages/admin/AdminAuditPage'
+import AdminSearchPage from '@/pages/admin/AdminSearchPage'
 import AdminTaxonomyPage from '@/pages/admin/AdminTaxonomyPage'
 import AdminUsersPage from '@/pages/admin/AdminUsersPage'
 import ActivatePage from '@/pages/auth/ActivatePage'
@@ -192,6 +193,15 @@ export default function App() {
           element={
             <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
               <ExpansionFormPage mode="moderator" />
+            </ProtectedRoute>
+          }
+        />
+        {/* Reindeks to narzędzie moderacji treści, nie administracja kontami. */}
+        <Route
+          path={ROUTES.admin.search}
+          element={
+            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+              <AdminSearchPage />
             </ProtectedRoute>
           }
         />

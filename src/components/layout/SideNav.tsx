@@ -97,6 +97,15 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                 </>
               )}
             </NavLink>
+            {/* Reindeks ma tę samą bramkę ról co kolejki, więc stoi tutaj, nie w Administracji. */}
+            <NavLink to={ROUTES.admin.search} onClick={onNavigate} className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  <Icon name="manage_search" filled={isActive} />
+                  <span>Wyszukiwarka</span>
+                </>
+              )}
+            </NavLink>
           </>
         )}
 
