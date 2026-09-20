@@ -1,5 +1,4 @@
 import { type FormEvent, useCallback, useState } from 'react'
-import { isAxiosError } from 'axios'
 import {
   getUserByEmail,
   getUserById,
@@ -19,7 +18,7 @@ import {
   Spinner,
   useToast,
 } from '@/components/ui'
-import { getApiErrorMessage } from '@/lib/apiError'
+import { getApiErrorMessage, isDomainNotFound } from '@/lib/apiError'
 import { displayRoles } from '@/lib/roles'
 import { usePaginatedList } from '@/lib/usePaginatedList'
 import { UserActionsDialog } from './UserActionsDialog'
@@ -101,7 +100,7 @@ export default function AdminUsersPage() {
         mode === 'email' ? getUserByEmail : mode === 'id' ? getUserById : getUserByUsername
       setResult(await lookup(q))
     } catch (err) {
-      if (isAxiosError(err) && err.response?.status === 404) {
+      if (isDomainNotFound(err)) {
         setResult('notfound')
       } else {
         toast.error(getApiErrorMessage(err))
