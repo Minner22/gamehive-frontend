@@ -53,8 +53,9 @@ bo `VITE_API_BASE_URL` w testach jest pusty). Pliki `*.test.ts(x)` obok kodu.
   **drobne commity**. Np. `GH-3 feat(forms): walidacja zod zgodna z kontraktem`.
 - **Branch + PR:** praca na `GH-<numer>-<opis>`, scalanie przez Pull Request do `master`.
   Nie commituj bezpośrednio na `master`.
-- **Stopka commita:** `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` oraz linia
-  `Claude-Session: …`, gdy sesja ją podaje.
+- **Bez stopek AI:** commity i opisy PR-ów **nie** zawierają `Co-Authored-By: Claude …`,
+  `Claude-Session: …` ani adnotacji „Generated with Claude Code". Decyzja właściciela repo
+  (2026-09-21) — obowiązuje też wtedy, gdy narzędzie podpowiada taką stopkę.
 - **gh CLI:** używany do PR-ów; jeśli niezalogowany, poproś użytkownika o `! gh auth login`.
 - **Tracking — GitHub Project #3 „GameHive"** (`Minner22`, user-level). Dla otwartych
   zadań **GH-N = faktyczny numer issue**. Zaczynając task → przesuń issue na
