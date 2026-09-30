@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
+import { RouteLoader } from '@/components/ui'
 import { SideNav } from './SideNav'
 import { TopAppBar } from './TopAppBar'
 
@@ -52,7 +53,10 @@ export default function AppShell() {
       {/* Treść */}
       <main className="md:pl-64">
         <div className="mx-auto w-full max-w-6xl px-6 py-8 md:py-12">
-          <Outlet />
+          {/* Granica dla tras ładowanych leniwie — nawigacja zostaje na ekranie. */}
+          <Suspense fallback={<RouteLoader />}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
     </div>

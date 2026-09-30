@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
+import { RouteLoader } from '@/components/ui'
 import { ThemeToggle } from './ThemeToggle'
 
 /**
@@ -23,7 +25,9 @@ export default function AuthLayout() {
       </div>
 
       <main className="relative z-10 w-full max-w-md">
-        <Outlet />
+        <Suspense fallback={<RouteLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   )

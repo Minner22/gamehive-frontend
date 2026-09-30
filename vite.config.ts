@@ -15,6 +15,24 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        // React i router zmieniają się tylko przy bumpie zależności, więc trzymamy
+        // je w osobnym pliku — wdrożenie samej aplikacji nie unieważnia ich w cache
+        // przeglądarki. Reszta node_modules idzie zwyczajnie razem z kodem, który
+        // jej używa (osobny chunk na paczkę = wodospad żądań).
+        advancedChunks: {
+          groups: [
+            {
+              name: 'vendor',
+              test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
+            },
+          ],
+        },
+      },
+    },
+  },
   server: {
     // Żądania do /api lecą na ten sam origin (:5173) i są przekazywane do
     // backendu — dzięki temu w dev nie ma CORS. Wymaga VITE_API_BASE_URL pustego.
