@@ -26,5 +26,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Test node-owy — sprawdzany przez tsconfig.node.json (ma typy `node`).
+  "exclude": ["src/test/icons.test.ts"]
 }
