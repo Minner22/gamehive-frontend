@@ -16,6 +16,7 @@ import axios, {
 } from 'axios'
 import type { AccessTokenResponseDto } from './types'
 import { clearAccessToken, getAccessToken, setAccessToken } from './tokenStore'
+import { REFRESH_LOCK_NAME, withCrossTabLock } from './crossTabLock'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -63,10 +64,13 @@ let refreshPromise: Promise<string> | null = null
  * aplikacji — inaczej dwie niezależne obietnice mogłyby wysłać ten sam refresh
  * równolegle, a po rotacji refresh tokenów (backend#146) drugi byłby „kradzieżą”.
  *
- * Nieudane odświeżenie czyści token w pamięci i przekazuje błąd dalej.
+ * Pod blokadą wspólną dla kart (`crossTabLock`): druga karta czeka, aż pierwsza
+ * skończy, i wysyła już nowe ciasteczko. Nieudane odświeżenie czyści token
+ * w pamięci i przekazuje błąd dalej.
  */
 export function refreshAccessToken(): Promise<string> {
-  refreshPromise ??= requestNewAccessToken()
+  // Single-flight łączy żądania w karcie, blokada — karty między sobą (#80).
+  refreshPromise ??= withCrossTabLock(REFRESH_LOCK_NAME, requestNewAccessToken)
     .catch((error: unknown) => {
       clearAccessToken()
       throw error
