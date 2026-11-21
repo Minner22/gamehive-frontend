@@ -71,6 +71,7 @@ src/
                    #   interceptor Bearer + single-flight refresh na 401
     tokenStore.ts  # access token TYLKO w pamięci (nie localStorage — ochrona XSS)
     schema.d.ts    # typy z OpenAPI (generowane: npm run gen:api) — NIE edytować
+    schema.contract.ts # strażnik: ręczny Page<T> == każdy wygenerowany Page*Dto (tsc -b)
     types.ts       # aliasy DTO z schema.d.ts + generyk Page<T> i unia Role
     params.ts      # pageParams/setIfPresent — wspólne budowanie query (Spring Data)
     auth.ts        # endpointy /auth/** (login, register, refreshSession, logout, …)
@@ -86,7 +87,7 @@ src/
   auth/
     AuthContext.tsx# AuthProvider (bootstrap sesji) + useAuth (status/user/login/logout/hasRole)
   collection/
-    CollectionContext.tsx # stan „mam / nie mam" (backend nie ma takiego pytania):
+    CollectionContext.tsx # stan „mam / nie mam" na kartach:
                    #   raz na sesję czyta same id (/collection/*/ids — nie pełne DTO),
                    #   potem aktualizuje przy akcjach
   components/
@@ -110,6 +111,7 @@ src/
     validation.ts  # schematy zod zgodne z kontraktem API (register/login/profile…)
     apiError.ts    # getApiErrorMessage + applyApiValidationErrors (błędy serwera -> pola)
     formError.ts   # handleApiFormError — wspólna obsługa błędu submitu (pola + toast)
+    useApiForm.ts  # useForm + zod + handleApiFormError w jednym (submit z onError)
     usePaginatedList.ts # listy stronicowane (dane/loader/błąd/nawigacja stron)
     useResource.ts # pojedynczy zasób (ok/notFound/error) — 404 to osobny stan
     gameFilters.ts # filtry biblioteki i wyszukiwarki ↔ query string (adres = źródło prawdy)
@@ -120,6 +122,9 @@ src/
     authorName.ts  # „Imię Nazwisko" ↔ para pól nowego autora (podział na 1. spacji)
     plural.ts      # pluralPl — polska odmiana rzeczownika po liczbie
     taxonomyErrors.ts # komunikaty słowników: *_IN_USE, *_EXISTS (po sufiksie kodu)
+    moderationStatus.ts # co autor może zrobić ze zgłoszeniem (edycja/wysyłka z DRAFT/REJECTED)
+    roles.ts       # role do nadania w panelu admina + etykiety (bez ROLE_USER i prefiksu ROLE_)
+    audit.ts       # dziennik audytu: parsowanie ROLE_CHANGE {before, after} i różnica ról
   pages/           # widoki przypięte do tras (games/ — moduł gier, moderation/ — kolejki)
   routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
   index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)
@@ -179,6 +184,22 @@ src/
 - **Sesja:** access token w body logowania, refresh token w ciasteczku **HttpOnly**
   (`/api/v1/auth/refresh`). Po reloadzie sesję odtwarza się przez `GET /auth/refresh`.
 - **Zmienne env:** prefiks `VITE_` (`.env`); `VITE_API_BASE_URL` = URL backendu (domyślnie `:8080`).
+
+## Skille projektu (`.claude/skills/`)
+
+Szczegóły, które nie mieszczą się w tym pliku, żyją w skillach — ładuj je przed pracą w danym obszarze.
+
+| skill | kiedy |
+| --- | --- |
+| `plan-issue` | start issue: plan, tablica Project #3, szkic issue do backendu, gdy brakuje API |
+| `new-route` | nowa strona/trasa/pozycja nawigacji/ikona |
+| `api-contract` | zmiany w `src/api/*`, `gen:api`, obsługa błędów i pułapki kontraktu |
+| `auth-session` | `client.ts`, `tokenStore.ts`, `AuthContext`, `ProtectedRoute`, ekrany auth, #80 |
+| `frontend-testing` | pisanie i review testów (Vitest + RTL + MSW), izolacja, pokrycie |
+| `ui-review` | dostępność + design system Nectar przed oddaniem UI |
+| `verify-ui` | weryfikacja na żywym backendzie i w przeglądarce, pomiar paczki |
+| `sonar-triage` | SonarCloud: quality gate, issues, plan sprzątania |
+| `claudemd-sync` | **po każdym issue**: aktualizacja tego pliku i skilli |
 
 ## Cel wizualny — design system „Nectar"
 
