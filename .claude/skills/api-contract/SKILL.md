@@ -1,6 +1,6 @@
 ---
 name: api-contract
-description: Kontrakt frontu GameHive z backendem Spring Boot — warstwa src/api/* (moduły per obszar, nigdy apiClient w komponencie), regeneracja typów npm run gen:api → schema.d.ts, aliasy w types.ts, strażnik Page<T> w schema.contract.ts, budowanie query (pageParams/setIfPresent, powtórzony sort), pole submit w każdym body gier/dodatków, enumeration-safe 404, isDomainNotFound vs RESOURCE_NOT_FOUND, errorCode i getApiErrorCode, mapowanie błędów walidacji na pola, sufit totalElements w /games/search, /suggest zamiast pełnych list. Użyj ZAWSZE przy dodawaniu lub zmianie funkcji w src/api, po zmianie kontraktu w gamehive-backend, przy obsłudze nowego kodu błędu, przy "nie ma takiego endpointu", "jak obsłużyć ten błąd", "skąd typ DTO".
+description: Kontrakt frontu GameHive z backendem Spring Boot — warstwa src/api/* (moduły per obszar, nigdy apiClient w komponencie), regeneracja typów npm run gen:api → schema.d.ts, aliasy w types.ts, strażnik Page<T> w schema.contract.ts, budowanie query (pageParams/setIfPresent, powtórzony sort), pole submit w każdym body gier/dodatków, enumeration-safe 404, isDomainNotFound vs RESOURCE_NOT_FOUND, errorCode i getApiErrorCode, polskie komunikaty z mapy errorMessages.ts (nigdy ApiError.message), mapowanie błędów walidacji na pola, sufit totalElements w /games/search, /suggest zamiast pełnych list. Użyj ZAWSZE przy dodawaniu lub zmianie funkcji w src/api, po zmianie kontraktu w gamehive-backend, przy obsłudze nowego kodu błędu, przy "nie ma takiego endpointu", "jak obsłużyć ten błąd", "skąd typ DTO".
 ---
 
 # Kontrakt z backendem
@@ -35,11 +35,12 @@ Backend: `Minner22/gamehive-backend` (lokalnie `../gamehive-backend`). Jego zasa
 - **Upload plików nie istnieje**: awatar i okładka to `profilePictureUrl` / `coverImageUrl` jako URL (string).
 
 ## Błędy
-- Komunikat do toasta: `getApiErrorMessage(err)` (brak odpowiedzi → „Brak połączenia z serwerem.”).
-- Własna obsługa przypadku: `getApiErrorCode(err) === 'ALREADY_IN_COLLECTION'` — porównuj **kod**, nigdy treść `message`.
-- Formularz: `useApiForm` (`lib/useApiForm.ts`) albo `handleApiFormError` — błędy walidacji (`ApiValidationError.errors[]`) idą na pola, pola spoza formularza i błędy ogólne do toasta (nic nie ginie po cichu). `onError` zwraca `true`, gdy błąd obsłużony specjalnie.
-- Komunikaty słowników po sufiksie kodu (`*_IN_USE`, `*_EXISTS`) → `lib/taxonomyErrors.ts`.
-- Otwarte: #81 — mapowanie `errorCode` na polskie komunikaty zamiast `ApiError.message` (backend#149). Do czasu wdrożenia nie buduj nowych map komunikatów na boku.
+- **UI nigdy nie pokazuje `ApiError.message` ani `errors[].message`** (#81, decyzja w backend#149): to angielskie opisy dla programisty. Właścicielem tekstów jest front.
+- Komunikat dla użytkownika: `getApiErrorMessage(err)` → `errorMessageFor(errorCode)` z `lib/errorMessages.ts`. Kolejność: brak odpowiedzi → „Brak połączenia z serwerem.”; znany kod → mapa; nieznany ze wspólną końcówką (`_NOT_FOUND`, `_IN_USE`, `_EXISTS`, `_NOT_PENDING`, `JWT_*`/`REFRESH_TOKEN_*`) → tekst wzorca; reszta → ogólny. Backendowe `message` idzie do `console.debug`.
+- **Mapa ma wpis dla każdego z 77 kodów** (`KnownErrorCode` = kopia `ErrorCode.java`, `satisfies Record<KnownErrorCode, string>`). OpenAPI typuje `errorCode` jako string, więc nowego kodu TypeScript nie wyłapie: **issue backendu dodające kod → dopisz go do `KnownErrorCode` i `ERROR_MESSAGES`** (test sprawdza liczbę kodów — podbij ją świadomie). Teksty bez danych wejściowych.
+- Własna obsługa przypadku: `getApiErrorCode(err) === 'ALREADY_IN_COLLECTION'` — porównuj **kod**. Ekran trzyma lokalny tekst tylko wtedy, gdy kontekst mówi więcej niż mapa (np. `CANNOT_REMOVE_LAST_ADMIN` przy usuwaniu **własnego** konta, błędy silnika przy reindeksie) — inaczej bierze tekst z mapy, żeby nie dublować tłumaczeń.
+- Formularz: `useApiForm` albo `handleApiFormError`. Z błędów walidacji serwera bierzemy tylko **które pole** odrzucono — przy polu ogólny polski `FIELD_ERROR_MESSAGE`, bo konkretne polskie teksty daje zod (te same reguły co DTO, łapie je przed wysłaniem). Pola spoza formularza → jeden toast `VALIDATION_ERROR`. `onError` zwraca `true`, gdy błąd obsłużony specjalnie.
+- Konflikty tego samego statusu rozróżniaj kodem, nie statusem: rejestracja — `EMAIL_ALREADY_EXISTS` → pole e-mail, `USERNAME_ALREADY_EXISTS` → pole nazwy (oba 409; do #81 oba lądowały przy e-mailu).
 
 ## Brak endpointu po stronie backendu
 Nie obchodź go na froncie (pobieranie pełnych list, by wyciągnąć jedno pole; liczenie po stronie klienta). Zmierz koszt i przygotuj issue do backendu — szablon w skillu `plan-issue`. Precedensy: backend#142 (id kolekcji), #143 (kompresja), #146, #149.

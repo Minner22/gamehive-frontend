@@ -18,7 +18,7 @@ description: Tworzy plan implementacji issue frontu GameHive (GH-N = numer issue
    - **Cel i odstępstwa od tekstu issue**
    - **Wymaga backendu** (jeśli dotyczy) — co, link do issue backendu, czy front czeka, czy robi część niezależną
    - **Zmiany** plik → co i dlaczego, pogrupowane w drobne commity `GH-<N> <typ>(<scope>): opis po polsku` (typy: feat, fix, refactor, perf, test, docs, chore, ci)
-   - **Kontrakt API** — wywoływane endpointy, kody błędów obsługiwane osobno
+   - **Kontrakt API** — wywoływane endpointy, kody błędów obsługiwane osobno; **nowy `errorCode` w backendzie → wpis w `src/lib/errorMessages.ts`** (inaczej użytkownik zobaczy ogólny komunikat)
    - **Testy** — pliki i przypadki; nowe handlery MSW; czy potrzebny reset cache w `setup.ts`
    - **Czego testy nie dowiodą** → scenariusze dla `verify-ui`
    - **Dokumentacja i skille** — co zaktualizuje `claudemd-sync`
