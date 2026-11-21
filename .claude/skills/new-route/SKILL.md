@@ -21,7 +21,7 @@ Każdy punkt poniżej to miejsce, które już raz ktoś pominął albo które ł
 - `path="*"` (`NotFoundPage`) musi zostać ostatni.
 
 ## 3. Nawigacja — `src/components/layout/SideNav.tsx`
-- Zwykła pozycja → `NAV_ITEMS` (`{ to, icon, label, end? }`; `end: true`, gdy ścieżka jest prefiksem innych, np. `/games` vs `/games/search`).
+- Zwykła pozycja → `NAV_ITEMS` (`{ to, icon, label, end? }`; `end: true`, gdy ścieżka jest prefiksem innych, np. `/games` (katalog) vs `/games/my`).
 - Sekcja **„Moderacja”** widoczna dla `ROLE_MODERATOR || ROLE_ADMIN`, sekcja **„Administracja”** tylko dla `ROLE_ADMIN`. Pozycję kładź według **roli z backendu**, nie prefiksu adresu: `/admin/search` (reindeks) stoi w „Moderacji”, bo backend wpuszcza tam moderatora.
 - Funkcja bez backendu → `SOON_ITEMS` (jak Hives), nie martwy link.
 
@@ -33,8 +33,10 @@ Każdy punkt poniżej to miejsce, które już raz ktoś pominął albo które ł
 ## 5. Treść strony
 - Pojedynczy zasób → `useResource` (`lib/useResource.ts`): stany `loading / ok / notFound / error`. `notFound` liczy `isDomainNotFound`, więc literówka w ścieżce API pokaże błąd, a nie „nie znaleziono”.
 - Komunikat 404 na zasobach enumeration-safe (`/games/{id}`, `/expansions/{id}`) **nie może** mówić o uprawnieniach („nie istnieje lub nie masz dostępu” też nie — po prostu „nie znaleziono”).
+- Nowa lista gier/dodatków → **nie** twórz osobnego ekranu: to zakładka albo filtr katalogu (`CatalogPage`, #84). Link z innego ekranu przez `catalogHref({ type, filters })`.
+- Zmiana ścieżki istniejącego ekranu → zostaw stary adres jako przekierowanie z zachowaniem query (wzór: `LegacyCatalogRedirect` + `legacyCatalogHref`, test w `App.test.tsx`).
 - Lista stronicowana → `usePaginatedList` + `Pagination`, `ListSkeleton` na pierwsze ładowanie, `EmptyState` dla pustej listy.
-- Filtry listy trzymaj w query stringu (`lib/gameFilters.ts` jako wzór) — adres jest źródłem prawdy; pole szukania przez `useDebouncedValue`.
+- Filtry listy trzymaj w query stringu (`lib/catalog.ts` jako wzór: parsowanie odporne na śmieci, serializacja bez wartości domyślnych, round-trip w teście) — adres jest źródłem prawdy; pole szukania przez `useDebouncedValue`.
 - Nawigacja z akcji → `ButtonLink` (renderuje `<a>`), nie `Button` + `navigate`. `navigate` tylko po udanym submicie.
 - Wywołania API wyłącznie przez `@/api/*` (skill `api-contract`), nie przez `apiClient` w stronie.
 - Z kolejki moderacji **nie linkuj** do `/games/{id}` ani `/expansions/{id}` — moderator dostanie 404 na cudze zgłoszenie.
