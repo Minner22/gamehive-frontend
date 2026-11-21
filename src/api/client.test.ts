@@ -1,9 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { isAxiosError } from 'axios'
+import axios, { isAxiosError } from 'axios'
 import { server } from '@/test/server'
 import { ANY_ORIGIN } from '@/test/handlers'
-import apiClient, { REFRESH_PATH } from './client'
+import { refreshSession } from './auth'
+import apiClient, { REFRESH_PATH, REFRESH_TIMEOUT_MS } from './client'
 import { getAccessToken, setAccessToken } from './tokenStore'
 
 /**
@@ -99,5 +100,58 @@ describe('apiClient — odświeżanie na 401', () => {
       (e: unknown) => isAxiosError(e) && e.response?.status === 401,
     )
     expect(refreshCalls).toBe(1)
+  })
+
+  /**
+   * Start aplikacji (`refreshSession`) i 401 w trakcie pracy szły kiedyś dwiema
+   * niezależnymi ścieżkami. Po rotacji refresh tokenów (backend#146) dwa równoległe
+   * odświeżenia to „kradzież” i globalne wylogowanie — muszą się łączyć w jedno.
+   */
+  it('odświeżenie przy starcie i odświeżenie z interceptora łączą się w jedno', async () => {
+    // 401 na żądanie wysłane ze starym tokenem może przyjść już PO odświeżeniu —
+    // wtedy interceptor ponawia z nowym tokenem zamiast odświeżać drugi raz.
+    mockProtected()
+    mockRefresh(() => HttpResponse.json({ accessToken: 'fresh' }))
+
+    const [token, response] = await Promise.all([refreshSession(), apiClient.get('/api/v1/users/me')])
+
+    expect(token).toBe('fresh')
+    expect(response.status).toBe(200)
+    expect(refreshCalls).toBe(1)
+  })
+})
+
+describe('apiClient — limit czasu odświeżenia', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  /**
+   * Odświeżanie blokuje wszystkie karty (#80) — zawieszone żądanie nie może trzymać
+   * blokady w nieskończoność. Samo przerwanie po czasie to odpowiedzialność axiosa
+   * (XHR w jsdom nie reaguje na sztuczny zegar), tu pinujemy, że limit jest ustawiony.
+   */
+  it('odświeżenie wychodzi z limitem czasu', async () => {
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: { accessToken: 'fresh' } })
+
+    await expect(refreshSession()).resolves.toBe('fresh')
+
+    expect(get).toHaveBeenCalledWith(REFRESH_PATH, expect.objectContaining({ timeout: REFRESH_TIMEOUT_MS }))
+  })
+
+  it('po nieudanym odświeżeniu kolejna próba to nowe żądanie, nie ta sama obietnica', async () => {
+    let calls = 0
+    server.use(
+      http.get(`${ANY_ORIGIN}${REFRESH_PATH}`, () => {
+        calls += 1
+        return calls === 1
+          ? HttpResponse.error()
+          : HttpResponse.json({ accessToken: 'fresh' })
+      }),
+    )
+
+    await expect(refreshSession()).rejects.toBeTruthy()
+    await expect(refreshSession()).resolves.toBe('fresh')
+    expect(calls).toBe(2)
   })
 })
