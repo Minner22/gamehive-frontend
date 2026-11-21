@@ -9,6 +9,7 @@ import { ANY_ORIGIN } from '@/test/handlers'
 import { makeExpansion, makeGame, makePage, makeSearchResult } from '@/test/fixtures'
 import type { GameExpansionDto } from '@/api/types'
 import ExpansionFormPage from './ExpansionFormPage'
+import { ERROR_MESSAGES } from '@/lib/errorMessages'
 
 let created: Record<string, unknown> | null = null
 
@@ -137,7 +138,7 @@ describe('ExpansionFormPage — nowe zgłoszenie', () => {
     server.use(
       http.post(`${ANY_ORIGIN}/api/v1/expansions`, () =>
         HttpResponse.json(
-          { errorCode: 'BASE_GAME_NOT_APPROVED', message: 'Gra bazowa nie jest zatwierdzona' },
+          { errorCode: 'BASE_GAME_NOT_APPROVED', message: 'Base game is not approved' },
           { status: 409 },
         ),
       ),
@@ -149,7 +150,9 @@ describe('ExpansionFormPage — nowe zgłoszenie', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /Zapisz szkic/ }))
 
-    expect(await screen.findByText('Gra bazowa nie jest zatwierdzona')).toBeInTheDocument()
+    expect(await screen.findByText(ERROR_MESSAGES.BASE_GAME_NOT_APPROVED)).toBeInTheDocument()
+    // #81: angielskie `message` z backendu nie trafia do UI.
+    expect(screen.queryByText('Base game is not approved')).not.toBeInTheDocument()
   })
 })
 

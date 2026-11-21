@@ -9,6 +9,7 @@ import { ANY_ORIGIN } from '@/test/handlers'
 import { makeGame } from '@/test/fixtures'
 import type { GameDto } from '@/api/types'
 import GameFormPage from './GameFormPage'
+import { ERROR_MESSAGES } from '@/lib/errorMessages'
 
 let created: Record<string, unknown> | null = null
 
@@ -231,7 +232,7 @@ describe('GameFormPage — edycja', () => {
     server.use(
       http.put(`${ANY_ORIGIN}/api/v1/games/5`, () =>
         HttpResponse.json(
-          { errorCode: 'INVALID_PLAYER_COUNT', message: 'Maksimum nie może być mniejsze od minimum' },
+          { errorCode: 'INVALID_PLAYER_COUNT', message: 'Minimum players cannot exceed maximum players' },
           { status: 400 },
         ),
       ),
@@ -242,7 +243,7 @@ describe('GameFormPage — edycja', () => {
     await userEvent.click(screen.getByRole('button', { name: /Zapisz zmiany/ }))
 
     expect(
-      await screen.findByText('Maksimum nie może być mniejsze od minimum'),
+      await screen.findByText(ERROR_MESSAGES.INVALID_PLAYER_COUNT),
     ).toBeInTheDocument()
   })
 

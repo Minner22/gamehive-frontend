@@ -19,7 +19,8 @@ import {
   Textarea,
   type ComboboxItem,
 } from '@/components/ui'
-import { getApiErrorCode, getApiErrorMessage } from '@/lib/apiError'
+import { getApiErrorCode } from '@/lib/apiError'
+import { errorMessageFor } from '@/lib/errorMessages'
 import { formatAuthorName, splitAuthorName } from '@/lib/authorName'
 import { isSubmissionEditable } from '@/lib/moderationStatus'
 import { useApiForm } from '@/lib/useApiForm'
@@ -186,7 +187,7 @@ function GameForm({ game, mode = 'owner' }: Readonly<GameFormProps>) {
     }
     const field = FIELD_BY_ERROR_CODE[code]
     if (!field) return false
-    setError(field, { message: getApiErrorMessage(error, code) })
+    setError(field, { message: errorMessageFor(code) })
     return true
   }
 

@@ -1,20 +1,26 @@
 import { isAxiosError } from 'axios'
 import type { ApiError, ApiValidationError } from '@/api/types'
+import {
+  ERROR_MESSAGES,
+  GENERIC_ERROR_MESSAGE,
+  NETWORK_ERROR_MESSAGE,
+  errorMessageFor,
+} from './errorMessages'
+
+/** Tekst przy polu, gdy serwer odrzucił wartość, a walidacja formularza (zod) jej nie złapała. */
+export const FIELD_ERROR_MESSAGE = 'Nieprawidłowa wartość — sprawdź to pole.'
 
 /**
- * Wyciąga czytelny komunikat z błędu Axios (ApiError / ApiValidationError),
- * z sensownym fallbackiem dla braku połączenia i błędów bez treści.
+ * Polski komunikat dla użytkownika z błędu zapytania (#81): po `errorCode` z mapy
+ * w `errorMessages.ts`, nigdy z `ApiError.message`. Backendowe `message` to
+ * angielski opis dla programisty (gamehive-backend#149) — trafia tylko do konsoli.
  */
-export function getApiErrorMessage(
-  error: unknown,
-  fallback = 'Coś poszło nie tak. Spróbuj ponownie.',
-): string {
-  if (isAxiosError(error)) {
-    if (!error.response) return 'Brak połączenia z serwerem.'
-    const data = error.response.data as ApiError | ApiValidationError | undefined
-    if (data?.message) return data.message
-  }
-  return fallback
+export function getApiErrorMessage(error: unknown): string {
+  if (!isAxiosError(error)) return GENERIC_ERROR_MESSAGE
+  if (!error.response) return NETWORK_ERROR_MESSAGE
+  const data = error.response.data as ApiError | ApiValidationError | undefined
+  if (data?.message) console.debug(`[api] ${data.errorCode ?? 'bez kodu'}: ${data.message}`)
+  return errorMessageFor(data?.errorCode)
 }
 
 /**
@@ -44,14 +50,20 @@ export function isDomainNotFound(error: unknown): boolean {
 export interface ApiValidationResult {
   /** Czy choć jeden błąd został przypisany do pola formularza. */
   applied: boolean
-  /** Komunikaty, których nie dało się przypisać do pola (brak `field` lub pole
-   *  spoza formularza). Pokaż je osobno, np. przez toast — nie znikają po cichu. */
+  /** Komunikaty dla błędów, których nie dało się przypisać do pola (brak `field` lub
+   *  pole spoza formularza) — pokaż je osobno, np. toastem, żeby nie znikały po cichu.
+   *  Najwyżej jeden, ogólny: backendowe teksty pól są po angielsku (#81). */
   unmapped: string[]
 }
 
 /**
  * Mapuje błędy walidacji z odpowiedzi serwera (ApiValidationError.errors[])
  * na pola formularza przez przekazany callback (np. setError z react-hook-form).
+ *
+ * Z serwera bierzemy tylko **które** pole odrzucono — tekst jest polski i ogólny
+ * (`FIELD_ERROR_MESSAGE`). Backendowe `errors[].message` to angielskie komunikaty
+ * Bean Validation; polskie, konkretne teksty daje walidacja formularza (zod),
+ * która łapie te same reguły, zanim żądanie w ogóle wyjdzie.
  *
  * Podaj `isFormField`, by błędy dla pól spoza formularza nie trafiały w próżnię —
  * wrócą w `unmapped` zamiast cichego setError na nieistniejące pole.
@@ -68,14 +80,15 @@ export function applyApiValidationErrors(
   if (!fieldErrors?.length) return { applied: false, unmapped }
 
   let applied = false
+  let outsideForm = false
   for (const fe of fieldErrors) {
-    const message = fe.message ?? 'Nieprawidłowa wartość'
     if (fe.field && (!isFormField || isFormField(fe.field))) {
-      setFieldError(fe.field, message)
+      setFieldError(fe.field, FIELD_ERROR_MESSAGE)
       applied = true
     } else {
-      unmapped.push(message)
+      outsideForm = true
     }
   }
+  if (outsideForm) unmapped.push(ERROR_MESSAGES.VALIDATION_ERROR)
   return { applied, unmapped }
 }

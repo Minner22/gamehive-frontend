@@ -7,6 +7,7 @@ import { TestProviders } from '@/test/TestProviders'
 import { ANY_ORIGIN } from '@/test/handlers'
 import { makeCollectionItem } from '@/test/fixtures'
 import { CollectionButton } from './CollectionButton'
+import { ERROR_MESSAGES } from '@/lib/errorMessages'
 
 function renderButton() {
   return render(
@@ -122,14 +123,16 @@ describe('CollectionButton', () => {
   it('nieudane dodanie zostawia przycisk w poprzednim stanie', async () => {
     server.use(
       http.post(`${ANY_ORIGIN}/api/v1/collection/games/1`, () =>
-        HttpResponse.json({ errorCode: 'GAME_NOT_APPROVED', message: 'Gra nie jest zatwierdzona' }, { status: 409 }),
+        HttpResponse.json({ errorCode: 'GAME_NOT_APPROVED', message: 'Game is not approved' }, { status: 409 }),
       ),
     )
     renderButton()
 
     await userEvent.click(screen.getByRole('button', { name: 'Dodaj do kolekcji: Agricola' }))
 
-    expect(await screen.findByText('Gra nie jest zatwierdzona')).toBeInTheDocument()
+    expect(await screen.findByText(ERROR_MESSAGES.GAME_NOT_APPROVED)).toBeInTheDocument()
+    // #81: angielskie `message` z backendu nie trafia do UI.
+    expect(screen.queryByText('Game is not approved')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Dodaj do kolekcji: Agricola' })).toBeInTheDocument()
   })
 })
