@@ -21,6 +21,7 @@ import {
 } from '@/components/ui'
 import { pluralPl } from '@/lib/plural'
 import { useResource } from '@/lib/useResource'
+import { catalogHref } from '@/lib/catalog'
 import { ROUTES } from '@/routes/paths'
 
 /** Ile dodatków pokazujemy pod grą; więcej i tak należy do widoku dodatków (GH-47). */
@@ -77,8 +78,8 @@ function GameExpansions({ gameId }: { gameId: number }) {
   )
   const { state, reload } = useResource(fetchExpansions)
 
-  // Sekcja pokazuje pierwszą stronę; pełna lista (z filtrami) żyje w bibliotece dodatków.
-  const allExpansionsHref = `${ROUTES.expansions.library}?baseGameId=${gameId}`
+  // Sekcja pokazuje pierwszą stronę; pełna lista (z filtrami) żyje w katalogu, zakładka Dodatki.
+  const allExpansionsHref = catalogHref({ type: 'expansion', filters: { baseGameId: gameId } })
 
   return (
     <Section
@@ -142,7 +143,7 @@ function GameDetail({ game }: { game: GameDto }) {
   return (
     <div className="space-y-6">
       <ButtonLink to={ROUTES.games.library} variant="ghost" size="sm" iconLeft="arrow_back">
-        Biblioteka gier
+        Odkrywaj
       </ButtonLink>
 
       <div className="grid gap-8 lg:grid-cols-12">
@@ -178,7 +179,7 @@ function GameDetail({ game }: { game: GameDto }) {
               editHref={ROUTES.moderation.editGame(game.id)}
               remove={() => deleteGame(game.id)}
               afterDeleteHref={ROUTES.games.library}
-              expansionsHref={`${ROUTES.expansions.library}?baseGameId=${game.id}`}
+              expansionsHref={catalogHref({ type: 'expansion', filters: { baseGameId: game.id } })}
             />
           )}
 

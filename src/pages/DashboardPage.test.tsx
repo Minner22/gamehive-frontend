@@ -102,8 +102,9 @@ describe('DashboardPage', () => {
     renderDashboard()
 
     const href = (name: RegExp) => screen.getByRole('link', { name }).getAttribute('href')
-    expect(href(/Przeglądaj bibliotekę/)).toBe(ROUTES.games.library)
-    expect(href(/Szukaj gry/)).toBe(ROUTES.games.search)
+    expect(href(/Odkrywaj gry/)).toBe(ROUTES.games.library)
+    // Szukanie to zakładka „Wszystko” katalogu, nie osobna trasa (#84).
+    expect(href(/Szukaj gier i dodatków/)).toBe(`${ROUTES.games.library}?type=all`)
     expect(href(/The Vault/)).toBe(ROUTES.vault)
     expect(href(/Zgłoś grę/)).toBe(ROUTES.games.new)
   })

@@ -24,13 +24,12 @@ const ProfileEditPage = lazy(() => import('@/pages/ProfileEditPage'))
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
 const UiKitPage = lazy(() => import('@/pages/UiKitPage'))
 
+const CatalogPage = lazy(() => import('@/pages/games/CatalogPage'))
+const LegacyCatalogRedirect = lazy(() => import('@/pages/games/LegacyCatalogRedirect'))
 const ExpansionDetailPage = lazy(() => import('@/pages/games/ExpansionDetailPage'))
 const ExpansionFormPage = lazy(() => import('@/pages/games/ExpansionFormPage'))
-const ExpansionsLibraryPage = lazy(() => import('@/pages/games/ExpansionsLibraryPage'))
 const GameDetailPage = lazy(() => import('@/pages/games/GameDetailPage'))
 const GameFormPage = lazy(() => import('@/pages/games/GameFormPage'))
-const GamesLibraryPage = lazy(() => import('@/pages/games/GamesLibraryPage'))
-const GameSearchPage = lazy(() => import('@/pages/games/GameSearchPage'))
 const MySubmissionsPage = lazy(() => import('@/pages/games/MySubmissionsPage'))
 const VaultPage = lazy(() => import('@/pages/games/VaultPage'))
 
@@ -84,18 +83,12 @@ export default function App() {
           path={ROUTES.games.library}
           element={
             <ProtectedRoute>
-              <GamesLibraryPage />
+              <CatalogPage />
             </ProtectedRoute>
           }
         />
-        <Route
-          path={ROUTES.games.search}
-          element={
-            <ProtectedRoute>
-              <GameSearchPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Stare adresy sprzed scalenia w „Odkrywaj” — przekierowanie z zachowaniem kryteriów. */}
+        <Route path={ROUTES.games.search} element={<LegacyCatalogRedirect />} />
         <Route
           path={ROUTES.games.my}
           element={
@@ -128,14 +121,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path={ROUTES.expansions.library}
-          element={
-            <ProtectedRoute>
-              <ExpansionsLibraryPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path={ROUTES.expansions.library} element={<LegacyCatalogRedirect />} />
         <Route
           path={ROUTES.expansions.new}
           element={

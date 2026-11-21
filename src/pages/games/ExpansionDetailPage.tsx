@@ -10,6 +10,7 @@ import { SourceNote } from '@/components/games/SourceNote'
 import { Badge, Button, ButtonLink, Card, EmptyState, Icon, Section, Spinner } from '@/components/ui'
 import { resolveCollection, resolvePlayers, resolveValue, type ValueSource } from '@/lib/expansionValues'
 import { useResource } from '@/lib/useResource'
+import { catalogHref } from '@/lib/catalog'
 import { ROUTES } from '@/routes/paths'
 
 function StatTile({
@@ -59,7 +60,7 @@ function ExpansionDetail({ expansion }: Readonly<{ expansion: GameExpansionDto }
 
   return (
     <div className="space-y-6">
-      <ButtonLink to={ROUTES.expansions.library} variant="ghost" size="sm" iconLeft="arrow_back">
+      <ButtonLink to={catalogHref({ type: 'expansion' })} variant="ghost" size="sm" iconLeft="arrow_back">
         Dodatki
       </ButtonLink>
 
@@ -93,7 +94,7 @@ function ExpansionDetail({ expansion }: Readonly<{ expansion: GameExpansionDto }
             name={expansion.name}
             editHref={ROUTES.moderation.editExpansion(expansion.id)}
             remove={() => deleteExpansion(expansion.id)}
-            afterDeleteHref={ROUTES.expansions.library}
+            afterDeleteHref={catalogHref({ type: 'expansion' })}
           />
         )}
       </header>
@@ -147,7 +148,7 @@ export default function ExpansionDetailPage() {
         title="Nie znaleziono dodatku"
         description="Dodatek o tym adresie nie istnieje albo został usunięty z biblioteki."
         action={
-          <ButtonLink to={ROUTES.expansions.library} variant="secondary" iconLeft="arrow_back">
+          <ButtonLink to={catalogHref({ type: 'expansion' })} variant="secondary" iconLeft="arrow_back">
             Wróć do dodatków
           </ButtonLink>
         }

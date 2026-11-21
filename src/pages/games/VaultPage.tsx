@@ -8,6 +8,7 @@ import { ResultsSection } from '@/components/games/ResultsSection'
 import { ButtonLink, Chip, EmptyState, Icon } from '@/components/ui'
 import { pluralPl } from '@/lib/plural'
 import { usePaginatedList } from '@/lib/usePaginatedList'
+import { catalogHref } from '@/lib/catalog'
 import { ROUTES } from '@/routes/paths'
 
 const PAGE_SIZE = 12
@@ -171,7 +172,7 @@ export default function VaultPage() {
               title="Nie masz jeszcze żadnych dodatków"
               description="Dodatek dodaje się niezależnie od gry bazowej — nie musisz mieć jej w kolekcji."
               action={
-                <ButtonLink to={ROUTES.expansions.library} variant="secondary" iconLeft="extension">
+                <ButtonLink to={catalogHref({ type: 'expansion' })} variant="secondary" iconLeft="extension">
                   Przeglądaj dodatki
                 </ButtonLink>
               }

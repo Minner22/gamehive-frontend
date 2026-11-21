@@ -73,7 +73,8 @@ src/
     useApiForm.ts    # useForm + zod + obsługa błędów API w jednym
     useResource.ts   # pojedynczy zasób: ok / notFound / error
     usePaginatedList.ts # lista stronicowana
-    gameFilters.ts   # filtry ↔ query string (adres = źródło prawdy)
+    catalog.ts       # katalog „Odkrywaj”: zakładka/fraza/filtry ↔ adres, wybór źródła
+                     #   (baza vs wyszukiwarka), przekierowania starych adresów
     useDebouncedValue.ts
     useTaxonomyOptions.ts # słowniki do filtrów, cache modułowy (reset w test/setup.ts)
     expansionValues.ts # dodatek: puste pole = dziedziczenie z gry bazowej
@@ -96,6 +97,7 @@ src/
 Każda ma rozwinięcie w skillu — tu tylko reguła.
 - **API tylko przez `@/api/*`**; typy z `@/api/types`, po zmianie backendu `gen:api`. Pułapki kontraktu (`submit`, enumeration-safe 404, sufit w `/games/search`, `/suggest`) → `api-contract`.
 - **404**: `isDomainNotFound`, nigdy goły `status === 404` (`RESOURCE_NOT_FOUND` = błąd naszej ścieżki). Komunikat 404 nie mówi o uprawnieniach.
+- **Katalog to jeden ekran** (`/games`, „Odkrywaj”, #84): gry, dodatki i wyszukiwanie — nie dodawaj osobnych list. Źródło wybiera `catalogSource` (baza, gdy wystarcza; Meili przy frazie, „Wszystko” lub filtrze spoza bazy); linki przez `catalogHref`. Nazwa „Odkrywaj” jest robocza (zmieni się z Ulami) — w kodzie neutralne „catalog”.
 - **Strony leniwe**: nowa trasa jako `lazy(...)` z `ProtectedRoute` **na zewnątrz**; ikona w kodzie → `icon_names` w `index.html` (pilnuje `icons.test.ts`) → `new-route`.
 - **Sesja**: token tylko w pamięci, refresh w ciasteczku HttpOnly, bootstrap przez `GET /auth/refresh` → `auth-session`.
 - **UI**: kolory tylko z tokenów `@theme` (nie `slate-*`/hex), UI-kit zamiast własnych kontrolek, `ButtonLink` do nawigacji, dostępność jak w kicie → `ui-review`.
@@ -125,8 +127,8 @@ mockupy Stitch w `stitch_gamehive.zip` (rozpakowane do `stitch_extracted/`, oba 
 
 ## Zakres vs backend
 
-- **Gotowe po obu stronach:** auth, profil, panel admina (użytkownicy, audyt, słowniki, reindeks), biblioteka gier i dodatków,
-  wyszukiwarka, zgłoszenia i moderacja, The Vault, dashboard.
+- **Gotowe po obu stronach:** auth, profil, panel admina (użytkownicy, audyt, słowniki, reindeks), katalog „Odkrywaj”
+  (gry, dodatki i wyszukiwarka na jednym ekranie), zgłoszenia i moderacja, The Vault, dashboard.
 - **Zablokowane backendem:** **Hives** — brak endpointów; najpierw issues w `gamehive-backend`.
 - **Rozbieżności (nie implementować po stronie frontu):** social login Google/Discord (brak OAuth), login tylko e-mailem,
   awatar i okładka jako URL (`profilePictureUrl` / `coverImageUrl`), nie upload pliku.
@@ -135,7 +137,7 @@ mockupy Stitch w `stitch_gamehive.zip` (rozpakowane do `stitch_extracted/`, oba 
 ## Roadmapa
 
 - **Zrobione:** fundament i auth (GH-1…GH-9), konto i dashboard (GH-10, #20, #21), panel admina (#22–#24),
-  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67).
+  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67), skille (#82), jeden katalog „Odkrywaj” (#84).
 - **Otwarte (Project #3):** **#14** landing · **#80** odświeżanie sesji między kartami (przed rotacją refresh tokenów, backend#146) ·
-  **#81** komunikaty błędów po `errorCode` (backend#149) · **#82** skille projektu.
+  **#81** komunikaty błędów po `errorCode` (backend#149).
 - **Poza obecnym backendem:** Hives.

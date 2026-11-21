@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/test/server'
@@ -51,7 +51,7 @@ describe('App — trasy ładowane leniwie', () => {
     renderAt(ROUTES.games.library)
 
     expect(
-      await screen.findByRole('heading', { name: 'Biblioteka gier', level: 1 }),
+      await screen.findByRole('heading', { name: 'Odkrywaj', level: 1 }),
     ).toBeInTheDocument()
   })
 
@@ -81,6 +81,30 @@ describe('App — trasy ładowane leniwie', () => {
 
     expect(await screen.findByRole('heading', { name: /Cześć, jan/ })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Użytkownicy' })).not.toBeInTheDocument()
+  })
+
+  /**
+   * Gry, dodatki i wyszukiwarka są jednym ekranem (#84). Stare adresy z historii
+   * i zakładek mają dojechać do katalogu z tymi samymi kryteriami.
+   */
+  it.each([
+    ['/games/search?q=wingspan', 'search', 'q', 'wingspan'],
+    ['/expansions?baseGameId=7', 'expansions', 'baseGameId', '7'],
+  ])('stary adres %s przekierowuje do katalogu z zachowaniem kryteriów', async (path, source, key, value) => {
+    const captured: URLSearchParams[] = []
+    const endpoint = source === 'search' ? '/api/v1/games/search' : '/api/v1/expansions'
+    server.use(
+      http.get(`${ANY_ORIGIN}${endpoint}`, ({ request }) => {
+        captured.push(new URL(request.url).searchParams)
+        return HttpResponse.json(makePage([]))
+      }),
+      http.get(`${ANY_ORIGIN}/api/v1/taxonomy/categories`, () => HttpResponse.json([])),
+      http.get(`${ANY_ORIGIN}/api/v1/taxonomy/mechanics`, () => HttpResponse.json([])),
+    )
+    renderAt(path)
+
+    expect(await screen.findByRole('heading', { name: 'Odkrywaj', level: 1 })).toBeInTheDocument()
+    await waitFor(() => expect(captured[0]?.get(key)).toBe(value))
   })
 
   it('nieznana ścieżka pokazuje stronę 404', async () => {

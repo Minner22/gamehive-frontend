@@ -30,6 +30,7 @@ import { useApiForm } from '@/lib/useApiForm'
 import { useResource } from '@/lib/useResource'
 import { useTaxonomyOptions } from '@/lib/useTaxonomyOptions'
 import { expansionSubmissionSchema, type ExpansionSubmissionInput } from '@/lib/validation'
+import { catalogHref } from '@/lib/catalog'
 import { ROUTES } from '@/routes/paths'
 
 /** Kody domenowe backendu przypisane do pól, których naprawdę dotyczą. */
@@ -378,7 +379,7 @@ function ExpansionForm({
           busy={isSubmitting}
           onSubmitToModeration={moderating ? undefined : save(true)}
           cancelHref={
-            editing ? ROUTES.expansions.detail(expansion.id) : ROUTES.expansions.library
+            editing ? ROUTES.expansions.detail(expansion.id) : catalogHref({ type: 'expansion' })
           }
         />
       </form>
@@ -401,7 +402,7 @@ function ExpansionEditLoader({
         title="Nie znaleziono zgłoszenia"
         description="Dodatek o tym adresie nie istnieje albo nie należy do Ciebie."
         action={
-          <ButtonLink to={ROUTES.expansions.library} variant="secondary" iconLeft="arrow_back">
+          <ButtonLink to={catalogHref({ type: 'expansion' })} variant="secondary" iconLeft="arrow_back">
             Wróć do dodatków
           </ButtonLink>
         }
@@ -453,7 +454,7 @@ export default function ExpansionFormPage({
         title="Nie znaleziono zgłoszenia"
         description="Dodatek o tym adresie nie istnieje albo nie należy do Ciebie."
         action={
-          <ButtonLink to={ROUTES.expansions.library} variant="secondary" iconLeft="arrow_back">
+          <ButtonLink to={catalogHref({ type: 'expansion' })} variant="secondary" iconLeft="arrow_back">
             Wróć do dodatków
           </ButtonLink>
         }

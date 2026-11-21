@@ -5,6 +5,7 @@ import { listMyExpansions } from '@/api/expansions'
 import { listGames, listMyGames } from '@/api/games'
 import { listModerationExpansions, listModerationGames } from '@/api/moderation'
 import { Badge, ButtonLink, Card, Icon, Section } from '@/components/ui'
+import { catalogHref } from '@/lib/catalog'
 import { ROUTES } from '@/routes/paths'
 
 /**
@@ -83,8 +84,8 @@ function StatTile({ icon, label, hint, fetchCount }: Readonly<StatTileProps>) {
 }
 
 const SHORTCUTS = [
-  { to: ROUTES.games.library, icon: 'casino', label: 'Przeglądaj bibliotekę' },
-  { to: ROUTES.games.search, icon: 'search', label: 'Szukaj gry' },
+  { to: ROUTES.games.library, icon: 'explore', label: 'Odkrywaj gry' },
+  { to: catalogHref({ type: 'all' }), icon: 'search', label: 'Szukaj gier i dodatków' },
   { to: ROUTES.vault, icon: 'inventory_2', label: 'The Vault' },
   { to: ROUTES.games.new, icon: 'add', label: 'Zgłoś grę' },
 ]
