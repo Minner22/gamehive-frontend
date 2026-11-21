@@ -102,12 +102,38 @@ describe('CatalogPage', () => {
     await waitFor(() => expect(requests.games).toHaveLength(1))
     expect(requests.games[0].get('page')).toBe('1')
 
+    await userEvent.click(screen.getByRole('button', { name: 'Filtry' }))
     await userEvent.selectOptions(await screen.findByLabelText('Kategoria'), '2')
     await userEvent.click(screen.getByRole('button', { name: /Filtruj/ }))
 
     await waitFor(() => expect(requests.games.length).toBeGreaterThan(1))
     expect(last(requests.games).get('categoryId')).toBe('2')
     expect(last(requests.games).get('page')).toBe('0')
+  })
+
+  /**
+   * Katalog to główne wejście — rozwinięty formularz spychał wyniki o ponad ekran
+   * na telefonie. Licznik mówi, że filtry działają, choć panel jest zwinięty.
+   */
+  it('filtry są domyślnie zwinięte, licznik pokazuje aktywne, a po zatwierdzeniu panel się zwija', async () => {
+    mockExpansions([makeExpansion()])
+    // baseGameId ma własny baner nad wynikami, więc nie wlicza się do licznika.
+    renderCatalog('/games?type=expansion&categoryId=1&baseGameId=7')
+
+    const toggle = await screen.findByRole('button', { name: 'Filtry (1)' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.getByLabelText('Kategoria')).not.toBeVisible()
+
+    await userEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByLabelText('Kategoria')).toBeVisible()
+
+    await userEvent.click(screen.getByRole('button', { name: /Filtruj/ }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^Filtry/ })).toHaveAttribute('aria-expanded', 'false'),
+    )
+    expect(screen.getByLabelText('Kategoria')).not.toBeVisible()
   })
 
   it('wpisana fraza przełącza na wyszukiwarkę zawężoną do zakładki (po debounce)', async () => {
@@ -155,6 +181,7 @@ describe('CatalogPage', () => {
     renderCatalog('/games?type=expansion')
 
     await waitFor(() => expect(requests.expansions).toHaveLength(1))
+    await userEvent.click(screen.getByRole('button', { name: 'Filtry' }))
     // Rok wydania nie dotyczy dodatków — pola nie ma w tej zakładce.
     expect(screen.queryByLabelText('Rok wydania')).not.toBeInTheDocument()
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isAxiosError } from 'axios'
 import type { ApiError } from '@/api/types'
@@ -50,6 +50,12 @@ const UNITS: Record<CatalogType, [string, string, string]> = {
   all: ['pozycja', 'pozycje', 'pozycji'],
 }
 
+/**
+ * Filtry z własnym banerem (przychodzą z linków, nie z formularza) — nie wliczają się
+ * do licznika na przycisku, bo i tak są widoczne nad wynikami.
+ */
+const LINK_ONLY_FILTERS = new Set(['authorId', 'baseGameId'])
+
 const EMPTY_TITLES: Record<CatalogType, string> = {
   game: 'Brak gier dla wybranych kryteriów',
   expansion: 'Brak dodatków dla wybranych kryteriów',
@@ -99,6 +105,10 @@ export default function CatalogPage() {
   const [term, setTerm] = useState(catalog.q ?? '')
   const debouncedTerm = useDebouncedValue(term)
   const [unavailable, setUnavailable] = useState(false)
+  // Filtry zwinięte domyślnie: katalog to główne wejście, a rozwinięty formularz
+  // spychał wyniki o ponad ekran w dół na telefonie (sprawdzone w przeglądarce, #84).
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const filtersId = useId()
   const { categories, mechanics } = useTaxonomyOptions()
 
   /**
@@ -154,6 +164,12 @@ export default function CatalogPage() {
 
   const applyFilters = (filters: CatalogFilters) => showQuery({ ...catalog, filters })
 
+  /** Po zatwierdzeniu formularza zwijamy go — użytkownik chce zobaczyć wyniki. */
+  const submitFilters = (filters: CatalogFilters) => {
+    applyFilters(filters)
+    setFiltersOpen(false)
+  }
+
   /** Czyści frazę i filtry, ale zostaje na tej samej zakładce. */
   const clearAll = () => {
     setTerm('')
@@ -171,6 +187,9 @@ export default function CatalogPage() {
   }
 
   const { baseGameId, authorId } = catalog.filters
+  const activeFilterCount = Object.entries(catalog.filters).filter(
+    ([key, value]) => value !== undefined && !LINK_ONLY_FILTERS.has(key),
+  ).length
   // Tytuł gry bazowej jest w każdym dodatku — nie dociągamy gry tylko po nazwę.
   const baseGameTitle = useMemo(() => {
     const first = data?.content.find((item) => item.kind === 'expansion')
@@ -205,16 +224,28 @@ export default function CatalogPage() {
           value={term}
           onChange={(e) => setTerm(e.target.value)}
         />
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Rodzaj pozycji">
-          {TABS.map((tab) => (
-            <Chip
-              key={tab.type}
-              selected={catalog.type === tab.type}
-              onClick={() => selectType(tab.type)}
-            >
-              {tab.label}
-            </Chip>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Rodzaj pozycji">
+            {TABS.map((tab) => (
+              <Chip
+                key={tab.type}
+                selected={catalog.type === tab.type}
+                onClick={() => selectType(tab.type)}
+              >
+                {tab.label}
+              </Chip>
+            ))}
+          </div>
+          <Button
+            size="sm"
+            variant={activeFilterCount > 0 ? 'primary' : 'secondary'}
+            iconLeft="filter_list"
+            aria-expanded={filtersOpen}
+            aria-controls={filtersId}
+            onClick={() => setFiltersOpen((open) => !open)}
+          >
+            {activeFilterCount > 0 ? `Filtry (${activeFilterCount})` : 'Filtry'}
+          </Button>
         </div>
       </div>
 
@@ -256,16 +287,22 @@ export default function CatalogPage() {
         </div>
       )}
 
-      {/* key: zmiana adresu (np. „wstecz") odtwarza formularz z nowych filtrów */}
-      <CatalogFiltersForm
-        key={query}
-        type={catalog.type}
-        initialFilters={catalog.filters}
-        categories={categories}
-        mechanics={mechanics}
-        onApply={applyFilters}
-        onClear={clearAll}
-      />
+      {/* `hidden` zamiast warunkowego renderu: aria-controls wskazuje istniejący element,
+          a key={query} i tak odtwarza formularz po zmianie adresu („wstecz”). */}
+      <div id={filtersId} hidden={!filtersOpen}>
+        <CatalogFiltersForm
+          key={query}
+          type={catalog.type}
+          initialFilters={catalog.filters}
+          categories={categories}
+          mechanics={mechanics}
+          onApply={submitFilters}
+          onClear={() => {
+            clearAll()
+            setFiltersOpen(false)
+          }}
+        />
+      </div>
 
       {unavailable ? (
         <EmptyState
