@@ -87,7 +87,8 @@ src/
     AuthContext.tsx# AuthProvider (bootstrap sesji) + useAuth (status/user/login/logout/hasRole)
   collection/
     CollectionContext.tsx # stan „mam / nie mam" (backend nie ma takiego pytania):
-                   #   raz na sesję czyta kolekcję, potem aktualizuje przy akcjach
+                   #   raz na sesję czyta same id (/collection/*/ids — nie pełne DTO),
+                   #   potem aktualizuje przy akcjach
   components/
     ui/            # UI-kit Nectar (Button/ButtonLink, Input/PasswordInput, Card, Chip,
                    #   Badge, HexAvatar, Icon, Spinner, Toast, Dialog, Pagination,
