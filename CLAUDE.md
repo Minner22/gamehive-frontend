@@ -1,193 +1,109 @@
 # CLAUDE.md — GameHive Frontend
 
-Wytyczne dla Claude Code w tym repo. Utrzymywane przez Claude — aktualizuj przy
-istotnych zmianach (nowy stack, konwencje, struktura, faza roadmapy).
+Wytyczne dla Claude Code w tym repo. Szczegóły obszarów żyją w skillach (`.claude/skills/`,
+tabela niżej) — ten plik trzyma tylko to, co dotyczy całego repo. Utrzymanie: skill `claudemd-sync`.
 
 ## Czym jest projekt
 
-`gamehive-frontend` to frontend platformy **GameHive** — społecznościowej aplikacji
-dla graczy w **gry planszowe** (kolekcje „The Vault", społeczności „Hives", katalog
-gier, profile). Konsumuje REST API backendu Spring Boot:
-[`gamehive-backend`](https://github.com/Minner22/gamehive-backend).
+Frontend platformy **GameHive** — społecznościowej aplikacji dla graczy w **gry planszowe**
+(katalog gier i dodatków, kolekcja „The Vault”, moderacja zgłoszeń, profile, panel admina;
+społeczności „Hives” czekają na backend). Konsumuje REST API Spring Boot:
+[`gamehive-backend`](https://github.com/Minner22/gamehive-backend) (lokalnie `../gamehive-backend`).
 
 ## Stack
 
-- **React 19** + **TypeScript** (Vite 8) — **wymaga Node ≥ 20.19** (Vite 8/Rolldown;
-  na starszym Node natywny binding się nie zainstaluje i build padnie)
-- **Tailwind CSS v4** — plugin `@tailwindcss/vite`, konfiguracja przez `@import 'tailwindcss'`
-  i dyrektywę `@theme` w CSS. **Nie ma `tailwind.config.js`** — nie twórz go.
-- **React Router v7** — `BrowserRouter` + `<Routes>` (deklaratywnie)
-- **Axios** — komunikacja z API
+- **React 19** + **TypeScript**, **Vite 8** (Rolldown) — **wymaga Node ≥ 20.19**, na starszym natywny binding się nie zainstaluje.
+- **Tailwind CSS v4** przez `@tailwindcss/vite`; konfiguracja w CSS (`@import 'tailwindcss'` + `@theme`). **Nie ma `tailwind.config.js`** — nie twórz go.
+- **React Router v7** (deklaratywnie: `BrowserRouter` + `<Routes>`), **Axios**, `react-hook-form` + `zod`.
+- Testy: **Vitest + React Testing Library + MSW** (jsdom).
 
 ## Komendy
 
-| Komenda           | Opis                                  |
-| ----------------- | ------------------------------------- |
-| `npm run dev`     | dev server (http://localhost:5173)    |
-| `npm run build`   | `tsc -b` + build produkcyjny          |
-| `npm run preview` | podgląd builda                        |
-| `npm run lint`    | ESLint                                |
-| `npm test`        | testy w trybie watch (Vitest)         |
-| `npm run test:run`| testy jednorazowo (CI)                |
-| `npm run test:coverage` | testy + pokrycie (`coverage/lcov.info` dla Sonara) |
-| `npm run gen:api` | regeneracja typów z OpenAPI (backend) |
+| komenda | opis |
+| --- | --- |
+| `npm run dev` | dev server :5173 (proxy `/api` → backend :8080) |
+| `npm run build` | `tsc -b` + build produkcyjny |
+| `npm run preview` | podgląd builda |
+| `npm run lint` | ESLint |
+| `npm test` / `npm run test:run` | Vitest watch / jednorazowo |
+| `npm run test:coverage` | testy + `coverage/lcov.info` dla Sonara |
+| `npm run gen:api` | typy z OpenAPI działającego backendu → `src/api/schema.d.ts` |
 
-Przed commitem upewnij się, że `npm run build`, `npm run lint` i `npm run test:run` przechodzą.
-**CI** (`.github/workflows/ci.yml`, GitHub Actions, Node 22) uruchamia `lint` +
-`test:coverage` + `build` na każdym PR i pushu do `master`, a na koniec **analizę
-SonarCloud** (`sonar-project.properties`, organizacja `minner22`, projekt
-`Minner22_gamehive-frontend` — ten sam układ co w backendzie). Krok analizy wykonuje się
-tylko, gdy repo ma sekret `SONAR_TOKEN`; bez niego CI idzie dalej bez Sonara.
-Wykluczenia pokrycia trzymaj **zgodne** w dwóch miejscach: `test.coverage.exclude`
-w `vite.config.ts` i `sonar.coverage.exclusions` w `sonar-project.properties`.
-Akcje w workflow są przypięte do **pełnych SHA** (z komentarzem, jaka to wersja) —
-ruchomy tag da się podmienić pod tym samym wskaźnikiem i Sonar to zgłasza.
+Przed commitem: `build`, `lint` i `test:run` zielone, build bez nowych ostrzeżeń.
+**CI** (`.github/workflows/ci.yml`, Node 22): `lint` + `test:coverage` + `build` na każdym PR i pushu do `master`,
+potem SonarCloud (`Minner22_gamehive-frontend`) — tylko gdy repo ma sekret `SONAR_TOKEN`.
+Akcje przypięte do **pełnych SHA** z komentarzem wersji (ruchomy tag da się podmienić).
 
-**Testy:** Vitest + React Testing Library + MSW (jsdom). Setup i serwer MSW w
-`src/test/` (`setup.ts`, `server.ts`, `handlers.ts` — handlery origin-agnostic `*/...`,
-bo `VITE_API_BASE_URL` w testach jest pusty). Pliki `*.test.ts(x)` obok kodu.
+## Konwencje
 
-## Konwencje (identyczne z backendem)
-
-- **Commity:** `GH-<numer-issue> <typ>(<scope>): opis` po polsku, conventional-commit-style,
-  **drobne commity**. Np. `GH-3 feat(forms): walidacja zod zgodna z kontraktem`.
-- **Branch + PR:** praca na `GH-<numer>-<opis>`, scalanie przez Pull Request do `master`.
-  Nie commituj bezpośrednio na `master`.
-- **Bez stopek AI:** commity i opisy PR-ów **nie** zawierają `Co-Authored-By: Claude …`,
-  `Claude-Session: …` ani adnotacji „Generated with Claude Code". Decyzja właściciela repo
-  (2026-09-21) — obowiązuje też wtedy, gdy narzędzie podpowiada taką stopkę.
-- **gh CLI:** używany do PR-ów; jeśli niezalogowany, poproś użytkownika o `! gh auth login`.
-- **Tracking — GitHub Project #3 „GameHive"** (`Minner22`, user-level). Dla otwartych
-  zadań **GH-N = faktyczny numer issue**. Zaczynając task → przesuń issue na
-  **In progress**; w PR-ze dopisz **`Closes #N`**, żeby merge zamknął issue i ustawił
-  go na **Done**. (Zamknięte GH-2…GH-10 to historia — tam GH-N ≠ numer.)
+- **Commity:** `GH-<nr-issue> <typ>(<scope>): opis po polsku`, **drobne**. Np. `GH-3 feat(forms): walidacja zod zgodna z kontraktem`.
+- **Branch + PR:** `GH-<nr>-<opis>`, scalanie przez PR do `master` z **`Closes #N`**. Nie commituj na `master`.
+- **Bez stopek AI:** commity i PR-y **bez** `Co-Authored-By: Claude …`, `Claude-Session: …` i „Generated with Claude Code”.
+  Decyzja właściciela repo (2026-09-21) — obowiązuje też, gdy narzędzie podpowiada stopkę.
+- **Tracking:** GitHub Project #3 „GameHive”; start zadania → issue na **In progress** (kroki: skill `plan-issue`).
+  GH-N = numer issue (wyjątek: historyczne GH-2…GH-10). Numery issue **kolidują** z backendem — zawsze `--repo`.
+- **gh CLI** do PR-ów; niezalogowany → poproś o `! gh auth login`.
 
 ## Architektura
 
 ```
 src/
-  api/             # warstwa HTTP
-    client.ts      # instancja Axios: baseURL z VITE_API_BASE_URL, withCredentials,
-                   #   interceptor Bearer + single-flight refresh na 401
-    tokenStore.ts  # access token TYLKO w pamięci (nie localStorage — ochrona XSS)
-    schema.d.ts    # typy z OpenAPI (generowane: npm run gen:api) — NIE edytować
-    schema.contract.ts # strażnik: ręczny Page<T> == każdy wygenerowany Page*Dto (tsc -b)
-    types.ts       # aliasy DTO z schema.d.ts + generyk Page<T> i unia Role
-    params.ts      # pageParams/setIfPresent — wspólne budowanie query (Spring Data)
-    auth.ts        # endpointy /auth/** (login, register, refreshSession, logout, …)
-    users.ts       # getMe, updateProfile
-    admin.ts       # /admin/users/** + dziennik audytu
-    games.ts       # biblioteka, szczegóły, moje zgłoszenia, zapis, wyszukiwarka
-    expansions.ts  # dodatki (lustrzane do games.ts, bez roku i okładki)
-    collection.ts  # „The Vault" — /collection/** (bez body, tożsamość z tokenu)
-    taxonomy.ts    # kategorie i mechaniki + podpowiedzi wydawców/autorów (/suggest)
-    moderation.ts  # kolejki i decyzje moderatora (MODERATOR/ADMIN)
-    adminTaxonomy.ts # słowniki admina (kuratorowane listy + stronicowane rosnące)
-    adminSearch.ts # reindeks obu indeksów wyszukiwarki
-  auth/
-    AuthContext.tsx# AuthProvider (bootstrap sesji) + useAuth (status/user/login/logout/hasRole)
-  collection/
-    CollectionContext.tsx # stan „mam / nie mam" na kartach:
-                   #   raz na sesję czyta same id (/collection/*/ids — nie pełne DTO),
-                   #   potem aktualizuje przy akcjach
+  api/               # warstwa HTTP — komponenty NIGDY nie wołają apiClient bezpośrednio
+    client.ts        # Axios: baseURL, withCredentials, Bearer + single-flight refresh na 401
+    tokenStore.ts    # access token tylko w pamięci (ochrona XSS)
+    schema.d.ts      # generowany (gen:api) — NIE edytować
+    schema.contract.ts # strażnik: Page<T> == każdy wygenerowany Page*Dto (tsc -b)
+    types.ts         # aliasy DTO + Page<T> + unia Role
+    params.ts        # pageParams / setIfPresent (query Spring Data)
+    auth.ts users.ts admin.ts games.ts expansions.ts collection.ts taxonomy.ts
+    moderation.ts adminTaxonomy.ts adminSearch.ts   # moduł na obszar API
+  auth/AuthContext.tsx         # AuthProvider (bootstrap sesji) + useAuth
+  collection/CollectionContext.tsx # „mam / nie mam” z /collection/*/ids, raz na sesję
   components/
-    ui/            # UI-kit Nectar (Button/ButtonLink, Input/PasswordInput, Card, Chip,
-                   #   Badge, HexAvatar, Icon, Spinner, Toast, Dialog, Pagination,
-                   #   EmptyState, ListSkeleton, Combobox, Textarea) + barrel;
-                   #   '@/components/ui'
-    games/         # komponenty modułu gier (GameCard, ExpansionCard,
-                   #   ModerationStatusBadge, Game/ExpansionFiltersForm, SourceNote,
-                   #   ModerationCard + ModerationQueue — wspólne dla gier i dodatków,
-                   #   LibraryModeratorActions — edycja/usuwanie pozycji z biblioteki)
-    admin/         # słowniki taksonomii: CuratedDictionary (kategorie, mechaniki — pełne
-                   #   listy), GrowingDictionary (wydawcy, autorzy — stronicowane, filtr
-                   #   statusu, ?q=, zatwierdzanie), DictionaryEntryForm, DeleteEntryButton
-    layout/        # AppShell, SideNav, TopAppBar, AuthLayout, AuthCard, AuthResult,
-                   #   Brand, ThemeToggle
+    ui/              # UI-kit Nectar + barrel '@/components/ui'
+    games/ admin/    # komponenty modułu gier i słowników taksonomii
+    layout/          # AppShell, SideNav, TopAppBar, AuthLayout, Brand, ThemeToggle…
     ProtectedRoute.tsx
   lib/
-    cn.ts          # helper klas (clsx + tailwind-merge) — używaj zamiast string concat
-    theme.ts       # wspólny store motywu (jasny/ciemny) — jedyne źródło prawdy
-    validation.ts  # schematy zod zgodne z kontraktem API (register/login/profile…)
-    apiError.ts    # getApiErrorMessage + applyApiValidationErrors (błędy serwera -> pola)
-    formError.ts   # handleApiFormError — wspólna obsługa błędu submitu (pola + toast)
-    useApiForm.ts  # useForm + zod + handleApiFormError w jednym (submit z onError)
-    usePaginatedList.ts # listy stronicowane (dane/loader/błąd/nawigacja stron)
-    useResource.ts # pojedynczy zasób (ok/notFound/error) — 404 to osobny stan
-    gameFilters.ts # filtry biblioteki i wyszukiwarki ↔ query string (adres = źródło prawdy)
-    useDebouncedValue.ts # opóźniona wartość (pole szukania nie strzela na literę)
-    useTaxonomyOptions.ts # kategorie i mechaniki do filtrów — jedno pobranie na sesję
-                   #   (cache modułowy; reset w test/setup.ts, inaczej przecieka)
+    cn.ts            # clsx + tailwind-merge — zamiast sklejania klas
+    theme.ts         # store motywu jasny/ciemny
+    validation.ts    # schematy zod zgodne z DTO
+    apiError.ts      # komunikat, kod błędu, isDomainNotFound, błędy walidacji → pola
+    formError.ts     # handleApiFormError (pola + toast)
+    useApiForm.ts    # useForm + zod + obsługa błędów API w jednym
+    useResource.ts   # pojedynczy zasób: ok / notFound / error
+    usePaginatedList.ts # lista stronicowana
+    gameFilters.ts   # filtry ↔ query string (adres = źródło prawdy)
+    useDebouncedValue.ts
+    useTaxonomyOptions.ts # słowniki do filtrów, cache modułowy (reset w test/setup.ts)
     expansionValues.ts # dodatek: puste pole = dziedziczenie z gry bazowej
-    authorName.ts  # „Imię Nazwisko" ↔ para pól nowego autora (podział na 1. spacji)
-    plural.ts      # pluralPl — polska odmiana rzeczownika po liczbie
-    taxonomyErrors.ts # komunikaty słowników: *_IN_USE, *_EXISTS (po sufiksie kodu)
-    moderationStatus.ts # co autor może zrobić ze zgłoszeniem (edycja/wysyłka z DRAFT/REJECTED)
-    roles.ts       # role do nadania w panelu admina + etykiety (bez ROLE_USER i prefiksu ROLE_)
-    audit.ts       # dziennik audytu: parsowanie ROLE_CHANGE {before, after} i różnica ról
-  pages/           # widoki przypięte do tras (games/ — moduł gier, moderation/ — kolejki)
-  routes/paths.ts  # centralne stałe ścieżek (jedno źródło prawdy)
-  index.css        # @theme z tokenami Nectar + custom utilities (hex, glass)
-  App.tsx          # definicja tras (AppShell vs AuthLayout)
-  main.tsx         # punkt wejścia (BrowserRouter + AuthProvider + ToastProvider)
+    authorName.ts    # „Imię Nazwisko” ↔ para pól autora
+    plural.ts        # pluralPl — polska odmiana
+    taxonomyErrors.ts # komunikaty słowników po sufiksie kodu
+    moderationStatus.ts # dozwolone akcje autora zgłoszenia
+    roles.ts         # role do nadania + etykiety
+    audit.ts         # parsowanie ROLE_CHANGE w dzienniku audytu
+  pages/             # strony (lazy w App.tsx): games/, moderation/, admin/, auth/
+  routes/paths.ts    # stałe ścieżek — jedyne źródło prawdy
+  test/              # setup MSW, handlery, TestProviders, fixture'y
+  index.css          # @theme z tokenami Nectar + utilities hex, glass
+  App.tsx            # trasy (AppShell vs AuthLayout)
+  main.tsx           # BrowserRouter + AuthProvider + ToastProvider + CollectionProvider
 ```
 
-- **Sesja/auth:** stan z `useAuth()` (`@/auth/AuthContext`) — `status`/`user`/`login`/
-  `logout`/`hasRole`. `AuthProvider` przy starcie odtwarza sesję (`refreshSession` →
-  `getMe`). Trasy chroń przez `<ProtectedRoute>` — `role` przyjmuje pojedynczą rolę
-  (`role="ROLE_ADMIN"`) albo listę, z której wystarczy **którakolwiek**
-  (`role={['ROLE_MODERATOR','ROLE_ADMIN']}` dla moderacji).
-  Wywołania API rób przez moduły z `@/api/*`, nie bezpośrednio przez `apiClient`.
-  Formularze gry i dodatku mają dwa tryby: `owner` (własne zgłoszenie, `/games/{id}`)
-  i `moderator` (pozycja z biblioteki, `/moderation/**`, trasy `/moderation/*/:id/edit`).
-  Z kolejki moderacji **nie linkuj** do `/games/{id}` ani `/expansions/{id}` — oba są
-  enumeration-safe, więc moderator dostaje 404 na cudze zgłoszenie.
-  `/admin/search` (reindeks) mimo prefiksu `admin` jest dostępne dla **MODERATOR lub ADMIN**,
-  dlatego w `SideNav` stoi w sekcji „Moderacja" — sekcja „Administracja" jest pod `ROLE_ADMIN`
-  i schowałaby je moderatorom.
+## Zasady przekrojowe
 
-- **Moduł gier — pułapki kontraktu** (pełny opis: `CLAUDE.md` backendu):
-  biblioteka to wyłącznie `moderationStatus = APPROVED`, a „moje zgłoszenia" to własne
-  `DRAFT/PENDING/REJECTED` tej samej encji. `GET /games/{id}` jest enumeration-safe —
-  cudze zgłoszenie daje to samo 404 co nieistniejące id, więc komunikat **nie może**
-  mówić o brakujących uprawnieniach. Pole `submit` jest po stronie backendu prymitywnym
-  `boolean`, więc `games.ts`/`expansions.ts`/`moderation.ts` dokładają je do **każdego**
-  body (brak pola = 400, także na PUT). Dodatek zwraca równolegle wartości własne
-  (`null` = dziedziczy) i `effective*` — UI ma pokazywać różnicę. Pełne listy wydawców
-  i autorów są `@Deprecated` i ucięte do 200 pozycji: jedynym wejściem jest `/suggest`.
-  Backend **nie ma** endpointu ze statystykami — liczniki (dashboard) bierz z `totalElements`
-  przy `size=1`, ale **nigdy z `/games/search`**: tam `totalElements` ma sufit 1000
-  (`maxTotalHits`), więc na rozmiar biblioteki idzie `/games`.
-  Uwaga na dwa różne 404: kod domenowy (`GAME_NOT_FOUND`, `USER_NOT_FOUND`…) znaczy „nie ma
-  takiego zasobu", a `RESOURCE_NOT_FOUND` — „nie ma takiej ścieżki", czyli błąd po naszej
-  stronie. Rozróżnia je `isDomainNotFound` z `lib/apiError.ts`; używaj go zamiast gołego
-  porównania `status === 404`, inaczej literówka w `src/api/*` udaje pusty wynik.
-
-- **Formularze:** `react-hook-form` + `zod` (`zodResolver`). Schematy w
-  `src/lib/validation.ts` (zgodne z DTO backendu). Po błędzie zapytania:
-  `applyApiValidationErrors(err, setError)` mapuje błędy pól, a `getApiErrorMessage(err)`
-  daje komunikat do `useToast().error(...)`. Nawigację linkową rób `ButtonLink`, nie `Button`+navigate.
-
-- **Design tokeny:** w `src/index.css` (`@theme`). Używaj utilities z tokenów
-  (`bg-primary`, `text-on-surface`, `bg-surface-container-low`…) — **nie** hardkoduj
-  kolorów ani `slate-*`/`violet-*`. Fonty: `font-headline` (Manrope) / `font-body` (Inter).
-- **Layouty:** `AppShell` (nawigacja) dla tras aplikacji, `AuthLayout` dla login/register.
-  Oba mają granicę `Suspense` (`RouteLoader`) wokół `<Outlet />`, bo **strony są ładowane
-  leniwie** (`React.lazy` w `App.tsx`). Nową trasę dopisuj jako `lazy(() => import(...))`,
-  a `ProtectedRoute` zostawiaj **na zewnątrz** — najpierw dostęp, potem pobranie kodu.
-- **Ikony ładowane jako subset:** `index.html` wymienia w `icon_names` każdą używaną ikonę
-  (pełny font Material Symbols to 3,9 MB, subset 23 kB). Dodajesz ikonę w kodzie → dopisz ją
-  tam, inaczej wyświetli się jej nazwa tekstem. Pilnuje tego `src/test/icons.test.ts`.
-  Link **musi** deklarować dwie osie (`wght,FILL`): przy jednej Google zwraca font statyczny,
-  w którym `filled` z `Icon` przestaje działać.
-- **Alias `@` → `./src`** (vite.config.ts + tsconfig.app.json `paths`). Używaj `@/...`.
-- **Sesja:** access token w body logowania, refresh token w ciasteczku **HttpOnly**
-  (`/api/v1/auth/refresh`). Po reloadzie sesję odtwarza się przez `GET /auth/refresh`.
-- **Zmienne env:** prefiks `VITE_` (`.env`); `VITE_API_BASE_URL` = URL backendu (domyślnie `:8080`).
+Każda ma rozwinięcie w skillu — tu tylko reguła.
+- **API tylko przez `@/api/*`**; typy z `@/api/types`, po zmianie backendu `gen:api`. Pułapki kontraktu (`submit`, enumeration-safe 404, sufit w `/games/search`, `/suggest`) → `api-contract`.
+- **404**: `isDomainNotFound`, nigdy goły `status === 404` (`RESOURCE_NOT_FOUND` = błąd naszej ścieżki). Komunikat 404 nie mówi o uprawnieniach.
+- **Strony leniwe**: nowa trasa jako `lazy(...)` z `ProtectedRoute` **na zewnątrz**; ikona w kodzie → `icon_names` w `index.html` (pilnuje `icons.test.ts`) → `new-route`.
+- **Sesja**: token tylko w pamięci, refresh w ciasteczku HttpOnly, bootstrap przez `GET /auth/refresh` → `auth-session`.
+- **UI**: kolory tylko z tokenów `@theme` (nie `slate-*`/hex), UI-kit zamiast własnych kontrolek, `ButtonLink` do nawigacji, dostępność jak w kicie → `ui-review`.
+- **Formularze**: `useApiForm` / `handleApiFormError` — błędy walidacji na pola, reszta do toasta.
+- **Testy** obok kodu (`*.test.ts(x)`), MSW z `onUnhandledRequest: 'error'`; wykluczenia pokrycia zgodne w `vite.config.ts` i `sonar-project.properties` → `frontend-testing`.
+- **Alias `@` → `./src`**; zmienne env z prefiksem `VITE_` (`VITE_API_BASE_URL` pusty w dev = proxy Vite).
 
 ## Skille projektu (`.claude/skills/`)
-
-Szczegóły, które nie mieszczą się w tym pliku, żyją w skillach — ładuj je przed pracą w danym obszarze.
 
 | skill | kiedy |
 | --- | --- |
@@ -196,62 +112,30 @@ Szczegóły, które nie mieszczą się w tym pliku, żyją w skillach — ładuj
 | `api-contract` | zmiany w `src/api/*`, `gen:api`, obsługa błędów i pułapki kontraktu |
 | `auth-session` | `client.ts`, `tokenStore.ts`, `AuthContext`, `ProtectedRoute`, ekrany auth, #80 |
 | `frontend-testing` | pisanie i review testów (Vitest + RTL + MSW), izolacja, pokrycie |
-| `ui-review` | dostępność + design system Nectar przed oddaniem UI |
+| `ui-review` | dostępność + design system Nectar, mockupy Stitch |
 | `verify-ui` | weryfikacja na żywym backendzie i w przeglądarce, pomiar paczki |
 | `sonar-triage` | SonarCloud: quality gate, issues, plan sprzątania |
 | `claudemd-sync` | **po każdym issue**: aktualizacja tego pliku i skilli |
 
-## Cel wizualny — design system „Nectar"
+## Design system „Nectar”
 
-Mockupy: `stitch_gamehive.zip` (ignorowany w git; rozpakuj do `stitch_extracted/`,
-też ignorowane). Każdy ekran: `code.html` (Tailwind przez CDN — wzorzec klas) + `screen.png`.
+Material 3 z miodową paletą (`primary #835400`, `primary-container #f9a825`), Manrope (nagłówki) + Inter (treść),
+Material Symbols Outlined, motyw heksagonalny, glassmorphism, brak linii 1px. Tokeny w `src/index.css`;
+mockupy Stitch w `stitch_gamehive.zip` (rozpakowane do `stitch_extracted/`, oba ignorowane w git). Szczegóły: `ui-review`.
 
-System **Material 3 / miodowa paleta**, fonty **Manrope** (nagłówki) + **Inter** (body),
-ikony **Material Symbols Outlined**, motyw heksagonalny, glassmorphism, brak linii 1px.
-Kluczowe tokeny → przenieść do `@theme` (zadanie GH-2):
+## Zakres vs backend
 
-| token | hex | | token | hex |
-| --- | --- | --- | --- | --- |
-| primary | `#835400` | | surface | `#f3faff` |
-| primary-container | `#f9a825` | | surface-container-low | `#e6f6ff` |
-| on-surface | `#071e27` | | surface-container-lowest | `#ffffff` |
-| on-surface-variant | `#524434` | | secondary | `#506169` |
-| error | `#ba1a1a` | | error-container | `#ffdad6` |
+- **Gotowe po obu stronach:** auth, profil, panel admina (użytkownicy, audyt, słowniki, reindeks), biblioteka gier i dodatków,
+  wyszukiwarka, zgłoszenia i moderacja, The Vault, dashboard.
+- **Zablokowane backendem:** **Hives** — brak endpointów; najpierw issues w `gamehive-backend`.
+- **Rozbieżności (nie implementować po stronie frontu):** social login Google/Discord (brak OAuth), login tylko e-mailem,
+  awatar i okładka jako URL (`profilePictureUrl` / `coverImageUrl`), nie upload pliku.
+- Brakuje czegoś w API → issue do backendu zamiast obejścia na froncie (szablon: `plan-issue`).
 
-## Zakres vs backend (ważne!)
+## Roadmapa
 
-Backend dziś = **auth + user + admin + gry** (faza „Gry" domknięta: taksonomia, gry,
-dodatki, kolekcje, moderacja, Meilisearch — 59 ścieżek w `/v3/api-docs`).
-- **Buildowalne teraz:** auth flow, profil + edycja, panel admina (users + audit),
-  biblioteka gier i dodatków, wyszukiwarka, zgłoszenia i moderacja treści, The Vault,
-  słowniki taksonomii, reindeks, dashboard na realnych danych.
-- **Zablokowane backendem:** **Hives** (społeczności) — brak jakichkolwiek endpointów;
-  wymaga osobnych issues w `gamehive-backend`.
-- **Rozbieżności do oflagowania:** social login Google/Discord (brak OAuth), login
-  „email lub username" (backend tylko email), upload awatara oraz okładki gry (backend ma
-  tylko `profilePictureUrl` / `coverImageUrl` jako string — URL, nie plik).
-
-## Roadmapa (skrót)
-
-Otwarte zadania śledzone na **Project #3** (GH-N = numer issue). Niżej numery
-zamkniętych (GH-1…GH-10) są historyczne (GH-N ≠ numer issue).
-
-- **Faza 1 — fundament ✅:** GH-1 init · GH-2 design system + AppShell + UI-kit ·
-  GH-3 formularze + Toast + mapowanie błędów · GH-4 AuthContext + bootstrap + ProtectedRoute.
-- **Faza 2 — auth ✅** (poza landingiem **GH-14**, Backlog): GH-6 rejestracja · GH-7 login ·
-  GH-8 aktywacja+resend+logout · GH-9 reset hasła.
-- **Faza 3 — konto:** GH-10 ✅ profil · **GH-20** edycja profilu · GH-21 dashboard (szkielet).
-- **Faza 4 — admin:** GH-22 lista userów · GH-23 akcje (role/activate/deactivate/
-  force-logout/delete) · GH-24 audyt.
-- **Faza 5 — jakość:** GH-25 testy (Vitest+RTL+MSW) · GH-26 CI · GH-27 (opc.) openapi-typescript.
-- **Faza 6 — moduł gier (nadgonienie backendu, GH-43…GH-57):** odczyt → kolekcja →
-  zgłoszenia → moderacja → admin.
-  - odczyt: **GH-43** fundament (typy + warstwa API + trasy + role) · **GH-44** biblioteka gier ·
-    **GH-45** szczegóły gry · **GH-46** wyszukiwarka · **GH-47** dodatki
-  - kolekcja: **GH-48** The Vault
-  - zgłoszenia: **GH-49** formularz gry + Combobox · **GH-50** formularz dodatku ·
-    **GH-51** moje zgłoszenia
-  - moderacja: **GH-52** kolejka gier · **GH-53** kolejka dodatków · **GH-54** edycja/usuwanie
-    z biblioteki
-  - admin: **GH-55** słowniki taksonomii · **GH-56** reindeks · **GH-57** dashboard na realnych danych
-- **Poza obecnym backendem:** Hives (społeczności) — wymaga najpierw API.
+- **Zrobione:** fundament i auth (GH-1…GH-9), konto i dashboard (GH-10, #20, #21), panel admina (#22–#24),
+  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67).
+- **Otwarte (Project #3):** **#14** landing · **#80** odświeżanie sesji między kartami (przed rotacją refresh tokenów, backend#146) ·
+  **#81** komunikaty błędów po `errorCode` (backend#149) · **#82** skille projektu.
+- **Poza obecnym backendem:** Hives.

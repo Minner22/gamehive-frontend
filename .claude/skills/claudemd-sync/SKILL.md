@@ -11,7 +11,7 @@ Aktualizacja dokumentacji to część „gotowe” każdego issue — nie czekaj
 | treść | miejsce |
 | --- | --- |
 | Stack, komendy, CI, konwencje commitów/PR, tracking | `CLAUDE.md` |
-| Drzewo „Architektura” — **każdy** plik w `src/api/` i `src/lib/` z jednolinijkowym opisem | `CLAUDE.md` |
+| Drzewo „Architektura” — **każdy** plik `src/lib/` z krótkim opisem; w `src/api/` pliki infrastruktury z opisem, moduły obszarowe wystarczy wymienić w zbiorczej linii | `CLAUDE.md` |
 | Reguła przekrojowa (dotyczy wielu modułów) — krótko, z odesłaniem do skilla | `CLAUDE.md` |
 | Zakres vs backend, roadmapa, faza | `CLAUDE.md` |
 | Szczegóły dodawania strony/trasy/nawigacji/ikon | skill `new-route` |
@@ -22,7 +22,7 @@ Aktualizacja dokumentacji to część „gotowe” każdego issue — nie czekaj
 | Nowe konto/procedura weryfikacji, zmiana progów rozmiaru paczki | skill `verify-ui` |
 | Świadoma decyzja Won't fix w Sonarze | skill `sonar-triage` |
 
-Gdy szczegół w CLAUDE.md rozrasta się ponad kilka linii, przenieś go do skilla i zostaw w CLAUDE.md jedną linię z odesłaniem. **CLAUDE.md ma się kurczyć, nie rosnąć.**
+Gdy szczegół w CLAUDE.md rozrasta się ponad kilka linii, przenieś go do skilla i zostaw w CLAUDE.md jedną linię z odesłaniem. **CLAUDE.md ma się kurczyć, nie rosnąć** — po wydzieleniu skilli (GH-82) ok. 9 kB; sekcja „Zasady przekrojowe” to jedna linia na regułę.
 
 ## Nowy skill — kiedy
 - nowy obszar z własnym cyklem życia (np. Hives, gdy backend da API; WebSocket/powiadomienia; i18n) → skill ekspert z mapą kodu, przepływami, niezmiennikami i testami (wzór: `auth-session`);
