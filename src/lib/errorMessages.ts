@@ -131,7 +131,7 @@ export const ERROR_MESSAGES = {
   INVALID_PLAYER_COUNT: 'Minimalna liczba graczy nie może być większa niż maksymalna.',
   GAME_NOT_EDITABLE: 'Zgłoszenie jest w moderacji — nie można go teraz edytować.',
   EXPANSION_NOT_EDITABLE: 'Zgłoszenie jest w moderacji — nie można go teraz edytować.',
-  RESUBMISSION_LIMIT_EXCEEDED: 'Wykorzystano limit ponownych zgłoszeń — skontaktuj się z moderatorem.',
+  RESUBMISSION_LIMIT_EXCEEDED: 'Wyczerpano limit poprawek — o odblokowanie zgłoszenia poproś moderatora.',
   GAME_NOT_FOUND: 'Nie znaleziono gry — mogła zostać usunięta.',
   EXPANSION_NOT_FOUND: 'Nie znaleziono dodatku — mógł zostać usunięty.',
 

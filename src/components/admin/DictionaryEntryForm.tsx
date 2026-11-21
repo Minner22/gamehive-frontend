@@ -1,6 +1,6 @@
 import { type SubmitEvent, useState } from 'react'
 import { Button, Input } from '@/components/ui'
-import { taxonomyErrorMessage } from '@/lib/taxonomyErrors'
+import { getApiErrorMessage } from '@/lib/apiError'
 
 export interface DictionaryField {
   key: string
@@ -52,7 +52,7 @@ export function DictionaryEntryForm({
       )
       if (!onCancel) setValues(emptyValues(fields))
     } catch (err) {
-      setError(taxonomyErrorMessage(err))
+      setError(getApiErrorMessage(err))
     } finally {
       setBusy(false)
     }

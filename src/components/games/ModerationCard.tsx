@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from 'react'
 import type { ModerationStatus } from '@/api/types'
 import { Badge, Button, Card, Dialog, Icon, Textarea } from '@/components/ui'
-import { getApiErrorCode, getApiErrorMessage } from '@/lib/apiError'
+import { getApiErrorMessage } from '@/lib/apiError'
 import { ModerationStatusBadge } from './ModerationStatusBadge'
 
 /**
@@ -56,12 +56,8 @@ export function ModerationCard({ entry, decided, onDecided }: Readonly<Moderatio
       onDecided(await action())
       setRejecting(false)
     } catch (err) {
-      const code = getApiErrorCode(err)
-      setError(
-        code === 'GAME_NOT_PENDING' || code === 'EXPANSION_NOT_PENDING'
-          ? 'Ktoś już podjął decyzję w tym zgłoszeniu — odśwież listę.'
-          : getApiErrorMessage(err),
-      )
+      // *_NOT_PENDING („ktoś już zdecydował”) ma własny tekst w mapie komunikatów.
+      setError(getApiErrorMessage(err))
     } finally {
       setBusy(null)
     }

@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { ToastProvider } from '@/components/ui'
 import { deleteAccount } from '@/api/users'
 import { DeleteAccountDialog } from './DeleteAccountDialog'
+import { ERROR_MESSAGES } from '@/lib/errorMessages'
 
 const clearSession = vi.hoisted(() => vi.fn())
 vi.mock('@/auth/AuthContext', () => ({ useAuth: () => ({ clearSession }) }))
@@ -47,7 +48,7 @@ describe('DeleteAccountDialog', () => {
     vi.mocked(deleteAccount).mockRejectedValueOnce(axiosErr(401, 'INVALID_PASSWORD'))
     renderDialog()
     await fillAndSubmit()
-    await waitFor(() => expect(screen.getByText('Nieprawidłowe hasło')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(ERROR_MESSAGES.INVALID_PASSWORD)).toBeInTheDocument())
     expect(clearSession).not.toHaveBeenCalled()
   })
 
