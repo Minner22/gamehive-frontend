@@ -15,9 +15,8 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: ROUTES.dashboard, icon: 'dashboard', label: 'Dashboard' },
-  { to: ROUTES.games.library, icon: 'casino', label: 'Gry', end: true },
-  { to: ROUTES.expansions.library, icon: 'extension', label: 'Dodatki' },
-  { to: ROUTES.games.search, icon: 'search', label: 'Szukaj' },
+  // Gry, dodatki i wyszukiwanie to jeden ekran (#84). `end`: „Moje zgłoszenia” też leżą pod /games.
+  { to: ROUTES.games.library, icon: 'explore', label: 'Odkrywaj', end: true },
   { to: ROUTES.vault, icon: 'inventory_2', label: 'The Vault' },
   { to: ROUTES.games.my, icon: 'edit_note', label: 'Moje zgłoszenia' },
   { to: ROUTES.profile, icon: 'person', label: 'Profil' },
