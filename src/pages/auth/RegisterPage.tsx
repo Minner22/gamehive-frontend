@@ -1,18 +1,25 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { isAxiosError } from 'axios'
 import { AuthCard } from '@/components/layout/AuthCard'
 import { AuthResult } from '@/components/layout/AuthResult'
 import { Button, Input, PasswordInput } from '@/components/ui'
 import { register as registerUser } from '@/api/auth'
 import { registerFormSchema, registerSchema, type RegisterFormInput } from '@/lib/validation'
+import { getApiErrorCode } from '@/lib/apiError'
+import { errorMessageFor } from '@/lib/errorMessages'
 import { useApiForm } from '@/lib/useApiForm'
 import { ROUTES } from '@/routes/paths'
 
 // Pola mapowalne na błędy serwera = klucze kontraktu (confirmPassword jest tylko
 // po stronie klienta). Wyprowadzone ze schematu, żeby nie rozjechać się przy zmianie.
 const REGISTER_FIELDS = Object.keys(registerSchema.shape)
+
+/** Konflikt przy rejestracji → pole, którego dotyczy. */
+const TAKEN_FIELD_BY_CODE: Partial<Record<string, 'email' | 'username'>> = {
+  EMAIL_ALREADY_EXISTS: 'email',
+  USERNAME_ALREADY_EXISTS: 'username',
+}
 
 export default function RegisterPage() {
   const [sentTo, setSentTo] = useState<string | null>(null)
@@ -38,11 +45,11 @@ export default function RegisterPage() {
       setSentTo(data.email)
     },
     (err) => {
-      if (isAxiosError(err) && err.response?.status === 409) {
-        setError('email', { message: 'Konto z tym adresem e-mail już istnieje' })
-        return true
-      }
-      return false
+      // Zajęty e-mail i zajęta nazwa to oba 409 — rozróżnia je dopiero kod (#81).
+      const field = TAKEN_FIELD_BY_CODE[getApiErrorCode(err) ?? '']
+      if (!field) return false
+      setError(field, { message: errorMessageFor(getApiErrorCode(err)) })
+      return true
     },
   )
 
