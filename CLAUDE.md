@@ -49,7 +49,8 @@ Akcje przypięte do **pełnych SHA** z komentarzem wersji (ruchomy tag da się p
 ```
 src/
   api/               # warstwa HTTP — komponenty NIGDY nie wołają apiClient bezpośrednio
-    client.ts        # Axios: baseURL, withCredentials, Bearer + single-flight refresh na 401
+    client.ts        # Axios: baseURL, withCredentials, Bearer + refreshAccessToken (jedyna ścieżka)
+    crossTabLock.ts  # blokada Web Locks wspólna dla kart (odświeżanie sesji, #80)
     tokenStore.ts    # access token tylko w pamięci (ochrona XSS)
     schema.d.ts      # generowany (gen:api) — NIE edytować
     schema.contract.ts # strażnik: Page<T> == każdy wygenerowany Page*Dto (tsc -b)
@@ -99,7 +100,7 @@ Każda ma rozwinięcie w skillu — tu tylko reguła.
 - **404**: `isDomainNotFound`, nigdy goły `status === 404` (`RESOURCE_NOT_FOUND` = błąd naszej ścieżki). Komunikat 404 nie mówi o uprawnieniach.
 - **Katalog to jeden ekran** (`/games`, „Odkrywaj”, #84): gry, dodatki i wyszukiwanie — nie dodawaj osobnych list. Źródło wybiera `catalogSource` (baza, gdy wystarcza; Meili przy frazie, „Wszystko” lub filtrze spoza bazy); linki przez `catalogHref`. Nazwa „Odkrywaj” jest robocza (zmieni się z Ulami) — w kodzie neutralne „catalog”.
 - **Strony leniwe**: nowa trasa jako `lazy(...)` z `ProtectedRoute` **na zewnątrz**; ikona w kodzie → `icon_names` w `index.html` (pilnuje `icons.test.ts`) → `new-route`.
-- **Sesja**: token tylko w pamięci, refresh w ciasteczku HttpOnly, bootstrap przez `GET /auth/refresh` → `auth-session`.
+- **Sesja**: token tylko w pamięci, refresh w ciasteczku HttpOnly, bootstrap przez `GET /auth/refresh`. Odświeżanie wyłącznie przez `refreshAccessToken()` — single-flight w karcie + blokada Web Locks między kartami (#80, warunek rotacji refresh tokenów backend#146) → `auth-session`.
 - **UI**: kolory tylko z tokenów `@theme` (nie `slate-*`/hex), UI-kit zamiast własnych kontrolek, `ButtonLink` do nawigacji, dostępność jak w kicie → `ui-review`.
 - **Formularze**: `useApiForm` / `handleApiFormError` — błędy walidacji na pola, reszta do toasta.
 - **Testy** obok kodu (`*.test.ts(x)`), MSW z `onUnhandledRequest: 'error'`; wykluczenia pokrycia zgodne w `vite.config.ts` i `sonar-project.properties` → `frontend-testing`.
@@ -137,7 +138,6 @@ mockupy Stitch w `stitch_gamehive.zip` (rozpakowane do `stitch_extracted/`, oba 
 ## Roadmapa
 
 - **Zrobione:** fundament i auth (GH-1…GH-9), konto i dashboard (GH-10, #20, #21), panel admina (#22–#24),
-  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67), skille (#82), jeden katalog „Odkrywaj” (#84).
-- **Otwarte (Project #3):** **#14** landing · **#80** odświeżanie sesji między kartami (przed rotacją refresh tokenów, backend#146) ·
-  **#81** komunikaty błędów po `errorCode` (backend#149).
+  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67), skille (#82), jeden katalog „Odkrywaj” (#84), odświeżanie sesji między kartami (#80).
+- **Otwarte (Project #3):** **#14** landing · **#81** komunikaty błędów po `errorCode` (backend#149).
 - **Poza obecnym backendem:** Hives.
