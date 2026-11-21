@@ -22,7 +22,7 @@ export default defineConfig({
         // je w osobnym pliku — wdrożenie samej aplikacji nie unieważnia ich w cache
         // przeglądarki. Reszta node_modules idzie zwyczajnie razem z kodem, który
         // jej używa (osobny chunk na paczkę = wodospad żądań).
-        advancedChunks: {
+        codeSplitting: {
           groups: [
             {
               name: 'vendor',
