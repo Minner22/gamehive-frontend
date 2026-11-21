@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ModerationStatus } from '@/api/types'
 import { Button, ButtonLink, Card, Icon } from '@/components/ui'
-import { getApiErrorCode, getApiErrorMessage } from '@/lib/apiError'
+import { getApiErrorMessage } from '@/lib/apiError'
 import { isSubmissionEditable, isSubmittable, STATUS_HINT } from '@/lib/moderationStatus'
 import { ModerationStatusBadge } from './ModerationStatusBadge'
 
@@ -39,11 +39,7 @@ export function SubmissionCard({ entry, onSubmitted }: Readonly<SubmissionCardPr
     } catch (err) {
       // Limit poprawek wyczerpany: stan zgłoszenia zostaje bez zmian, a odblokować
       // je może wyłącznie moderator — komunikat musi to powiedzieć wprost.
-      setError(
-        getApiErrorCode(err) === 'RESUBMISSION_LIMIT_EXCEEDED'
-          ? 'Wyczerpano limit poprawek — o odblokowanie zgłoszenia poproś moderatora.'
-          : getApiErrorMessage(err),
-      )
+      setError(getApiErrorMessage(err))
     } finally {
       setBusy(false)
     }

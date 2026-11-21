@@ -21,7 +21,7 @@ Komendy: `npm test` (watch), `npm run test:run` (CI), `npm run test:coverage` (l
 - **Asynchroniczność**: `await screen.findBy…` zamiast `waitFor(() => getBy…)`; `userEvent` (nie `fireEvent`).
 - **Asercja negatywna potrzebuje kotwicy**: „brak nagłówka admina” przejdzie też, gdy strona w ogóle się nie wyrenderuje — najpierw poczekaj na coś, co **ma** być (wzór w `App.test.tsx`).
 - **Komentarz nad testem** (`/** … */`) wyjaśnia *dlaczego* przypadek istnieje, gdy nie wynika z nazwy (konwencja repo). Nazwy testów po polsku, opisują zachowanie.
-- Błąd serwera: `HttpResponse.json({ errorCode, message }, { status })` — testuj po kodzie, który UI faktycznie rozróżnia.
+- Błąd serwera: `HttpResponse.json({ errorCode, message }, { status })` z **prawdziwym angielskim** `message` z `ErrorCode.java`, a asercja na polski tekst z mapy (`ERROR_MESSAGES.KOD` z `@/lib/errorMessages`) i — gdzie to ważne — `queryByText(<angielski>)).not.toBeInTheDocument()`. Nigdy nie wpisuj polskiego tekstu do `message` w mocku: test przeszedłby, choć UI pokazuje `message` (dokładnie ten błąd naprawiło #81).
 
 ## Izolacja — pułapki
 - **Cache na poziomie modułu przecieka między testami** (ten sam proces). Każdy nowy cache modułowy (jak `useTaxonomyOptions`) wymaga eksportowanej funkcji `reset…` wołanej w `setup.ts`. Bez tego wynik zależy od kolejności plików.

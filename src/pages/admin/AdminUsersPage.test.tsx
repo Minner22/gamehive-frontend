@@ -7,6 +7,7 @@ import { TestProviders } from '@/test/TestProviders'
 import { ANY_ORIGIN } from '@/test/handlers'
 import { makePage } from '@/test/fixtures'
 import AdminUsersPage from './AdminUsersPage'
+import { ERROR_MESSAGES } from '@/lib/errorMessages'
 
 const USERS = `${ANY_ORIGIN}/api/v1/admin/users`
 
@@ -56,7 +57,8 @@ describe('AdminUsersPage — wyszukiwanie użytkownika', () => {
 
     await search('jan.kowalski')
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Resource not found')
+    expect(await screen.findByRole('alert')).toHaveTextContent(ERROR_MESSAGES.RESOURCE_NOT_FOUND)
+    expect(screen.queryByText(/Resource not found/)).not.toBeInTheDocument()
     expect(
       screen.queryByText('Nie znaleziono użytkownika dla podanej wartości.'),
     ).not.toBeInTheDocument()

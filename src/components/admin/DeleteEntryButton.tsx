@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui'
-import { taxonomyErrorMessage } from '@/lib/taxonomyErrors'
+import { getApiErrorMessage } from '@/lib/apiError'
 
 interface DeleteEntryButtonProps {
   name: string
@@ -24,7 +24,7 @@ export function DeleteEntryButton({ name, onDelete }: Readonly<DeleteEntryButton
     try {
       await onDelete()
     } catch (err) {
-      setError(taxonomyErrorMessage(err))
+      setError(getApiErrorMessage(err))
       setConfirming(false)
     } finally {
       setBusy(false)

@@ -13,13 +13,12 @@ const COUNTERS: { key: keyof ReindexResultDto; label: string }[] = [
 ]
 
 /**
- * Trzy stany, w których wina nie leży po stronie klikającego, mają własne
- * komunikaty — surowy kod błędu nic by tu nie powiedział.
+ * Dwa stany silnika mają tu tekst bardziej konkretny niż ogólny z mapy komunikatów —
+ * w panelu chodzi o przebudowę indeksu, nie o zwykłe wyszukiwanie. Reszta (w tym
+ * REINDEX_ALREADY_RUNNING) idzie z mapy.
  */
 function reindexErrorMessage(err: unknown): string {
   switch (getApiErrorCode(err)) {
-    case 'REINDEX_ALREADY_RUNNING':
-      return 'Przebudowa już trwa — poczekaj, aż się skończy.'
     case 'SEARCH_INDEX_UNAVAILABLE':
       return 'Silnik wyszukiwania jest niedostępny. Spróbuj ponownie, gdy wróci.'
     case 'SEARCH_FAILED':

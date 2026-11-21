@@ -81,7 +81,7 @@ src/
     expansionValues.ts # dodatek: puste pole = dziedziczenie z gry bazowej
     authorName.ts    # „Imię Nazwisko” ↔ para pól autora
     plural.ts        # pluralPl — polska odmiana
-    taxonomyErrors.ts # komunikaty słowników po sufiksie kodu
+    errorMessages.ts # errorCode → polski komunikat (wszystkie 77 kodów + wzorce dla nowych)
     moderationStatus.ts # dozwolone akcje autora zgłoszenia
     roles.ts         # role do nadania + etykiety
     audit.ts         # parsowanie ROLE_CHANGE w dzienniku audytu
@@ -102,7 +102,8 @@ Każda ma rozwinięcie w skillu — tu tylko reguła.
 - **Strony leniwe**: nowa trasa jako `lazy(...)` z `ProtectedRoute` **na zewnątrz**; ikona w kodzie → `icon_names` w `index.html` (pilnuje `icons.test.ts`) → `new-route`.
 - **Sesja**: token tylko w pamięci, refresh w ciasteczku HttpOnly, bootstrap przez `GET /auth/refresh`. Odświeżanie wyłącznie przez `refreshAccessToken()` — single-flight w karcie + blokada Web Locks między kartami (#80, warunek rotacji refresh tokenów backend#146) → `auth-session`.
 - **UI**: kolory tylko z tokenów `@theme` (nie `slate-*`/hex), UI-kit zamiast własnych kontrolek, `ButtonLink` do nawigacji, dostępność jak w kicie → `ui-review`.
-- **Formularze**: `useApiForm` / `handleApiFormError` — błędy walidacji na pola, reszta do toasta.
+- **Komunikaty błędów** tylko z `errorCode` przez mapę `errorMessages.ts` — nigdy `ApiError.message` (#81). Nowy kod w backendzie → wpis w mapie → `api-contract`.
+- **Formularze**: `useApiForm` / `handleApiFormError` — błędy walidacji na pola (polskie teksty z zod), reszta do toasta.
 - **Testy** obok kodu (`*.test.ts(x)`), MSW z `onUnhandledRequest: 'error'`; wykluczenia pokrycia zgodne w `vite.config.ts` i `sonar-project.properties` → `frontend-testing`.
 - **Alias `@` → `./src`**; zmienne env z prefiksem `VITE_` (`VITE_API_BASE_URL` pusty w dev = proxy Vite).
 
@@ -138,6 +139,6 @@ mockupy Stitch w `stitch_gamehive.zip` (rozpakowane do `stitch_extracted/`, oba 
 ## Roadmapa
 
 - **Zrobione:** fundament i auth (GH-1…GH-9), konto i dashboard (GH-10, #20, #21), panel admina (#22–#24),
-  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67), skille (#82), jeden katalog „Odkrywaj” (#84), odświeżanie sesji między kartami (#80).
-- **Otwarte (Project #3):** **#14** landing · **#81** komunikaty błędów po `errorCode` (backend#149).
+  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67), skille (#82), jeden katalog „Odkrywaj” (#84), odświeżanie sesji między kartami (#80), komunikaty błędów po polsku z `errorCode` (#81).
+- **Otwarte (Project #3):** **#14** landing.
 - **Poza obecnym backendem:** Hives.

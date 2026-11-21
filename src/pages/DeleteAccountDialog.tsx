@@ -8,6 +8,7 @@ import { Button, Dialog, PasswordInput } from '@/components/ui'
 import { deleteAccountSchema, type DeleteAccountInput } from '@/lib/validation'
 import { useApiForm } from '@/lib/useApiForm'
 import { ROUTES } from '@/routes/paths'
+import { ERROR_MESSAGES } from '@/lib/errorMessages'
 
 export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
@@ -32,9 +33,10 @@ export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
       if (isAxiosError(err)) {
         const code = (err.response?.data as ApiError | undefined)?.errorCode
         if (code === 'INVALID_PASSWORD') {
-          setError('password', { message: 'Nieprawidłowe hasło' })
+          setError('password', { message: ERROR_MESSAGES.INVALID_PASSWORD })
           return true
         }
+        // Kontekst „własne konto” mówi więcej niż ogólny tekst z mapy — świadomie lokalnie.
         if (code === 'CANNOT_REMOVE_LAST_ADMIN') {
           toast.error('Ostatni administrator nie może usunąć własnego konta.')
           return true
