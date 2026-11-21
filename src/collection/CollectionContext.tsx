@@ -4,8 +4,8 @@ import { isAxiosError } from 'axios'
 import {
   addExpansionToCollection,
   addGameToCollection,
-  listCollectionExpansions,
-  listCollectionGames,
+  listCollectionExpansionIds,
+  listCollectionGameIds,
   removeExpansionFromCollection,
   removeGameFromCollection,
 } from '@/api/collection'
@@ -13,14 +13,6 @@ import type { ApiError } from '@/api/types'
 import { useAuth } from '@/auth/AuthContext'
 import { useToast } from '@/components/ui'
 import { getApiErrorMessage } from '@/lib/apiError'
-
-/**
- * Ile pozycji wczytujemy, żeby wiedzieć, co użytkownik już ma. Backend nie ma
- * endpointu „czy mam tę grę", więc jedyną drogą jest przejrzenie kolekcji.
- * Powyżej tego progu przyciski działają optymistycznie i polegają na 409 —
- * kolekcja większa niż 200 pozycji jest w tym module rzadkim przypadkiem.
- */
-const MEMBERSHIP_PAGE_SIZE = 200
 
 export type CollectionTarget = 'game' | 'expansion'
 
@@ -58,19 +50,18 @@ export function CollectionProvider({ children }: Readonly<{ children: ReactNode 
   // Wiedza o kolekcji jest przypisana do konkretnego konta — po wylogowaniu
   // przestaje pasować i `owns` przestaje ją brać pod uwagę, bez czyszczenia stanu
   // w ciele efektu.
+  // Czytamy same identyfikatory (`/collection/{games,expansions}/ids`), nie pełne
+  // DTO: to cała kolekcja bez stronicowania, a ładunek to kilka bajtów na pozycję.
   useEffect(() => {
     if (status !== 'authenticated' || !ownerId) return
     let active = true
-    Promise.all([
-      listCollectionGames({ size: MEMBERSHIP_PAGE_SIZE }),
-      listCollectionExpansions({ size: MEMBERSHIP_PAGE_SIZE }),
-    ])
-      .then(([gamePage, expansionPage]) => {
+    Promise.all([listCollectionGameIds(), listCollectionExpansionIds()])
+      .then(([gameIds, expansionIds]) => {
         if (!active) return
         setMembership({
           ownerId,
-          games: new Set(gamePage.content.map((item) => item.game.id)),
-          expansions: new Set(expansionPage.content.map((item) => item.expansion.id)),
+          games: new Set(gameIds),
+          expansions: new Set(expansionIds),
         })
       })
       // Brak tej wiedzy nie psuje aplikacji — przyciski zadziałają optymistycznie.

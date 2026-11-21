@@ -27,6 +27,15 @@ export async function listCollectionGames(
   return data
 }
 
+/**
+ * Same identyfikatory gier w kolekcji — do oznaczania „mam / nie mam" na kartach.
+ * Bez stronicowania (zawsze cała kolekcja), rosnąco; pusta kolekcja to `[]`, nie 404.
+ */
+export async function listCollectionGameIds(): Promise<number[]> {
+  const { data } = await apiClient.get<number[]>('/api/v1/collection/games/ids')
+  return data
+}
+
 export async function addGameToCollection(gameId: number): Promise<GameCollectionItemDto> {
   const { data } = await apiClient.post<GameCollectionItemDto>(
     `/api/v1/collection/games/${gameId}`,
@@ -44,6 +53,12 @@ export async function listCollectionExpansions(
   const { data } = await apiClient.get<PageExpansionCollectionItemDto>(
     `/api/v1/collection/expansions?${pageParams(pageable)}`,
   )
+  return data
+}
+
+/** Same identyfikatory dodatków w kolekcji — lustrzane do `listCollectionGameIds`. */
+export async function listCollectionExpansionIds(): Promise<number[]> {
+  const { data } = await apiClient.get<number[]>('/api/v1/collection/expansions/ids')
   return data
 }
 
