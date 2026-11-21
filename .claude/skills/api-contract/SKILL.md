@@ -21,6 +21,8 @@ Backend: `Minner22/gamehive-backend` (lokalnie `../gamehive-backend`). Jego zasa
 - Nowy moduł → wpis w drzewie „Architektura” w CLAUDE.md.
 
 ## Pułapki kontraktu (każda już raz ugryzła)
+- **Jedna encja, dwa widoki**: biblioteka (`/games`, `/expansions`) to wyłącznie `moderationStatus = APPROVED`; „moje zgłoszenia” (`/games/my`, `/expansions/my`) to własne `DRAFT/PENDING/REJECTED` tej samej encji. Co autor może zrobić ze zgłoszeniem → `lib/moderationStatus.ts` (backend odpowiada `GAME_NOT_EDITABLE`/`EXPANSION_NOT_EDITABLE`, UI nie proponuje tych akcji).
+- **Formularze gry i dodatku mają dwa tryby**: `owner` (własne zgłoszenie, zapis przez `games.ts`/`expansions.ts` na `/games/{id}`) i `moderator` (pozycja z biblioteki, zapis przez `moderation.ts` na `/moderation/**`, trasy `/moderation/*/:id/edit`). Nie mieszaj endpointów między trybami.
 - **`submit`** jest po stronie backendu prymitywnym `boolean` — `games.ts`, `expansions.ts`, `moderation.ts` dokładają go do **każdego** body, także PUT (brak pola = 400). Nowy endpoint zapisu gry/dodatku → to samo.
 - **Dwa różne 404**: kod domenowy (`GAME_NOT_FOUND`, `USER_NOT_FOUND`…) = „nie ma zasobu”; `RESOURCE_NOT_FOUND` = „nie ma takiej ścieżki”, czyli błąd po naszej stronie (gamehive-backend#140, front GH-74). Zawsze `isDomainNotFound(err)` z `lib/apiError.ts`, nigdy goły `status === 404` — inaczej literówka w ścieżce udaje pusty wynik.
 - **Enumeration-safe**: `GET /games/{id}` i `/expansions/{id}` dają to samo 404 dla cudzego zgłoszenia i nieistniejącego id. Komunikat nie może sugerować braku uprawnień; moderator nie może tam linkować.
