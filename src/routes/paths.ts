@@ -15,7 +15,9 @@ export const ROUTES = {
    * konkretny adres — dzięki temu wzorzec i link nigdy się nie rozjeżdżają.
    */
   games: {
+    /** Katalog „Odkrywaj” (gry, dodatki i wyszukiwanie) — linki buduj przez `catalogHref`. */
     library: '/games',
+    /** Stary adres wyszukiwarki — tylko przekierowanie do katalogu. */
     search: '/games/search',
     my: '/games/my',
     new: '/games/new',
@@ -25,6 +27,7 @@ export const ROUTES = {
     edit: (id: number | string) => `/games/${id}/edit`,
   },
   expansions: {
+    /** Stary adres biblioteki dodatków — tylko przekierowanie do katalogu (`?type=expansion`). */
     library: '/expansions',
     new: '/expansions/new',
     detailPattern: '/expansions/:id',
