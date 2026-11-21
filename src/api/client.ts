@@ -5,7 +5,9 @@
  * - withCredentials: true — wysyłamy ciasteczko refreshToken (HttpOnly),
  * - request interceptor dokleja nagłówek Authorization: Bearer <accessToken>,
  * - response interceptor przy 401 jednorazowo próbuje odświeżyć token
- *   (GET /api/v1/auth/refresh) i ponawia oryginalne żądanie.
+ *   (GET /api/v1/auth/refresh) i ponawia oryginalne żądanie,
+ * - `refreshAccessToken()` to JEDYNA ścieżka odświeżania — używa jej interceptor
+ *   i start aplikacji (`refreshSession` w api/auth), patrz niżej.
  */
 import axios, {
   AxiosError,
@@ -14,6 +16,7 @@ import axios, {
 } from 'axios'
 import type { AccessTokenResponseDto } from './types'
 import { clearAccessToken, getAccessToken, setAccessToken } from './tokenStore'
+import { REFRESH_LOCK_NAME, withCrossTabLock } from './crossTabLock'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -34,18 +37,48 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config
 })
 
-// Single-flight: równoległe żądania, które dostały 401, czekają na jedno
-// wspólne odświeżenie zamiast wywoływać refresh każde z osobna.
-let refreshPromise: Promise<string> | null = null
+/**
+ * Limit czasu żądania odświeżenia. Odświeżanie jest blokadą wspólną dla kart (#80),
+ * więc zawieszone żądanie w jednej karcie wstrzymałoby wszystkie pozostałe —
+ * po tym czasie żądanie pada jak błąd sieci, a blokada się zwalnia.
+ */
+export const REFRESH_TIMEOUT_MS = 15_000
 
-async function refreshAccessToken(): Promise<string> {
+async function requestNewAccessToken(): Promise<string> {
   // Czysta instancja axios — bez interceptorów, żeby uniknąć pętli na 401.
   const { data } = await axios.get<AccessTokenResponseDto>(REFRESH_PATH, {
     baseURL,
     withCredentials: true,
+    timeout: REFRESH_TIMEOUT_MS,
   })
   setAccessToken(data.accessToken)
   return data.accessToken
+}
+
+// Single-flight: równoległe żądania, które dostały 401, czekają na jedno
+// wspólne odświeżenie zamiast wywoływać refresh każde z osobna.
+let refreshPromise: Promise<string> | null = null
+
+/**
+ * Nowy access token z ciasteczka refresh. Jedna ścieżka dla interceptora i startu
+ * aplikacji — inaczej dwie niezależne obietnice mogłyby wysłać ten sam refresh
+ * równolegle, a po rotacji refresh tokenów (backend#146) drugi byłby „kradzieżą”.
+ *
+ * Pod blokadą wspólną dla kart (`crossTabLock`): druga karta czeka, aż pierwsza
+ * skończy, i wysyła już nowe ciasteczko. Nieudane odświeżenie czyści token
+ * w pamięci i przekazuje błąd dalej.
+ */
+export function refreshAccessToken(): Promise<string> {
+  // Single-flight łączy żądania w karcie, blokada — karty między sobą (#80).
+  refreshPromise ??= withCrossTabLock(REFRESH_LOCK_NAME, requestNewAccessToken)
+    .catch((error: unknown) => {
+      clearAccessToken()
+      throw error
+    })
+    .finally(() => {
+      refreshPromise = null
+    })
+  return refreshPromise
 }
 
 interface RetriableConfig extends AxiosRequestConfig {
@@ -70,20 +103,18 @@ apiClient.interceptors.response.use(
 
     if (status === 401 && canRetry) {
       original!._retry = true
-      try {
-        refreshPromise ??= refreshAccessToken().finally(() => {
-          refreshPromise = null
-        })
-        const token = await refreshPromise
-        original!.headers = {
-          ...original!.headers,
-          Authorization: `Bearer ${token}`,
-        }
-        return apiClient(original!)
-      } catch (refreshError) {
-        clearAccessToken()
-        return Promise.reject(refreshError)
+      // Żądanie wyszło ze starym tokenem, a inne w międzyczasie już odświeżyło sesję —
+      // wystarczy ponowić z obecnym. Kolejne odświeżenie byłoby zbędną rotacją refresh
+      // tokena (backend#146), a między kartami kolejnym czekaniem na blokadę (#80).
+      const current = getAccessToken()
+      const sentWith = String(original!.headers?.Authorization ?? '')
+      const token =
+        current && sentWith !== `Bearer ${current}` ? current : await refreshAccessToken()
+      original!.headers = {
+        ...original!.headers,
+        Authorization: `Bearer ${token}`,
       }
+      return apiClient(original!)
     }
 
     return Promise.reject(error)
