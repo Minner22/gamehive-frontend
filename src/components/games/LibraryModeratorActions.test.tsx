@@ -26,13 +26,9 @@ function mockSession(roles: string[]) {
         profile: {},
       })
     }),
-    // Kontekst kolekcji dla zalogowanego czyta kolekcję — tu bez znaczenia.
-    http.get(`${ANY_ORIGIN}/api/v1/collection/games`, () =>
-      HttpResponse.json({ content: [], empty: true, first: true, last: true, number: 0, numberOfElements: 0, size: 200, totalElements: 0, totalPages: 0 }),
-    ),
-    http.get(`${ANY_ORIGIN}/api/v1/collection/expansions`, () =>
-      HttpResponse.json({ content: [], empty: true, first: true, last: true, number: 0, numberOfElements: 0, size: 200, totalElements: 0, totalPages: 0 }),
-    ),
+    // Kontekst kolekcji dla zalogowanego czyta identyfikatory kolekcji — tu bez znaczenia.
+    http.get(`${ANY_ORIGIN}/api/v1/collection/games/ids`, () => HttpResponse.json([])),
+    http.get(`${ANY_ORIGIN}/api/v1/collection/expansions/ids`, () => HttpResponse.json([])),
   )
 }
 

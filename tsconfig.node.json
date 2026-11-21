@@ -20,5 +20,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  // `icons.test.ts` czyta index.html i pliki źródłowe z dysku, więc należy do
+  // środowiska Node (typy `node`), a nie do kodu aplikacji.
+  "include": ["vite.config.ts", "src/test/icons.test.ts"]
 }

@@ -12,9 +12,22 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <!-- Ikony: Material Symbols Outlined (display=block — bez FOUT z nazwami ligatur) -->
+    <!--
+      Ikony: Material Symbols Outlined, zawężone do faktycznie używanych nazw.
+      Pełny font wariacyjny (opsz,wght,FILL,GRAD z pełnymi zakresami) waży 3,9 MB;
+      ten sam zestaw z `icon_names` to 23 kB.
+
+      Dwie osie (`wght,FILL`) są tu konieczne, choć kod używa tylko `FILL`:
+      przy jednej osi Google zwraca font STATYCZNY (font-weight: 400), w którym
+      `fontVariationSettings: 'FILL' 1` z komponentu `Icon` nic nie robi —
+      aktywne pozycje nawigacji przestałyby mieć wypełnione ikony.
+
+      Listę pilnuje test `src/test/icons.test.ts` — dopisanie ikony w kodzie bez
+      dopisania jej tutaj zepsułoby ją w UI (wyświetliłaby się nazwa tekstem).
+      display=block: bez tego przy niewczytanym foncie migają nazwy ligatur.
+    -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block&icon_names=add,add_circle,admin_panel_settings,apartment,arrow_back,arrow_forward,badge,block,cake,calendar_month,call,casino,category,check,check_circle,chevron_left,chevron_right,clear,close,cloud_off,dark_mode,dashboard,delete,delete_forever,edit,edit_note,error,event_available,extension,filter_list,gavel,group,groups,history,hive,home,image,info,inventory_2,light_mode,link_off,list,location_city,lock,lock_open,login,logout,mail,manage_search,mark_email_unread,markunread_mailbox,menu,menu_book,open_in_new,palette,person,public,refresh,save,schedule,search,search_off,send,shield_person,sports_esports,task_alt,travel_explore,visibility,visibility_off"
       rel="stylesheet"
     />
     <!-- Ustaw motyw przed pierwszym malowaniem (brak migotania) -->

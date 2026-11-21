@@ -5,7 +5,7 @@ import { http, HttpResponse } from 'msw'
 import { server } from '@/test/server'
 import { TestProviders } from '@/test/TestProviders'
 import { ANY_ORIGIN } from '@/test/handlers'
-import { makeCollectionItem, makeGame, makePage } from '@/test/fixtures'
+import { makeCollectionItem } from '@/test/fixtures'
 import { CollectionButton } from './CollectionButton'
 
 function renderButton() {
@@ -54,8 +54,10 @@ describe('CollectionButton', () => {
   })
 
   /**
-   * Dla zalogowanego kontekst czyta kolekcję raz na sesję — dzięki temu przycisk
-   * zna stan bez klikania i bez pytania backendu o każdą pozycję z osobna.
+   * Dla zalogowanego kontekst czyta raz na sesję same identyfikatory kolekcji
+   * (`/ids`, nie pełne DTO) — przycisk zna stan bez klikania i bez pytania backendu
+   * o każdą pozycję z osobna. Pełne listy nie mają handlera, więc przy
+   * `onUnhandledRequest: 'error'` powrót do nich wywaliłby test.
    */
   it('po zalogowaniu zna zawartość kolekcji bez klikania', async () => {
     server.use(
@@ -72,17 +74,26 @@ describe('CollectionButton', () => {
           profile: {},
         }),
       ),
-      http.get(`${ANY_ORIGIN}/api/v1/collection/games`, () =>
-        HttpResponse.json(makePage([makeCollectionItem({ game: makeGame({ id: 1 }) })])),
-      ),
-      http.get(`${ANY_ORIGIN}/api/v1/collection/expansions`, () =>
-        HttpResponse.json(makePage([])),
-      ),
+      http.get(`${ANY_ORIGIN}/api/v1/collection/games/ids`, () => HttpResponse.json([1, 7])),
+      http.get(`${ANY_ORIGIN}/api/v1/collection/expansions/ids`, () => HttpResponse.json([3])),
     )
-    renderButton()
+    render(
+      <TestProviders>
+        <CollectionButton target="game" id={1} name="Agricola" />
+        <CollectionButton target="expansion" id={3} name="Agricola: Farmers of the Moor" />
+        <CollectionButton target="expansion" id={1} name="Terra Mystica: Fire & Ice" />
+      </TestProviders>,
+    )
 
     expect(
       await screen.findByRole('button', { name: 'Usuń z kolekcji: Agricola' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Usuń z kolekcji: Agricola: Farmers of the Moor' }),
+    ).toBeInTheDocument()
+    // Identyfikatory gier i dodatków to osobne przestrzenie — gra 1 nie oznacza dodatku 1.
+    expect(
+      screen.getByRole('button', { name: 'Dodaj do kolekcji: Terra Mystica: Fire & Ice' }),
     ).toBeInTheDocument()
   })
 

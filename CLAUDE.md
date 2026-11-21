@@ -87,7 +87,8 @@ src/
     AuthContext.tsx# AuthProvider (bootstrap sesji) + useAuth (status/user/login/logout/hasRole)
   collection/
     CollectionContext.tsx # stan „mam / nie mam" (backend nie ma takiego pytania):
-                   #   raz na sesję czyta kolekcję, potem aktualizuje przy akcjach
+                   #   raz na sesję czyta same id (/collection/*/ids — nie pełne DTO),
+                   #   potem aktualizuje przy akcjach
   components/
     ui/            # UI-kit Nectar (Button/ButtonLink, Input/PasswordInput, Card, Chip,
                    #   Badge, HexAvatar, Icon, Spinner, Toast, Dialog, Pagination,
@@ -113,6 +114,8 @@ src/
     useResource.ts # pojedynczy zasób (ok/notFound/error) — 404 to osobny stan
     gameFilters.ts # filtry biblioteki i wyszukiwarki ↔ query string (adres = źródło prawdy)
     useDebouncedValue.ts # opóźniona wartość (pole szukania nie strzela na literę)
+    useTaxonomyOptions.ts # kategorie i mechaniki do filtrów — jedno pobranie na sesję
+                   #   (cache modułowy; reset w test/setup.ts, inaczej przecieka)
     expansionValues.ts # dodatek: puste pole = dziedziczenie z gry bazowej
     authorName.ts  # „Imię Nazwisko" ↔ para pól nowego autora (podział na 1. spacji)
     plural.ts      # pluralPl — polska odmiana rzeczownika po liczbie
@@ -164,6 +167,14 @@ src/
   (`bg-primary`, `text-on-surface`, `bg-surface-container-low`…) — **nie** hardkoduj
   kolorów ani `slate-*`/`violet-*`. Fonty: `font-headline` (Manrope) / `font-body` (Inter).
 - **Layouty:** `AppShell` (nawigacja) dla tras aplikacji, `AuthLayout` dla login/register.
+  Oba mają granicę `Suspense` (`RouteLoader`) wokół `<Outlet />`, bo **strony są ładowane
+  leniwie** (`React.lazy` w `App.tsx`). Nową trasę dopisuj jako `lazy(() => import(...))`,
+  a `ProtectedRoute` zostawiaj **na zewnątrz** — najpierw dostęp, potem pobranie kodu.
+- **Ikony ładowane jako subset:** `index.html` wymienia w `icon_names` każdą używaną ikonę
+  (pełny font Material Symbols to 3,9 MB, subset 23 kB). Dodajesz ikonę w kodzie → dopisz ją
+  tam, inaczej wyświetli się jej nazwa tekstem. Pilnuje tego `src/test/icons.test.ts`.
+  Link **musi** deklarować dwie osie (`wght,FILL`): przy jednej Google zwraca font statyczny,
+  w którym `filled` z `Icon` przestaje działać.
 - **Alias `@` → `./src`** (vite.config.ts + tsconfig.app.json `paths`). Używaj `@/...`.
 - **Sesja:** access token w body logowania, refresh token w ciasteczku **HttpOnly**
   (`/api/v1/auth/refresh`). Po reloadzie sesję odtwarza się przez `GET /auth/refresh`.

@@ -1,34 +1,54 @@
+import { lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import AppShell from '@/components/layout/AppShell'
 import AuthLayout from '@/components/layout/AuthLayout'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import DashboardPage from '@/pages/DashboardPage'
 import HomeRoute from '@/pages/HomeRoute'
-import NotFoundPage from '@/pages/NotFoundPage'
-import ProfileEditPage from '@/pages/ProfileEditPage'
-import ProfilePage from '@/pages/ProfilePage'
-import GameDetailPage from '@/pages/games/GameDetailPage'
-import GameFormPage from '@/pages/games/GameFormPage'
-import ExpansionDetailPage from '@/pages/games/ExpansionDetailPage'
-import ExpansionFormPage from '@/pages/games/ExpansionFormPage'
-import ExpansionsLibraryPage from '@/pages/games/ExpansionsLibraryPage'
-import GameSearchPage from '@/pages/games/GameSearchPage'
-import MySubmissionsPage from '@/pages/games/MySubmissionsPage'
-import ExpansionModerationPage from '@/pages/moderation/ExpansionModerationPage'
-import GameModerationPage from '@/pages/moderation/GameModerationPage'
-import VaultPage from '@/pages/games/VaultPage'
-import GamesLibraryPage from '@/pages/games/GamesLibraryPage'
-import UiKitPage from '@/pages/UiKitPage'
-import AdminAuditPage from '@/pages/admin/AdminAuditPage'
-import AdminSearchPage from '@/pages/admin/AdminSearchPage'
-import AdminTaxonomyPage from '@/pages/admin/AdminTaxonomyPage'
-import AdminUsersPage from '@/pages/admin/AdminUsersPage'
-import ActivatePage from '@/pages/auth/ActivatePage'
-import LoginPage from '@/pages/auth/LoginPage'
-import PasswordResetConfirmPage from '@/pages/auth/PasswordResetConfirmPage'
-import PasswordResetRequestPage from '@/pages/auth/PasswordResetRequestPage'
-import RegisterPage from '@/pages/auth/RegisterPage'
 import { ROUTES } from '@/routes/paths'
+
+/**
+ * Ekrany ładowane razem z trasą (`React.lazy`), więc pierwsze wejście nie ściąga
+ * kodu wszystkich widoków naraz. Granice `Suspense` siedzą w layoutach (`AppShell`,
+ * `AuthLayout`) wokół `<Outlet />` — szkielet z nawigacją nie miga przy przejściu.
+ *
+ * `HomeRoute` zostaje statycznie: to trasa `/`, więc jej kod i tak jest potrzebny
+ * natychmiast, a osobny plik oznaczałby tylko dodatkowe żądanie na starcie.
+ *
+ * `ProtectedRoute` jest **na zewnątrz** `lazy`: najpierw rozstrzygamy dostęp, potem
+ * ściągamy kod ekranu. Inaczej niezalogowany pobierałby panel admina tylko po to,
+ * żeby zobaczyć przekierowanie.
+ */
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
+const ProfileEditPage = lazy(() => import('@/pages/ProfileEditPage'))
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
+const UiKitPage = lazy(() => import('@/pages/UiKitPage'))
+
+const ExpansionDetailPage = lazy(() => import('@/pages/games/ExpansionDetailPage'))
+const ExpansionFormPage = lazy(() => import('@/pages/games/ExpansionFormPage'))
+const ExpansionsLibraryPage = lazy(() => import('@/pages/games/ExpansionsLibraryPage'))
+const GameDetailPage = lazy(() => import('@/pages/games/GameDetailPage'))
+const GameFormPage = lazy(() => import('@/pages/games/GameFormPage'))
+const GamesLibraryPage = lazy(() => import('@/pages/games/GamesLibraryPage'))
+const GameSearchPage = lazy(() => import('@/pages/games/GameSearchPage'))
+const MySubmissionsPage = lazy(() => import('@/pages/games/MySubmissionsPage'))
+const VaultPage = lazy(() => import('@/pages/games/VaultPage'))
+
+const ExpansionModerationPage = lazy(() => import('@/pages/moderation/ExpansionModerationPage'))
+const GameModerationPage = lazy(() => import('@/pages/moderation/GameModerationPage'))
+
+const AdminAuditPage = lazy(() => import('@/pages/admin/AdminAuditPage'))
+const AdminSearchPage = lazy(() => import('@/pages/admin/AdminSearchPage'))
+const AdminTaxonomyPage = lazy(() => import('@/pages/admin/AdminTaxonomyPage'))
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'))
+
+const ActivatePage = lazy(() => import('@/pages/auth/ActivatePage'))
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
+const PasswordResetConfirmPage = lazy(() => import('@/pages/auth/PasswordResetConfirmPage'))
+const PasswordResetRequestPage = lazy(() => import('@/pages/auth/PasswordResetRequestPage'))
+const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
+
+const MODERATOR = ['ROLE_MODERATOR', 'ROLE_ADMIN'] as const
 
 export default function App() {
   return (
@@ -167,7 +187,7 @@ export default function App() {
         <Route
           path={ROUTES.moderation.games}
           element={
-            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+            <ProtectedRoute role={[...MODERATOR]}>
               <GameModerationPage />
             </ProtectedRoute>
           }
@@ -175,7 +195,7 @@ export default function App() {
         <Route
           path={ROUTES.moderation.expansions}
           element={
-            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+            <ProtectedRoute role={[...MODERATOR]}>
               <ExpansionModerationPage />
             </ProtectedRoute>
           }
@@ -183,7 +203,7 @@ export default function App() {
         <Route
           path={ROUTES.moderation.editGamePattern}
           element={
-            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+            <ProtectedRoute role={[...MODERATOR]}>
               <GameFormPage mode="moderator" />
             </ProtectedRoute>
           }
@@ -191,7 +211,7 @@ export default function App() {
         <Route
           path={ROUTES.moderation.editExpansionPattern}
           element={
-            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+            <ProtectedRoute role={[...MODERATOR]}>
               <ExpansionFormPage mode="moderator" />
             </ProtectedRoute>
           }
@@ -200,7 +220,7 @@ export default function App() {
         <Route
           path={ROUTES.admin.search}
           element={
-            <ProtectedRoute role={['ROLE_MODERATOR', 'ROLE_ADMIN']}>
+            <ProtectedRoute role={[...MODERATOR]}>
               <AdminSearchPage />
             </ProtectedRoute>
           }
