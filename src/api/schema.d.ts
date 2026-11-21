@@ -1034,6 +1034,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/collection/games/ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Moje gry (same ID)
+         * @description Identyfikatory wszystkich gier w kolekcji zalogowanego użytkownika — lekka odpowiedź do oznaczania „mam / nie mam” na kartach. Bez stronicowania (zawsze cała kolekcja), posortowane rosnąco; pusta kolekcja zwraca [] (nie 404). Pełne dane gier: GET /api/v1/collection/games.
+         */
+        get: operations["getMyCollectionGameIds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/collection/expansions": {
         parameters: {
             query?: never;
@@ -1046,6 +1066,26 @@ export interface paths {
          * @description Dodatki w kolekcji zalogowanego użytkownika wraz z wartościami własnymi i efektywnymi. Parametry stronicowania: page, size, sort.
          */
         get: operations["myExpansions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/collection/expansions/ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Moje dodatki (same ID)
+         * @description Identyfikatory wszystkich dodatków w kolekcji zalogowanego użytkownika — lekka odpowiedź do oznaczania „mam / nie mam” na kartach. Bez stronicowania (zawsze cała kolekcja), posortowane rosnąco; pusta kolekcja zwraca [] (nie 404). Pełne dane dodatków: GET /api/v1/collection/expansions.
+         */
+        get: operations["getMyCollectionExpansionIds"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6619,6 +6659,44 @@ export interface operations {
             };
         };
     };
+    getMyCollectionGameIds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rosnąca lista ID gier w kolekcji (może być pusta) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": number[];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     myExpansions: {
         parameters: {
             query: {
@@ -6637,6 +6715,44 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageExpansionCollectionItemDto"];
+                };
+            };
+            /** @description Brak lub nieprawidłowy token dostępowy */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Błąd wewnętrzny serwera */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    getMyCollectionExpansionIds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rosnąca lista ID dodatków w kolekcji (może być pusta) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": number[];
                 };
             };
             /** @description Brak lub nieprawidłowy token dostępowy */
