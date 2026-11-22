@@ -12,15 +12,36 @@ import { ROUTES } from '@/routes/paths'
 
 /**
  * `revoked` — wysłano nowszy link (backend#145), `used` — link już zadziałał,
+ * `active` — link ważny, ale konto aktywowano inaczej (409 `USER_ALREADY_ACTIVATED`),
  * `error` — wygasły albo nieprawidłowy (#88).
  */
-type ActivationState = 'activating' | 'success' | 'revoked' | 'used' | 'error' | 'no-token'
+type ActivationState =
+  | 'activating'
+  | 'success'
+  | 'revoked'
+  | 'used'
+  | 'active'
+  | 'error'
+  | 'no-token'
 
 function failureState(error: unknown): ActivationState {
   const code = getApiErrorCode(error)
   if (code === 'TOKEN_REVOKED') return 'revoked'
   if (code === 'JWT_BLACKLISTED') return 'used'
+  if (code === 'USER_ALREADY_ACTIVATED') return 'active'
   return 'error'
+}
+
+/** Konto na pewno aktywne — zamiast ponownego wysłania (które nic by nie wysłało) logowanie. */
+const ACTIVE_TEXTS: Record<'used' | 'active', { title: string; text: string }> = {
+  used: {
+    title: 'Link już użyty',
+    text: 'Ten link został już użyty — konto jest aktywne, możesz się zalogować.',
+  },
+  active: {
+    title: 'Konto już aktywne',
+    text: 'To konto jest już aktywne — możesz się zalogować.',
+  },
 }
 
 /** Podtytuł nad formularzem ponownego wysłania — zależnie od tego, czemu link nie zadziałał. */
@@ -123,14 +144,11 @@ export default function ActivatePage() {
     )
   }
 
-  // Link już użyty = konto aktywne; ponowne wysłanie i tak nic by nie wysłało.
-  if (state === 'used') {
+  if (state === 'used' || state === 'active') {
     return (
-      <AuthCard title="Link już użyty">
+      <AuthCard title={ACTIVE_TEXTS[state].title}>
         <AuthResult icon="task_alt">
-          <p className="text-sm text-on-surface-variant">
-            Ten link został już użyty — konto jest aktywne, możesz się zalogować.
-          </p>
+          <p className="text-sm text-on-surface-variant">{ACTIVE_TEXTS[state].text}</p>
           <ButtonLink to={ROUTES.login} iconRight="login">
             Przejdź do logowania
           </ButtonLink>

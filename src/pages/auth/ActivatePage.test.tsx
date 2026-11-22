@@ -51,6 +51,16 @@ describe('ActivatePage', () => {
     expect(resendButton()).not.toBeInTheDocument()
   })
 
+  /** Link ważny, ale konto aktywowano inaczej — backend nie blacklistuje wtedy tokenu (dev, 2026-11-22). */
+  it('409 USER_ALREADY_ACTIVATED → konto już aktywne, logowanie zamiast ponownego wysłania', async () => {
+    mockActivate(409, { errorCode: 'USER_ALREADY_ACTIVATED', message: 'User is already activated' })
+    renderPage()
+
+    expect(await screen.findByText('To konto jest już aktywne — możesz się zalogować.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Przejdź do logowania/ })).toHaveAttribute('href', ROUTES.login)
+    expect(resendButton()).not.toBeInTheDocument()
+  })
+
   it.each([
     ['401 JWT_EXPIRED', 401, { errorCode: 'JWT_EXPIRED' }],
     ['400 zniekształcony token', 400, { errorCode: 'JWT_PARSE_ERROR' }],
