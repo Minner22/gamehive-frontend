@@ -100,7 +100,7 @@ Każda ma rozwinięcie w skillu — tu tylko reguła.
 - **404**: `isDomainNotFound`, nigdy goły `status === 404` (`RESOURCE_NOT_FOUND` = błąd naszej ścieżki). Komunikat 404 nie mówi o uprawnieniach.
 - **Katalog to jeden ekran** (`/games`, „Odkrywaj”, #84): gry, dodatki i wyszukiwanie — nie dodawaj osobnych list. Źródło wybiera `catalogSource` (baza, gdy wystarcza; Meili przy frazie, „Wszystko” lub filtrze spoza bazy); linki przez `catalogHref`. Nazwa „Odkrywaj” jest robocza (zmieni się z Ulami) — w kodzie neutralne „catalog”.
 - **Strony leniwe**: nowa trasa jako `lazy(...)` z `ProtectedRoute` **na zewnątrz**; ikona w kodzie → `icon_names` w `index.html` (pilnuje `icons.test.ts`) → `new-route`.
-- **Sesja**: token tylko w pamięci, refresh w ciasteczku HttpOnly, bootstrap przez `GET /auth/refresh`. Odświeżanie wyłącznie przez `refreshAccessToken()` — single-flight w karcie + blokada Web Locks między kartami (#80, warunek rotacji refresh tokenów backend#146) → `auth-session`.
+- **Sesja**: token tylko w pamięci, refresh w ciasteczku HttpOnly, bootstrap przez `GET /auth/refresh`. Odświeżanie wyłącznie przez `refreshAccessToken()` — single-flight w karcie + blokada Web Locks między kartami (#80, warunek rotacji refresh tokenów backend#146). Publiczne endpointy auth (`AUTH_PATHS`) bez Bearer i bez refreshu (#88) → `auth-session`.
 - **UI**: kolory tylko z tokenów `@theme` (nie `slate-*`/hex), UI-kit zamiast własnych kontrolek, `ButtonLink` do nawigacji, dostępność jak w kicie → `ui-review`.
 - **Komunikaty błędów** tylko z `errorCode` przez mapę `errorMessages.ts` — nigdy `ApiError.message` (#81). Nowy kod w backendzie → wpis w mapie → `api-contract`.
 - **Formularze**: `useApiForm` / `handleApiFormError` — błędy walidacji na pola (polskie teksty z zod), reszta do toasta.
@@ -139,6 +139,6 @@ mockupy Stitch w `stitch_gamehive.zip` (rozpakowane do `stitch_extracted/`, oba 
 ## Roadmapa
 
 - **Zrobione:** fundament i auth (GH-1…GH-9), konto i dashboard (GH-10, #20, #21), panel admina (#22–#24),
-  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67), skille (#82), jeden katalog „Odkrywaj” (#84), odświeżanie sesji między kartami (#80), komunikaty błędów po polsku z `errorCode` (#81).
+  jakość — testy, CI, typy z OpenAPI, Sonar (#25–#27, #61), moduł gier (#43–#57, #74), wydajność (#67), skille (#82), jeden katalog „Odkrywaj” (#84), odświeżanie sesji między kartami (#80), komunikaty błędów po polsku z `errorCode` (#81), komunikaty dla unieważnionych linków z maila (#88).
 - **Otwarte (Project #3):** **#14** landing.
 - **Poza obecnym backendem:** Hives.
