@@ -5,7 +5,7 @@
  * potrzebuje (np. MessageResponseDto); w przeciwnym razie `void`. `login`
  * zwraca `void`, bo token konsumuje wewnętrznie (setAccessToken).
  */
-import apiClient, { refreshAccessToken } from './client'
+import apiClient, { AUTH_PATHS, refreshAccessToken } from './client'
 import { clearAccessToken, setAccessToken } from './tokenStore'
 import type {
   AccessTokenResponseDto,
@@ -19,13 +19,13 @@ import type {
 
 /** Logowanie: access token ląduje w pamięci, refresh token w ciasteczku HttpOnly. */
 export async function login(dto: LoginDto): Promise<void> {
-  const { data } = await apiClient.post<AccessTokenResponseDto>('/api/v1/auth/login', dto)
+  const { data } = await apiClient.post<AccessTokenResponseDto>(AUTH_PATHS.login, dto)
   setAccessToken(data.accessToken)
 }
 
 /** Rejestracja nowego (nieaktywnego) konta — wysyła e-mail aktywacyjny. */
 export async function register(dto: RegistrationDto): Promise<MessageResponseDto> {
-  const { data } = await apiClient.post<MessageResponseDto>('/api/v1/auth/register', dto)
+  const { data } = await apiClient.post<MessageResponseDto>(AUTH_PATHS.register, dto)
   return data
 }
 
@@ -48,7 +48,7 @@ export function refreshSession(): Promise<string> {
 
 /** Aktywacja konta tokenem z linku e-mail. */
 export async function activateAccount(token: string): Promise<MessageResponseDto> {
-  const { data } = await apiClient.get<MessageResponseDto>('/api/v1/auth/activate', {
+  const { data } = await apiClient.get<MessageResponseDto>(AUTH_PATHS.activate, {
     params: { token },
   })
   return data
@@ -56,15 +56,15 @@ export async function activateAccount(token: string): Promise<MessageResponseDto
 
 /** Ponowne wysłanie wiadomości aktywacyjnej. */
 export async function resendActivation(dto: ResendActivationEmailDto): Promise<void> {
-  await apiClient.post('/api/v1/auth/activation/resend', dto)
+  await apiClient.post(AUTH_PATHS.resendActivation, dto)
 }
 
 /** Żądanie linku do resetu hasła (odpowiedź zawsze 200). */
 export async function requestPasswordReset(dto: PasswordResetRequestDto): Promise<void> {
-  await apiClient.post('/api/v1/auth/password-reset/request', dto)
+  await apiClient.post(AUTH_PATHS.passwordResetRequest, dto)
 }
 
 /** Ustawienie nowego hasła tokenem resetu. */
 export async function confirmPasswordReset(dto: PasswordResetConfirmDto): Promise<void> {
-  await apiClient.post('/api/v1/auth/password-reset/confirm', dto)
+  await apiClient.post(AUTH_PATHS.passwordResetConfirm, dto)
 }

@@ -6,10 +6,50 @@ import { AuthResult } from '@/components/layout/AuthResult'
 import { Button, ButtonLink, Input, Spinner } from '@/components/ui'
 import { activateAccount, resendActivation } from '@/api/auth'
 import { resendActivationSchema, type ResendActivationInput } from '@/lib/validation'
+import { getApiErrorCode } from '@/lib/apiError'
 import { useApiForm } from '@/lib/useApiForm'
 import { ROUTES } from '@/routes/paths'
 
-type ActivationState = 'activating' | 'success' | 'error' | 'no-token'
+/**
+ * `revoked` — wysłano nowszy link (backend#145), `used` — link już zadziałał,
+ * `active` — link ważny, ale konto aktywowano inaczej (409 `USER_ALREADY_ACTIVATED`),
+ * `error` — wygasły albo nieprawidłowy (#88).
+ */
+type ActivationState =
+  | 'activating'
+  | 'success'
+  | 'revoked'
+  | 'used'
+  | 'active'
+  | 'error'
+  | 'no-token'
+
+function failureState(error: unknown): ActivationState {
+  const code = getApiErrorCode(error)
+  if (code === 'TOKEN_REVOKED') return 'revoked'
+  if (code === 'JWT_BLACKLISTED') return 'used'
+  if (code === 'USER_ALREADY_ACTIVATED') return 'active'
+  return 'error'
+}
+
+/** Konto na pewno aktywne — zamiast ponownego wysłania (które nic by nie wysłało) logowanie. */
+const ACTIVE_TEXTS: Record<'used' | 'active', { title: string; text: string }> = {
+  used: {
+    title: 'Link już użyty',
+    text: 'Ten link został już użyty — konto jest aktywne, możesz się zalogować.',
+  },
+  active: {
+    title: 'Konto już aktywne',
+    text: 'To konto jest już aktywne — możesz się zalogować.',
+  },
+}
+
+/** Podtytuł nad formularzem ponownego wysłania — zależnie od tego, czemu link nie zadziałał. */
+const RESEND_SUBTITLES: Record<'revoked' | 'error' | 'no-token', string> = {
+  revoked: 'Wysłaliśmy nowszy link aktywacyjny — użyj linku z najnowszej wiadomości.',
+  error: 'Link aktywacyjny jest nieprawidłowy lub wygasł. Wyślij nowy poniżej.',
+  'no-token': 'Wpisz adres e-mail, aby otrzymać nowy link aktywacyjny.',
+}
 
 const RESEND_FIELDS = Object.keys(resendActivationSchema.shape)
 
@@ -71,11 +111,11 @@ export default function ActivatePage() {
   useEffect(() => {
     if (!token || didRun.current) return
     didRun.current = true
-    // Błędy tokena (400/401) są nieakcjonowalne dla użytkownika — pokazujemy
-    // jeden przyjazny komunikat zamiast surowej wiadomości serwera.
+    // Rozróżniamy tylko powody, które zmieniają radę dla użytkownika; reszta
+    // (wygasły, zniekształcony, 5xx) to jeden przyjazny komunikat.
     activateAccount(token)
       .then(() => setState('success'))
-      .catch(() => setState('error'))
+      .catch((error: unknown) => setState(failureState(error)))
   }, [token])
 
   if (state === 'activating') {
@@ -104,15 +144,24 @@ export default function ActivatePage() {
     )
   }
 
-  // 'error' lub 'no-token' → komunikat kontekstowy + formularz ponownego wysłania.
+  if (state === 'used' || state === 'active') {
+    return (
+      <AuthCard title={ACTIVE_TEXTS[state].title}>
+        <AuthResult icon="task_alt">
+          <p className="text-sm text-on-surface-variant">{ACTIVE_TEXTS[state].text}</p>
+          <ButtonLink to={ROUTES.login} iconRight="login">
+            Przejdź do logowania
+          </ButtonLink>
+        </AuthResult>
+      </AuthCard>
+    )
+  }
+
+  // 'revoked', 'error' lub 'no-token' → komunikat kontekstowy + formularz ponownego wysłania.
   return (
     <AuthCard
-      title={state === 'error' ? 'Link nieaktualny' : 'Aktywacja konta'}
-      subtitle={
-        state === 'error'
-          ? 'Link aktywacyjny jest nieprawidłowy lub wygasł. Wyślij nowy poniżej.'
-          : 'Wpisz adres e-mail, aby otrzymać nowy link aktywacyjny.'
-      }
+      title={state === 'no-token' ? 'Aktywacja konta' : 'Link nieaktualny'}
+      subtitle={RESEND_SUBTITLES[state]}
       footer={
         <>
           Konto jest już aktywne?{' '}

@@ -6,6 +6,7 @@
  * - request interceptor dokleja nagłówek Authorization: Bearer <accessToken>,
  * - response interceptor przy 401 jednorazowo próbuje odświeżyć token
  *   (GET /api/v1/auth/refresh) i ponawia oryginalne żądanie,
+ * - publiczne endpointy auth (`AUTH_PATHS`) idą bez tokenu i bez odświeżania,
  * - `refreshAccessToken()` to JEDYNA ścieżka odświeżania — używa jej interceptor
  *   i start aplikacji (`refreshSession` w api/auth), patrz niżej.
  */
@@ -23,6 +24,30 @@ const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 /** Endpoint odświeżania sesji — jedno źródło dla interceptora i api/auth. */
 export const REFRESH_PATH = '/api/v1/auth/refresh'
 
+/** Publiczne endpointy auth — jedno źródło dla interceptorów i api/auth (#88). */
+export const AUTH_PATHS = {
+  login: '/api/v1/auth/login',
+  register: '/api/v1/auth/register',
+  activate: '/api/v1/auth/activate',
+  resendActivation: '/api/v1/auth/activation/resend',
+  passwordResetRequest: '/api/v1/auth/password-reset/request',
+  passwordResetConfirm: '/api/v1/auth/password-reset/confirm',
+} as const
+
+const PUBLIC_AUTH_PATHS: ReadonlySet<string> = new Set(Object.values(AUTH_PATHS))
+
+/**
+ * Endpoint bez sesji: poświadczenia albo jednorazowy token z linku są w body/query.
+ * Nie dostaje tokenu sesji i nie odświeża jej na 401 — 401 dotyczy wtedy hasła
+ * albo linku, nie sesji. Gdyby Bearer szedł, backendowy filtr JWT (który
+ * `/activate` i `/password-reset/confirm` obejmuje) mógłby odpowiedzieć
+ * 401 `TOKEN_REVOKED` za unieważnioną sesję — nie do odróżnienia od
+ * unieważnionego linku.
+ */
+export function isPublicAuthCall(url: string | undefined): boolean {
+  return PUBLIC_AUTH_PATHS.has((url ?? '').split('?')[0])
+}
+
 export const apiClient = axios.create({
   baseURL,
   withCredentials: true,
@@ -31,7 +56,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken()
-  if (token) {
+  if (token && !isPublicAuthCall(config.url)) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
@@ -99,7 +124,11 @@ apiClient.interceptors.response.use(
     const errorCode = (error.response?.data as { errorCode?: string } | undefined)?.errorCode
     const isCredentialError = errorCode === 'INVALID_PASSWORD'
     const canRetry =
-      Boolean(original) && !original?._retry && !isRefreshCall && !isCredentialError
+      Boolean(original) &&
+      !original?._retry &&
+      !isRefreshCall &&
+      !isCredentialError &&
+      !isPublicAuthCall(url)
 
     if (status === 401 && canRetry) {
       original!._retry = true

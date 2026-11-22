@@ -3,8 +3,8 @@ import { http, HttpResponse } from 'msw'
 import axios, { isAxiosError } from 'axios'
 import { server } from '@/test/server'
 import { ANY_ORIGIN } from '@/test/handlers'
-import { refreshSession } from './auth'
-import apiClient, { REFRESH_PATH, REFRESH_TIMEOUT_MS } from './client'
+import { activateAccount, confirmPasswordReset, login, logout, refreshSession } from './auth'
+import apiClient, { AUTH_PATHS, REFRESH_PATH, REFRESH_TIMEOUT_MS, isPublicAuthCall } from './client'
 import { getAccessToken, setAccessToken } from './tokenStore'
 
 /**
@@ -153,5 +153,82 @@ describe('apiClient — limit czasu odświeżenia', () => {
     await expect(refreshSession()).rejects.toBeTruthy()
     await expect(refreshSession()).resolves.toBe('fresh')
     expect(calls).toBe(2)
+  })
+})
+
+/**
+ * #88: 401 z publicznego endpointu auth dotyczy hasła albo linku z maila, nie sesji.
+ * Odświeżenie byłoby zbędne (z sesją — zbędna rotacja, backend#146), a bez sesji
+ * strona dostałaby błąd odświeżenia zamiast oryginalnego `errorCode`.
+ */
+describe('apiClient — publiczne endpointy auth', () => {
+  let authHeaders: (string | null)[] = []
+
+  beforeEach(() => {
+    refreshCalls = 0
+    authHeaders = []
+    // Karta z sesją w pamięci — najgorszy przypadek: jest co wysłać i co odświeżyć.
+    setAccessToken('session')
+    mockRefresh(() => HttpResponse.json({ accessToken: 'fresh' }))
+  })
+
+  function reject401(method: 'get' | 'post', path: string, errorCode: string) {
+    server.use(
+      http[method](`${ANY_ORIGIN}${path}`, ({ request }) => {
+        authHeaders.push(request.headers.get('Authorization'))
+        return HttpResponse.json({ errorCode }, { status: 401 })
+      }),
+    )
+  }
+
+  const errorCodeOf = (e: unknown) =>
+    isAxiosError(e) ? (e.response?.data as { errorCode?: string }).errorCode : undefined
+
+  it.each([
+    ['aktywacja', 'get', AUTH_PATHS.activate, () => activateAccount('link'), 'TOKEN_REVOKED'],
+    [
+      'reset hasła',
+      'post',
+      AUTH_PATHS.passwordResetConfirm,
+      () => confirmPasswordReset({ token: 'link', newPassword: 'password123' }),
+      'JWT_BLACKLISTED',
+    ],
+    [
+      'logowanie',
+      'post',
+      AUTH_PATHS.login,
+      () => login({ email: 'jane@example.com', password: 'wrong' }),
+      'INVALID_CREDENTIALS',
+    ],
+  ] as const)('%s: bez tokenu sesji, bez odświeżania, z oryginalnym errorCode', async (_, method, path, call, code) => {
+    reject401(method, path, code)
+
+    const error = await call().catch((e: unknown) => e)
+
+    expect(errorCodeOf(error)).toBe(code)
+    expect(refreshCalls).toBe(0)
+    expect(authHeaders).toEqual([null])
+    // Sesja karty zostaje nietknięta — 401 linku nie wylogowuje.
+    expect(getAccessToken()).toBe('session')
+  })
+
+  it('wylogowanie nadal wysyła token sesji', async () => {
+    server.use(
+      http.post(`${ANY_ORIGIN}/api/v1/auth/logout`, ({ request }) => {
+        authHeaders.push(request.headers.get('Authorization'))
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    await logout()
+
+    expect(authHeaders).toEqual(['Bearer session'])
+  })
+
+  it('rozpoznaje ścieżkę także z query, ale nie prefiks innej ścieżki', () => {
+    expect(isPublicAuthCall(`${AUTH_PATHS.activate}?token=x`)).toBe(true)
+    expect(isPublicAuthCall('/api/v1/auth/logout')).toBe(false)
+    expect(isPublicAuthCall('/api/v1/auth/login-history')).toBe(false)
+    expect(isPublicAuthCall(undefined)).toBe(false)
   })
 })
