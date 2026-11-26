@@ -12,7 +12,7 @@ społeczności „Hives” czekają na backend). Konsumuje REST API Spring Boot:
 
 ## Stack
 
-- **React 19** + **TypeScript**, **Vite 8** (Rolldown) — **wymaga Node ≥ 20.19**, na starszym natywny binding się nie zainstaluje.
+- **React 19** + **TypeScript**, **Vite 8** (Rolldown) — projekt na **Node 26 LTS** (`engines` `>=26`, #90); minimum samego Vite to 20.19 (natywny binding Rolldowna).
 - **Tailwind CSS v4** przez `@tailwindcss/vite`; konfiguracja w CSS (`@import 'tailwindcss'` + `@theme`). **Nie ma `tailwind.config.js`** — nie twórz go.
 - **React Router v7** (deklaratywnie: `BrowserRouter` + `<Routes>`), **Axios**, `react-hook-form` + `zod`.
 - Testy: **Vitest + React Testing Library + MSW** (jsdom).
@@ -30,7 +30,7 @@ społeczności „Hives” czekają na backend). Konsumuje REST API Spring Boot:
 | `npm run gen:api` | typy z OpenAPI działającego backendu → `src/api/schema.d.ts` |
 
 Przed commitem: `build`, `lint` i `test:run` zielone, build bez nowych ostrzeżeń.
-**CI** (`.github/workflows/ci.yml`, Node 22): `lint` + `test:coverage` + `build` na każdym PR i pushu do `master`,
+**CI** (`.github/workflows/ci.yml`, Node 26): `lint` + `test:coverage` + `build` na każdym PR i pushu do `master`,
 potem SonarCloud (`Minner22_gamehive-frontend`) — tylko gdy repo ma sekret `SONAR_TOKEN`.
 Akcje przypięte do **pełnych SHA** z komentarzem wersji (ruchomy tag da się podmienić).
 

@@ -12,8 +12,8 @@ repo [`gamehive-backend`](https://github.com/Minner22/gamehive-backend)).
 
 ## Wymagania
 
-- **Node.js ≥ 20.19** (lub 22 LTS) — Vite 8 opiera się na bundlerze Rolldown,
-  który wymaga tej wersji. Na starszym Node natywny binding się nie zainstaluje.
+- **Node.js 26 LTS** (`engines` w `package.json`, ta sama wersja w CI). Samo Vite 8
+  (bundler Rolldown) potrzebuje co najmniej 20.19 — na starszym natywny binding się nie zainstaluje.
 - npm ≥ 10
 
 ## Start
